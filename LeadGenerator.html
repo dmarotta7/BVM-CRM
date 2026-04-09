@@ -1,0 +1,660 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Lead Generator — Mendham &amp; Chester NJ</title>
+<style>
+  :root{
+    --navy:#0f1f3d;
+    --navy-dark:#0a1628;
+    --navy-mid:#1a3160;
+    --orange:#e86a2a;
+    --orange-dark:#c95a1e;
+    --orange-light:#fdf0e8;
+    --orange-border:#f0c49a;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;background:#f0f2f5;color:#1a1a18;min-height:100vh}
+
+  .topbar{background:var(--navy);padding:0 2rem;display:flex;align-items:center;justify-content:space-between;height:58px;position:sticky;top:0;z-index:10;box-shadow:0 2px 12px rgba(0,0,0,.25)}
+  .topbar-title{font-size:16px;font-weight:700;color:#fff}
+  .topbar-sub{font-size:12px;color:rgba(255,255,255,.45);margin-left:10px}
+  .topbar-right{display:flex;gap:8px;align-items:center}
+  .sync-dot{width:8px;height:8px;border-radius:50%;background:rgba(255,255,255,.3);display:inline-block;margin-right:6px;transition:background .3s}
+  .sync-dot.ok{background:#22c55e}.sync-dot.err{background:#ef4444}.sync-dot.loading{background:#f59e0b}
+  #syncstatus{color:rgba(255,255,255,.6);font-size:12px}
+
+  .container{max-width:1400px;margin:0 auto;padding:1.5rem}
+
+  .btn{padding:7px 16px;border-radius:8px;border:1px solid #d5d5cf;background:#fff;font-size:13px;cursor:pointer;color:#1a1a18;font-family:inherit;transition:all .15s}
+  .btn:hover{background:#f5f5f3;border-color:#bbb}
+  .btnp{background:var(--orange);color:#fff;border-color:var(--orange-dark)}
+  .btnp:hover{background:var(--orange-dark)}
+  .btnsm{padding:5px 12px;font-size:12px}
+  .btn-navy{background:var(--navy);color:#fff;border-color:var(--navy-dark)}
+  .btn-navy:hover{background:var(--navy-mid)}
+
+  /* topbar buttons */
+  .topbar-right .btn{background:rgba(255,255,255,.1);border-color:rgba(255,255,255,.2);color:#fff}
+  .topbar-right .btn:hover{background:rgba(255,255,255,.2)}
+  .topbar-right .btnp{background:var(--orange);border-color:var(--orange-dark);color:#fff}
+  .topbar-right .btnp:hover{background:var(--orange-dark)}
+
+  .metrics{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:1.5rem}
+  .mc{background:#fff;border:1px solid #e2e6ed;border-radius:10px;padding:1rem 1.25rem;border-top:3px solid var(--navy)}
+  .ml{font-size:12px;color:#888;margin-bottom:4px}
+  .mv{font-size:24px;font-weight:700}
+
+  .section-head{font-size:15px;font-weight:700;color:var(--navy);margin-bottom:12px;padding-bottom:8px;border-bottom:2px solid var(--orange)}
+
+  /* Target list panel */
+  .panel{background:#fff;border:1px solid #e2e6ed;border-radius:12px;padding:1.25rem;margin-bottom:1.25rem;box-shadow:0 1px 4px rgba(0,0,0,.05)}
+
+  /* Tier cards */
+  .tier-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-bottom:1.5rem}
+  .tier-card{background:#fff;border:1px solid #e2e6ed;border-radius:10px;padding:1rem;cursor:pointer;transition:all .15s;border-top:3px solid transparent}
+  .tier-card:hover{border-color:#b0bdd4;box-shadow:0 2px 8px rgba(0,0,0,.08)}
+  .tier-card.active{border-top-color:var(--orange);background:var(--orange-light);border-color:var(--orange-border)}
+  .tier-card .tier-name{font-size:13px;font-weight:700;color:var(--navy);margin-bottom:4px}
+  .tier-card .tier-desc{font-size:12px;color:#888;margin-bottom:8px}
+  .tier-card .tier-count{font-size:11px;font-weight:600;color:var(--orange)}
+
+  /* Business type chips */
+  .chip-grid{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:1rem}
+  .chip{padding:5px 12px;border-radius:99px;border:1px solid #d5d5cf;font-size:12px;cursor:pointer;background:#fff;transition:all .15s;color:#555}
+  .chip:hover{border-color:var(--orange);color:var(--orange)}
+  .chip.sel{background:var(--navy);color:#fff;border-color:var(--navy)}
+
+  /* Prospect table */
+  .card-scroll{background:#fff;border:1px solid #e2e6ed;border-radius:12px;overflow-x:auto;box-shadow:0 1px 4px rgba(0,0,0,.06)}
+  table{width:100%;min-width:900px;border-collapse:collapse;font-size:13px}
+  thead tr{background:var(--navy)}
+  th{text-align:left;padding:10px;font-size:11px;font-weight:600;color:rgba(255,255,255,.75);text-transform:uppercase;letter-spacing:.05em;white-space:nowrap}
+  td{padding:9px 10px;border-bottom:1px solid #f0f2f5;vertical-align:middle}
+  tr:last-child td{border-bottom:none}
+  tr:hover td{background:#fdf5f0}
+
+  .badge{display:inline-block;padding:2px 10px;border-radius:99px;font-size:11px;font-weight:600}
+  .b1{background:#EAFAF0;color:#1a7a45}
+  .b2{background:#FFF3CD;color:#7d5c00}
+  .b3{background:#EBF4FF;color:#1d5ca8}
+  .bsent{background:#e8edf7;color:var(--navy-mid)}
+  .badded{background:#EAFAF0;color:#1a7a45}
+
+  /* Quick-add form */
+  .qaform{background:var(--orange-light);border:1px solid var(--orange-border);border-radius:12px;padding:1.25rem;margin-bottom:1.25rem;border-top:3px solid var(--orange)}
+  .fr{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:12px}
+  .fr3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px;margin-bottom:12px}
+  .fg{display:flex;flex-direction:column;gap:5px}
+  .fg label{font-size:12px;font-weight:600;color:var(--navy)}
+  .fg input,.fg select,.fg textarea{padding:8px 11px;border-radius:8px;border:1px solid #d5d5cf;font-size:13px;font-family:inherit;color:#1a1a18;background:#fff;transition:border .15s}
+  .fg input:focus,.fg select:focus,.fg textarea:focus{outline:none;border-color:var(--orange)}
+
+  /* Outreach scripts */
+  .script-box{background:#f8f9fc;border-left:3px solid var(--orange);border-radius:0 8px 8px 0;padding:1rem;font-size:13px;color:#1a1a18;line-height:1.75;white-space:pre-wrap;margin-top:8px}
+  .script-label{font-size:11px;font-weight:700;color:var(--orange);text-transform:uppercase;letter-spacing:.05em;margin-bottom:4px}
+
+  /* Channel cards */
+  .channel-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+  .channel-card{background:#fff;border:1px solid #e2e6ed;border-radius:10px;padding:1rem}
+  .ch-title{font-size:13px;font-weight:700;color:var(--navy);margin-bottom:4px}
+  .ch-sub{font-size:12px;color:#888;margin-bottom:8px;line-height:1.5}
+  .ch-priority{display:inline-block;font-size:11px;font-weight:600;padding:2px 8px;border-radius:99px;margin-bottom:8px}
+  .pri-hi{background:#EAFAF0;color:#1a7a45}
+  .pri-md{background:#FFF3CD;color:#7d5c00}
+
+  .toast{position:fixed;bottom:24px;right:24px;background:var(--navy);color:#fff;padding:10px 18px;border-radius:8px;font-size:13px;z-index:999;opacity:0;transform:translateY(8px);transition:all .25s;pointer-events:none;border-left:3px solid var(--orange)}
+  .toast.show{opacity:1;transform:translateY(0)}
+
+  .spinner{display:inline-block;width:12px;height:12px;border:2px solid #ccc;border-top-color:var(--orange);border-radius:50%;animation:spin .6s linear infinite;vertical-align:middle;margin-right:6px}
+  @keyframes spin{to{transform:rotate(360deg)}}
+
+  .progress-bar{height:4px;background:#e2e6ed;border-radius:2px;overflow:hidden;margin-top:6px}
+  .progress-fill{height:100%;background:var(--orange);border-radius:2px;transition:width .3s}
+
+  .empty{text-align:center;padding:3rem;color:#aaa;font-size:13px}
+
+  .tab-row{display:flex;gap:2px;border-bottom:2px solid #e2e6ed;margin-bottom:1.5rem}
+  .tab{padding:9px 18px;font-size:13px;cursor:pointer;border:none;background:none;color:#888;border-bottom:3px solid transparent;margin-bottom:-2px;font-family:inherit;transition:color .15s}
+  .tab.on{color:var(--navy);border-bottom-color:var(--orange);font-weight:600}
+  .tab:hover{color:var(--navy)}
+  .pg{display:none}.pg.on{display:block}
+
+  @media(max-width:700px){.metrics{grid-template-columns:1fr 1fr}.fr{grid-template-columns:1fr}.fr3{grid-template-columns:1fr}.tier-grid{grid-template-columns:1fr}.channel-grid{grid-template-columns:1fr}.container{padding:1rem}.topbar{padding:0 1rem}.topbar-sub{display:none}}
+</style>
+</head>
+<body>
+
+<div class="topbar">
+  <div style="display:flex;align-items:center">
+    <span class="topbar-title">Lead Generator</span>
+    <span class="topbar-sub">Mendham &amp; Chester NJ</span>
+  </div>
+  <div class="topbar-right">
+    <span style="font-size:12px;color:rgba(255,255,255,.6);display:flex;align-items:center">
+      <span class="sync-dot loading" id="syncdot"></span>
+      <span id="syncstatus">Connecting...</span>
+    </span>
+    <a href="/BVM-CRM/index.html" class="btn" style="text-decoration:none">&#x2190; Back to CRM</a>
+    <button class="btn btnp" onclick="showQuickAdd()">+ Add lead to CRM</button>
+  </div>
+</div>
+
+<div class="container">
+
+  <div class="metrics">
+    <div class="mc"><div class="ml">Target businesses</div><div class="mv" id="m-total">147</div></div>
+    <div class="mc"><div class="ml" style="color:var(--orange-dark)">Added to CRM</div><div class="mv" id="m-added" style="color:var(--orange-dark)">0</div></div>
+    <div class="mc"><div class="ml" style="color:#1a7a45">Mendham prospects</div><div class="mv" id="m-mend" style="color:#1a7a45">74</div></div>
+    <div class="mc"><div class="ml" style="color:#1d5ca8">Chester prospects</div><div class="mv" id="m-chest" style="color:#1d5ca8">73</div></div>
+  </div>
+
+  <div class="tab-row">
+    <button class="tab on" onclick="showTab('prospects',this)">Prospect list</button>
+    <button class="tab" onclick="showTab('channels',this)">Find me channels</button>
+    <button class="tab" onclick="showTab('scripts',this)">Outreach scripts</button>
+    <button class="tab" onclick="showTab('quickadd',this)">Quick add</button>
+  </div>
+
+  <!-- PROSPECTS TAB -->
+  <div class="pg on" id="tab-prospects">
+
+    <div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin-bottom:1rem">
+      <input id="srch" placeholder="Search business or type..." oninput="renderProspects()" style="padding:7px 11px;border-radius:8px;border:1px solid #d5d5cf;font-size:13px;font-family:inherit;min-width:200px"/>
+      <select id="ftier" onchange="renderProspects()" style="padding:7px 11px;border-radius:8px;border:1px solid #d5d5cf;font-size:13px;font-family:inherit">
+        <option value="">All tiers</option>
+        <option value="1">Tier 1 — Home services</option>
+        <option value="2">Tier 2 — Professional</option>
+        <option value="3">Tier 3 — Retail &amp; dining</option>
+      </select>
+      <select id="ftown" onchange="renderProspects()" style="padding:7px 11px;border-radius:8px;border:1px solid #d5d5cf;font-size:13px;font-family:inherit">
+        <option value="">Both towns</option>
+        <option value="Mendham">Mendham</option>
+        <option value="Chester">Chester</option>
+      </select>
+      <select id="fadded" onchange="renderProspects()" style="padding:7px 11px;border-radius:8px;border:1px solid #d5d5cf;font-size:13px;font-family:inherit">
+        <option value="">All status</option>
+        <option value="no">Not yet added</option>
+        <option value="yes">Added to CRM</option>
+      </select>
+    </div>
+
+    <div class="card-scroll">
+      <table>
+        <thead>
+          <tr>
+            <th>Business type</th>
+            <th>Town</th>
+            <th>Tier</th>
+            <th>Best services</th>
+            <th>Why they buy</th>
+            <th>Status</th>
+            <th>Actions</th>
+          </tr>
+        </thead>
+        <tbody id="ptbody"></tbody>
+      </table>
+      <div id="pempty" class="empty" style="display:none">No prospects match your filters.</div>
+    </div>
+
+  </div>
+
+  <!-- CHANNELS TAB -->
+  <div class="pg" id="tab-channels">
+    <div class="channel-grid">
+      <div class="channel-card">
+        <span class="ch-priority pri-hi">Do this today</span>
+        <div class="ch-title">Google Business Profile</div>
+        <div class="ch-sub">Set up as a marketing consultant serving Mendham, Chester, and Morris County. When a business owner Googles "local advertising Chester NJ" you need to appear. Fill every field, add magazine photos, post weekly.</div>
+        <div style="font-size:12px;color:var(--navy);font-weight:600;margin-bottom:4px">Keyword targets:</div>
+        <div style="font-size:12px;color:#555;line-height:1.6">Local advertising Mendham NJ &bull; Magazine advertising Chester NJ &bull; Local business marketing Morris County &bull; Community magazine advertising NJ</div>
+      </div>
+      <div class="channel-card">
+        <span class="ch-priority pri-hi">Highest local reach</span>
+        <div class="ch-title">Facebook &amp; Nextdoor groups</div>
+        <div class="ch-sub">Join Mendham Borough, Chester Township, Long Valley NJ, and Morris County community groups. Add value first — answer marketing questions, share tips. Never lead with a pitch. When someone asks "who does local marketing?" you're already known.</div>
+        <div style="font-size:12px;color:var(--navy);font-weight:600;margin-bottom:4px">Groups to join:</div>
+        <div style="font-size:12px;color:#555;line-height:1.6">Mendham Community &bull; Chester NJ Residents &bull; Long Valley NJ &bull; Morris County Business Network &bull; Nextdoor Mendham &amp; Chester</div>
+      </div>
+      <div class="channel-card">
+        <span class="ch-priority pri-md">Business owners specifically</span>
+        <div class="ch-title">LinkedIn — local targeting</div>
+        <div class="ch-sub">Search by zip codes 07945 (Mendham), 07930 (Chester), 07853 (Long Valley). Filter by "business owner" and "owner/founder." Connect with a personal note referencing their town. Post Morris County results weekly.</div>
+        <div style="font-size:12px;color:var(--navy);font-weight:600;margin-bottom:4px">Your headline angle:</div>
+        <div style="font-size:12px;color:#555;font-style:italic;line-height:1.6">"Helping local businesses in Mendham &amp; Chester reach every homeowner in their community — print, digital &amp; online presence."</div>
+      </div>
+      <div class="channel-card">
+        <span class="ch-priority pri-md">In-person credibility</span>
+        <div class="ch-title">Chamber &amp; walk-ins</div>
+        <div class="ch-sub">Join Morris County Chamber of Commerce and Chester Business Association. Show up to monthly mixers. Walk Main Street in Chester and Mendham — leave a one-pager, introduce yourself, follow up 3 days later. Warm walk-ins convert better than cold email at this market size.</div>
+        <div style="font-size:12px;color:var(--navy);font-weight:600;margin-bottom:4px">Key stops:</div>
+        <div style="font-size:12px;color:#555;line-height:1.6">Chester Main St businesses &bull; Mendham Borough businesses &bull; Route 24 corridor service businesses &bull; Chester Commons plaza</div>
+      </div>
+      <div class="channel-card">
+        <span class="ch-priority pri-hi">Built-in proof</span>
+        <div class="ch-title">Your existing advertisers</div>
+        <div class="ch-sub">Every current advertiser is a referral machine. Ask them directly: "Who else do you know in town that could use more visibility?" A happy HVAC company will happily recommend you to the landscaper down the street. Set a goal of 2 referral asks per week.</div>
+        <div style="font-size:12px;color:var(--navy);font-weight:600;margin-bottom:4px">Referral script:</div>
+        <div style="font-size:12px;color:#555;font-style:italic;line-height:1.6">"You've been in the magazine for X months — who else in town do you think could benefit from this kind of visibility?"</div>
+      </div>
+      <div class="channel-card">
+        <span class="ch-priority pri-md">Optional boost</span>
+        <div class="ch-title">Google Ads — local keywords</div>
+        <div class="ch-sub">$200–300/month targeting "advertise in Mendham NJ," "local business marketing Chester NJ," and "community magazine NJ." Small budget, very targeted. Worth testing after GBP is live and you have 3+ months of organic presence built.</div>
+        <div style="font-size:12px;color:var(--navy);font-weight:600;margin-bottom:4px">Start date:</div>
+        <div style="font-size:12px;color:#555;line-height:1.6">Month 2 or 3 — after GBP is indexed and you have review social proof in place.</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- SCRIPTS TAB -->
+  <div class="pg" id="tab-scripts">
+    <div class="panel" style="margin-bottom:1rem">
+      <div class="section-head">Cold walk-in intro (30 seconds)</div>
+      <div class="script-label">What to say when you walk in</div>
+      <div class="script-box">Hi, I'm Dave Marotta — I publish the community magazine that goes into every home in Mendham and Chester each month. I'm not here to sell you anything today, just wanted to introduce myself and drop off something that shows you what we do. [hand them the one-pager] If you ever want to talk about getting in front of every homeowner in your town, just give me a call. Have a great day!</div>
+    </div>
+
+    <div class="panel" style="margin-bottom:1rem">
+      <div class="section-head">Follow-up call (3 days after walk-in)</div>
+      <div class="script-label">Phone script</div>
+      <div class="script-box">Hi [name], this is Dave Marotta — I stopped by last week and left some information about the Mendham and Chester community magazine. Did you get a chance to look at it? [pause]
+
+The reason I'm calling is we're putting together the next issue and I have a couple of spots available in your category. I wanted to give you first look before I reach out to [competitor type] in the area.
+
+Would you have 15 minutes this week — I can show you exactly what it looks like and what other businesses in your industry are getting from it?</div>
+    </div>
+
+    <div class="panel" style="margin-bottom:1rem">
+      <div class="section-head">Online presence opener (Discovery question)</div>
+      <div class="script-label">This one question opens the conversation</div>
+      <div class="script-box">"Quick question for you — when a homeowner in Mendham searches for a [plumber/landscaper/etc] on Google right now, does your business show up? And when they find you, how many reviews do you have?"
+
+[Let them answer. Most will be uncomfortable.]
+
+"That's actually the most common thing I hear from businesses in town. We put together a package that fixes all three of those problems — we get you found, we get you looking great, and then we put you in front of every mailbox in the community on top of it. Want me to show you how it works?"</div>
+    </div>
+
+    <div class="panel" style="margin-bottom:1rem">
+      <div class="section-head">The full bundle pitch (meeting/presentation)</div>
+      <div class="script-label">Use when you have 15+ minutes with a prospect</div>
+      <div class="script-box">"Most businesses in Mendham and Chester pick one thing — they run a Facebook ad, or they get a website, or they advertise somewhere — and then wonder why it doesn't move the needle. The reason is they're invisible everywhere else.
+
+What we do is build you a complete local presence. First, you're in every mailbox in town — the magazine goes to every homeowner in Mendham and Chester, every single month. That's the trust piece. People see you repeatedly in their own community.
+
+Second, we follow them online. After they see you in the magazine, our Digital Impression program keeps you in front of them wherever they go on the internet.
+
+Third, when they actually go to look you up, you show up, you look great, and you have the reviews to back it up.
+
+Three things, working together. That's what the businesses who really win locally are doing. The question is whether you want to be that business in your category in this town."</div>
+    </div>
+
+    <div class="panel">
+      <div class="section-head">Facebook community group post (value-add, no pitch)</div>
+      <div class="script-label">Post in Mendham/Chester community groups — builds awareness without selling</div>
+      <div class="script-box">Quick tip for local business owners in the area:
+
+If you haven't claimed your Google Business Profile yet, do it today. It's free and it's the single fastest way to show up when a neighbor searches for what you offer.
+
+Three things to add right now:
+1. Your hours (make sure they're current)
+2. At least 5 recent photos
+3. A response to every review you've received
+
+Takes about 30 minutes and most of your competitors haven't done it. Happy to answer questions if anyone has them.</div>
+    </div>
+  </div>
+
+  <!-- QUICK ADD TAB -->
+  <div class="pg" id="tab-quickadd">
+    <div class="qaform">
+      <div style="font-size:15px;font-weight:700;color:var(--navy);margin-bottom:14px">Add local business to CRM</div>
+      <div class="fr">
+        <div class="fg"><label>Contact name *</label><input id="qa-name" placeholder="John Smith"/></div>
+        <div class="fg"><label>Business name *</label><input id="qa-company" placeholder="Smith Plumbing LLC"/></div>
+      </div>
+      <div class="fr">
+        <div class="fg"><label>Phone</label><input id="qa-phone" placeholder="(908) 555-0100"/></div>
+        <div class="fg"><label>Email</label><input id="qa-email" placeholder="john@smithplumbing.com"/></div>
+      </div>
+      <div class="fr3">
+        <div class="fg"><label>Town</label>
+          <select id="qa-town">
+            <option value="Mendham">Mendham NJ</option>
+            <option value="Chester">Chester NJ</option>
+            <option value="Long Valley">Long Valley NJ</option>
+            <option value="Other">Other</option>
+          </select>
+        </div>
+        <div class="fg"><label>Business type</label>
+          <select id="qa-industry">
+            <option>Home Services</option>
+            <option>HVAC</option>
+            <option>Plumbing</option>
+            <option>Electrical</option>
+            <option>Landscaping</option>
+            <option>Roofing</option>
+            <option>Pool and Spa</option>
+            <option>Cleaning Services</option>
+            <option>Pest Control</option>
+            <option>Healthcare</option>
+            <option>Dental</option>
+            <option>Real Estate</option>
+            <option>Financial Services</option>
+            <option>Legal</option>
+            <option>Restaurant</option>
+            <option>Retail</option>
+            <option>Automotive</option>
+            <option>Other</option>
+          </select>
+        </div>
+        <div class="fg"><label>Interested in</label>
+          <select id="qa-interest">
+            <option value="Print + Digital + Online">All 3 services</option>
+            <option value="Print Magazine">Print magazine only</option>
+            <option value="Digital Impression">Digital Impression</option>
+            <option value="Online Presence">Online presence</option>
+            <option value="Print + Digital">Print + Digital</option>
+          </select>
+        </div>
+      </div>
+      <div class="fr">
+        <div class="fg"><label>How you found them</label>
+          <select id="qa-source">
+            <option>Cold outreach</option>
+            <option>Walk-in</option>
+            <option>Referral</option>
+            <option>Facebook</option>
+            <option>LinkedIn</option>
+            <option>Event</option>
+            <option>Nextdoor</option>
+            <option>Google</option>
+            <option>Other</option>
+          </select>
+        </div>
+        <div class="fg"><label>Estimated deal value ($)</label>
+          <input id="qa-value" type="number" placeholder="1200"/>
+        </div>
+      </div>
+      <div class="fg" style="margin-bottom:14px"><label>Notes</label>
+        <textarea id="qa-notes" placeholder="Where you met them, what they said, key needs, best time to follow up..."></textarea>
+      </div>
+      <div style="display:flex;gap:8px;justify-content:flex-end">
+        <button class="btn" onclick="clearQuickAdd()">Clear form</button>
+        <button class="btn btnp" id="qa-savebtn" onclick="saveQuickAdd()">Send to CRM pipeline</button>
+      </div>
+      <div id="qa-status" style="font-size:13px;color:#1a7a45;margin-top:10px;display:none"></div>
+    </div>
+
+    <div class="panel">
+      <div class="section-head">Recently added to CRM</div>
+      <div id="recent-list"><div class="empty">No leads added yet this session.</div></div>
+    </div>
+  </div>
+
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+var SURL='https://zueydnbdfhshpuoqqxwi.supabase.co';
+var SKEY='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inp1ZXlkbmJkZmhzaHB1b3FxeHdpIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzU0OTQwNDIsImV4cCI6MjA5MTA3MDA0Mn0.wtTYE60EfJoo-BhhDJIGhR3pyXlLg9zHSnnr6exEkQg';
+var SBH={'Content-Type':'application/json','apikey':SKEY,'Authorization':'Bearer '+SKEY};
+var addedLeads=[];
+var addedIds={};
+
+async function sbFetch(path,opts){
+  opts=opts||{};
+  var r=await fetch(SURL+'/rest/v1/'+path,Object.assign({},opts,{headers:Object.assign({},SBH,opts.headers||{})}));
+  if(!r.ok){var e=await r.json().catch(function(){return{message:r.status}});throw new Error(e.message||r.status);}
+  return r.status===204?null:r.json();
+}
+
+function setSS(state,text){
+  document.getElementById('syncdot').className='sync-dot '+state;
+  document.getElementById('syncstatus').textContent=text;
+}
+
+async function checkConnection(){
+  setSS('loading','Connecting...');
+  try{
+    await sbFetch('leads?limit=1&select=id');
+    setSS('ok','Connected to CRM');
+    loadAddedCount();
+  }catch(e){
+    setSS('err','CRM offline');
+  }
+}
+
+async function loadAddedCount(){
+  try{
+    var data=await sbFetch('leads?select=id&source=eq.Walk-in&limit=500');
+    document.getElementById('m-added').textContent=data.length;
+  }catch(e){}
+}
+
+function toast(msg){
+  var t=document.getElementById('toast');
+  t.textContent=msg;t.classList.add('show');
+  setTimeout(function(){t.classList.remove('show');},2500);
+}
+
+function showTab(n,el){
+  document.querySelectorAll('.pg').forEach(function(p){p.classList.remove('on');});
+  document.querySelectorAll('.tab').forEach(function(t){t.classList.remove('on');});
+  document.getElementById('tab-'+n).classList.add('on');el.classList.add('on');
+}
+
+function showQuickAdd(){
+  showTab('quickadd', document.querySelectorAll('.tab')[3]);
+  document.getElementById('qa-name').focus();
+}
+
+/* -- Prospect data ------------------------------- */
+var prospects=[
+  /* TIER 1 - HOME SERVICES */
+  {type:'HVAC / Heating & Cooling',town:'Mendham',tier:1,services:'Print + Digital + Online',why:'Homeowners search seasonally - be the trusted local name year-round'},
+  {type:'HVAC / Heating & Cooling',town:'Chester',tier:1,services:'Print + Digital + Online',why:'Seasonal demand + high ticket = high ROI on visibility'},
+  {type:'Plumbing',town:'Mendham',tier:1,services:'Print + Digital + Online',why:'Emergency searches go to businesses with reviews and online presence'},
+  {type:'Plumbing',town:'Chester',tier:1,services:'Print + Digital + Online',why:'First plumber homeowners recognize wins the call'},
+  {type:'Electrical contractor',town:'Mendham',tier:1,services:'Print + Online Presence',why:'Trust is everything - magazine credibility closes deals'},
+  {type:'Electrical contractor',town:'Chester',tier:1,services:'Print + Online Presence',why:'Local electricians rarely market well - easy differentiation'},
+  {type:'Landscaping / lawn care',town:'Mendham',tier:1,services:'Print + Digital',why:'Visual service - magazine shows the work to neighbors'},
+  {type:'Landscaping / lawn care',town:'Chester',tier:1,services:'Print + Digital',why:'Spring and fall campaigns drive seasonal contracts'},
+  {type:'Roofing',town:'Mendham',tier:1,services:'Print + Online Presence',why:'High-value job, neighbors share who they used - be visible'},
+  {type:'Roofing',town:'Chester',tier:1,services:'Print + Online Presence',why:'Storm damage creates urgency - be top of mind in mailbox first'},
+  {type:'Pool and Spa service',town:'Mendham',tier:1,services:'Print + Digital',why:'High-income homes = high pool density in these towns'},
+  {type:'Pool and Spa service',town:'Chester',tier:1,services:'Print + Digital',why:'Seasonal contracts worth $3K+ per customer'},
+  {type:'House cleaning service',town:'Mendham',tier:1,services:'Print + Digital',why:'Recurring revenue model - one ad fills a schedule for years'},
+  {type:'House cleaning service',town:'Chester',tier:1,services:'Print + Digital',why:'Word of mouth drives this business - magazine amplifies it'},
+  {type:'Pest control',town:'Mendham',tier:1,services:'Print + Online Presence',why:'Annual contracts - build trust before the problem hits'},
+  {type:'Pest control',town:'Chester',tier:1,services:'Print + Online Presence',why:'Seasonal with tick/mosquito concern in NJ suburbs'},
+  {type:'Gutter cleaning / exterior',town:'Mendham',tier:1,services:'Print',why:'Neighbors share contractors - mailbox presence seeds referrals'},
+  {type:'Gutter cleaning / exterior',town:'Chester',tier:1,services:'Print',why:'Low competition for marketing in this niche'},
+  {type:'Window replacement',town:'Mendham',tier:1,services:'Print + Digital',why:'Major purchase - multiple touchpoints needed to close'},
+  {type:'Window replacement',town:'Chester',tier:1,services:'Print + Digital',why:'High-income neighborhoods = premium product buyers'},
+  {type:'Painting (interior/exterior)',town:'Mendham',tier:1,services:'Print + Digital',why:'Portfolio visual - magazine showcases the quality'},
+  {type:'Painting (interior/exterior)',town:'Chester',tier:1,services:'Print + Digital',why:'Spring/fall seasonal surge - time campaigns to issues'},
+  {type:'General contractor / remodeling',town:'Mendham',tier:1,services:'Print + Digital + Online',why:'Project-based with high value - needs consistent local presence'},
+  {type:'General contractor / remodeling',town:'Chester',tier:1,services:'Print + Digital + Online',why:'Referral-driven - magazine keeps name top of mind between projects'},
+  {type:'Tree service / arborist',town:'Mendham',tier:1,services:'Print + Online Presence',why:'Storm-driven demand - local name recognition wins the call'},
+  {type:'Tree service / arborist',town:'Chester',tier:1,services:'Print + Online Presence',why:'High-income suburban neighborhoods = large lots, big trees'},
+  {type:'Home security / smart home',town:'Mendham',tier:1,services:'Print + Digital',why:'Trust product - community magazine builds credibility'},
+  {type:'Generator installation',town:'Chester',tier:1,services:'Print + Online Presence',why:'Growing demand post-storm events in NJ'},
+  /* TIER 2 - PROFESSIONAL */
+  {type:'Dentist / dental practice',town:'Mendham',tier:2,services:'Print + Online Presence',why:'Families pick dentists from trusted community sources'},
+  {type:'Dentist / dental practice',town:'Chester',tier:2,services:'Print + Online Presence',why:'New residents actively looking for local dentist - be visible'},
+  {type:'Chiropractor',town:'Mendham',tier:2,services:'Print + Digital',why:'Repeat patient model - awareness drives long-term patients'},
+  {type:'Chiropractor',town:'Chester',tier:2,services:'Print + Digital',why:'Low local competition for marketing in this category'},
+  {type:'Physical therapy',town:'Mendham',tier:2,services:'Print + Online Presence',why:'Doctor referrals + local visibility = full caseload'},
+  {type:'Real estate agent',town:'Mendham',tier:2,services:'Print + Digital',why:'Hyperlocal market - magazine keeps name visible between deals'},
+  {type:'Real estate agent',town:'Chester',tier:2,services:'Print + Digital',why:'Every listing in Mendham/Chester touches your reader base'},
+  {type:'Financial advisor',town:'Mendham',tier:2,services:'Print + Online Presence',why:'High-income zip code - ideal audience for wealth management'},
+  {type:'Financial advisor',town:'Chester',tier:2,services:'Print + Online Presence',why:'Trust-based service - print credibility is differentiating'},
+  {type:'Estate / family attorney',town:'Mendham',tier:2,services:'Print',why:'High-income homeowners = estate planning prospects'},
+  {type:'Veterinarian',town:'Mendham',tier:2,services:'Print + Digital',why:'Pet owners are loyal once they trust a local vet'},
+  {type:'Veterinarian',town:'Chester',tier:2,services:'Print + Digital',why:'Rural-adjacent area = large pet ownership in both towns'},
+  {type:'Optometrist',town:'Mendham',tier:2,services:'Print + Online Presence',why:'Families with kids - school year drives annual exam timing'},
+  {type:'Insurance agent',town:'Chester',tier:2,services:'Print',why:'Trust product - community presence is a competitive advantage'},
+  {type:'Accountant / CPA',town:'Mendham',tier:2,services:'Print',why:'Annual relationship - January/February magazine timing is perfect'},
+  {type:'Interior designer',town:'Mendham',tier:2,services:'Print + Digital',why:'Visual portfolio + high-income audience = natural fit'},
+  {type:'Personal trainer / wellness',town:'Chester',tier:2,services:'Print + Digital',why:'Growing wellness interest in suburban communities'},
+  /* TIER 3 - RETAIL & DINING */
+  {type:'Restaurant / dining',town:'Chester',tier:3,services:'Print + Digital',why:'Drive traffic from Mendham/Chester residents on weekends'},
+  {type:'Cafe / coffee shop',town:'Chester',tier:3,services:'Print',why:'Community gathering spot - magazine readers are regulars'},
+  {type:'Hair salon / barbershop',town:'Mendham',tier:3,services:'Print + Digital',why:'Recurring appointments - one ad fills a chair for years'},
+  {type:'Hair salon / barbershop',town:'Chester',tier:3,services:'Print + Digital',why:'Local loyalty is high - get them before they find a competitor'},
+  {type:'Yoga / pilates studio',town:'Mendham',tier:3,services:'Print + Digital',why:'Subscription model + affluent audience = strong LTV'},
+  {type:'Boutique retail',town:'Chester',tier:3,services:'Print + Digital',why:'Drive foot traffic from entire community not just walk-bys'},
+  {type:'Auto repair / mechanic',town:'Chester',tier:3,services:'Print + Online Presence',why:'Homeowners are loyal once they trust a local mechanic'},
+  {type:'Auto repair / mechanic',town:'Mendham',tier:3,services:'Print + Online Presence',why:'Reviews + magazine presence = go-to local shop status'},
+  {type:'Dry cleaner / tailor',town:'Mendham',tier:3,services:'Print',why:'Commuter suburbs = professional wardrobe care demand'},
+  {type:'Florist',town:'Chester',tier:3,services:'Print + Digital',why:'Holiday and event timing campaigns drive high-margin orders'},
+  {type:'Gym / fitness center',town:'Chester',tier:3,services:'Print + Digital',why:'New Year + summer campaigns in the magazine convert well'},
+  {type:'Tutoring / learning center',town:'Mendham',tier:3,services:'Print',why:'High-income parents invest heavily in kids education'},
+  {type:'Photography / videography',town:'Mendham',tier:3,services:'Print + Digital',why:'Event and family portrait market strong in affluent suburbs'},
+  {type:'Catering',town:'Chester',tier:3,services:'Print + Digital',why:'Event-driven with high tickets - magazine builds name recognition'},
+];
+
+var addedSet={};
+
+function tierBadge(t){
+  if(t===1)return '<span class="badge b1">Tier 1</span>';
+  if(t===2)return '<span class="badge b2">Tier 2</span>';
+  return '<span class="badge b3">Tier 3</span>';
+}
+
+function renderProspects(){
+  var q=document.getElementById('srch').value.toLowerCase();
+  var ft=document.getElementById('ftier').value;
+  var fw=document.getElementById('ftown').value;
+  var fa=document.getElementById('fadded').value;
+
+  var fl=prospects.filter(function(p){
+    var matchQ=!q||p.type.toLowerCase().includes(q)||p.town.toLowerCase().includes(q);
+    var matchT=!ft||String(p.tier)===ft;
+    var matchW=!fw||p.town===fw;
+    var matchA=!fa||(fa==='yes'?addedSet[p.type+p.town]:!addedSet[p.type+p.town]);
+    return matchQ&&matchT&&matchW&&matchA;
+  });
+
+  document.getElementById('pempty').style.display=fl.length?'none':'block';
+  document.getElementById('ptbody').innerHTML=fl.map(function(p,i){
+    var added=addedSet[p.type+p.town];
+    var idx=prospects.indexOf(p);
+    return '<tr>'
+      +'<td style="font-weight:500">'+p.type+'</td>'
+      +'<td><span style="font-size:12px;font-weight:600;color:var(--navy)">'+p.town+'</span></td>'
+      +'<td>'+tierBadge(p.tier)+'</td>'
+      +'<td style="font-size:12px;color:#555">'+p.services+'</td>'
+      +'<td style="font-size:12px;color:#888;max-width:220px;white-space:normal">'+p.why+'</td>'
+      +'<td>'+(added?'<span class="badge badded">Added</span>':'<span style="font-size:12px;color:#aaa">-</span>')+'</td>'
+      +'<td><button class="btn btnsm '+(added?'':'btnp')+' qa-btn" data-idx="'+idx+'">'+(added?'Edit in CRM':'+ Add to CRM')+'</button></td>'
+      +'</tr>';
+  }).join('');
+}
+
+function quickAddFromList(idx){
+  var p=prospects[idx];
+  if(!p)return;
+  var type=p.type, town=p.town, services=p.services;
+  showTab('quickadd', document.querySelectorAll('.tab')[3]);
+  document.getElementById('qa-company').value='';
+  document.getElementById('qa-name').value='';
+  document.getElementById('qa-town').value=town;
+  var ind=document.getElementById('qa-industry');
+  var opts=ind.options;
+  for(var i=0;i<opts.length;i++){
+    if(opts[i].text.toLowerCase().includes(type.split('/')[0].toLowerCase().trim())){
+      ind.selectedIndex=i;break;
+    }
+  }
+  document.getElementById('qa-interest').value=services.split(' + ').length>=3?'Print + Digital + Online':services;
+  document.getElementById('qa-source').value='Walk-in';
+  document.getElementById('qa-company').focus();
+  toast('Pre-filled for '+type+' in '+town+' - add the business name and details');
+}
+
+document.addEventListener('click',function(e){
+  var btn=e.target.closest('.qa-btn');
+  if(btn){quickAddFromList(parseInt(btn.getAttribute('data-idx')));}
+});
+
+async function saveQuickAdd(){
+  var name=document.getElementById('qa-name').value.trim();
+  var company=document.getElementById('qa-company').value.trim();
+  if(!name||!company){toast('Name and business name are required');return;}
+
+  var btn=document.getElementById('qa-savebtn');
+  btn.disabled=true;btn.textContent='Sending to CRM...';
+  setSS('loading','Saving...');
+
+  var town=document.getElementById('qa-town').value;
+  var industry=document.getElementById('qa-industry').value;
+  var interest=document.getElementById('qa-interest').value;
+  var source=document.getElementById('qa-source').value;
+  var rawNotes=document.getElementById('qa-notes').value.trim();
+  var notes=[];
+  if(rawNotes)notes.push(rawNotes);
+  notes.push('Town: '+town+' | Interested in: '+interest);
+
+  var row={
+    name:name,
+    company:company,
+    email:document.getElementById('qa-email').value.trim()||null,
+    phone:document.getElementById('qa-phone').value.trim()||null,
+    source:source,
+    industry:industry,
+    stage:'New',
+    value:parseInt(document.getElementById('qa-value').value)||0,
+    notes:notes,
+    score:45,
+    contact_date:new Date().toISOString().slice(0,10),
+    followup_date:new Date(Date.now()+3*86400000).toISOString().slice(0,10)
+  };
+
+  try{
+    var data=await sbFetch('leads?select=*',{method:'POST',headers:{'Prefer':'return=representation'},body:JSON.stringify(row)});
+    addedLeads.unshift({name:name,company:company,town:town,industry:industry,interest:interest,id:data[0].id,added:new Date().toLocaleTimeString()});
+    addedSet[industry+town]=true;
+    updateMetrics();
+    renderRecent();
+    clearQuickAdd();
+    setSS('ok','Synced');
+    toast(company+' added to CRM pipeline!');
+    renderProspects();
+  }catch(e){
+    setSS('err','Sync error');
+    toast('Error: '+e.message);
+  }
+  btn.disabled=false;btn.textContent='Send to CRM pipeline';
+}
+
+function clearQuickAdd(){
+  ['qa-name','qa-company','qa-phone','qa-email','qa-value','qa-notes'].forEach(function(id){document.getElementById(id).value='';});
+  document.getElementById('qa-status').style.display='none';
+}
+
+function updateMetrics(){
+  document.getElementById('m-added').textContent=addedLeads.length;
+}
+
+function renderRecent(){
+  var el=document.getElementById('recent-list');
+  if(!addedLeads.length){el.innerHTML='<div class="empty">No leads added yet this session.</div>';return;}
+  el.innerHTML=addedLeads.map(function(l){
+    return '<div style="display:flex;align-items:center;justify-content:space-between;padding:10px 0;border-bottom:1px solid #f0f2f5">'
+      +'<div><div style="font-size:13px;font-weight:600;color:var(--navy)">'+l.company+'</div>'
+      +'<div style="font-size:12px;color:#888">'+l.name+' &bull; '+l.town+' &bull; '+l.industry+'</div></div>'
+      +'<div style="text-align:right"><span class="badge badded">In CRM</span><div style="font-size:11px;color:#aaa;margin-top:3px">Added '+l.added+'</div></div>'
+      +'</div>';
+  }).join('');
+}
+
+checkConnection();
+renderProspects();
+renderRecent();
+</script>
+</body>
+</html>

@@ -1,0 +1,1010 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Lead Management — Marketing & Sales</title>
+<style>
+  /* ── Color tokens ── */
+  :root{
+    --navy:#0f1f3d;
+    --navy-dark:#0a1628;
+    --navy-mid:#1a3160;
+    --orange:#e86a2a;
+    --orange-dark:#c95a1e;
+    --orange-light:#fdf0e8;
+    --orange-border:#f0c49a;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;background:#f0f2f5;color:#1a1a18;min-height:100vh}
+
+  /* ── Topbar ── */
+  .topbar{background:var(--navy);border-bottom:none;padding:0 2rem;display:flex;align-items:center;justify-content:space-between;height:58px;position:sticky;top:0;z-index:10;box-shadow:0 2px 12px rgba(0,0,0,.25)}
+  .topbar-title{font-size:16px;font-weight:700;color:#fff;letter-spacing:.01em}
+  .topbar-sub{font-size:12px;color:rgba(255,255,255,.45);margin-left:10px}
+  .topbar-right{display:flex;gap:8px;align-items:center}
+
+  /* topbar buttons */
+  .topbar-right .btn{background:rgba(255,255,255,.1);border-color:rgba(255,255,255,.2);color:#fff}
+  .topbar-right .btn:hover{background:rgba(255,255,255,.2)}
+  .topbar-right .btnp{background:var(--orange);border-color:var(--orange-dark);color:#fff}
+  .topbar-right .btnp:hover{background:var(--orange-dark)}
+
+  /* sync dot */
+  .sync-dot{width:8px;height:8px;border-radius:50%;background:rgba(255,255,255,.3);display:inline-block;margin-right:6px;transition:background .3s}
+  .sync-dot.ok{background:#22c55e}
+  .sync-dot.err{background:#ef4444}
+  .sync-dot.loading{background:#f59e0b}
+  #syncstatus{color:rgba(255,255,255,.6);font-size:12px}
+
+  /* ── Layout ── */
+  .container{max-width:1600px;margin:0 auto;padding:1.5rem}
+
+  /* ── Metric cards ── */
+  .metrics{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:1.5rem}
+  .mc{background:#fff;border:1px solid #e2e6ed;border-radius:10px;padding:1rem 1.25rem;border-top:3px solid var(--navy)}
+  .ml{font-size:12px;color:#888;margin-bottom:4px}
+  .mv{font-size:24px;font-weight:700}
+
+  /* ── Tabs ── */
+  .tabs{display:flex;gap:2px;border-bottom:2px solid #e2e6ed;margin-bottom:1.5rem}
+  .tab{padding:9px 18px;font-size:13px;cursor:pointer;border:none;background:none;color:#888;border-bottom:3px solid transparent;margin-bottom:-2px;font-family:inherit;transition:color .15s}
+  .tab.on{color:var(--navy);border-bottom-color:var(--orange);font-weight:600}
+  .tab:hover{color:var(--navy)}
+  .pg{display:none}.pg.on{display:block}
+
+  /* ── Cards ── */
+  .card{background:#fff;border:1px solid #e2e6ed;border-radius:12px;padding:1.25rem;margin-bottom:1rem}
+  .card-scroll{background:#fff;border:1px solid #e2e6ed;border-radius:12px;margin-bottom:1rem;overflow-x:auto;box-shadow:0 1px 4px rgba(0,0,0,.06)}
+
+  /* ── Table ── */
+  table{width:100%;min-width:1100px;border-collapse:collapse;font-size:13px}
+  thead tr{background:var(--navy)}
+  th{text-align:left;padding:10px 10px;font-size:11px;font-weight:600;color:rgba(255,255,255,.75);border-bottom:none;text-transform:uppercase;letter-spacing:.05em;white-space:nowrap}
+  th.col-actions,td.col-actions{min-width:220px;white-space:nowrap}
+  td{padding:9px 10px;border-bottom:1px solid #f0f2f5;vertical-align:middle;white-space:nowrap}
+  tr:last-child td{border-bottom:none}
+  tr:hover td{background:#fdf5f0}
+
+  /* ── Badges ── */
+  .bdg{display:inline-block;padding:2px 10px;border-radius:99px;font-size:11px;font-weight:600}
+  .bh{background:#FCEBEB;color:#A32D2D}.bw{background:#FFF3CD;color:#7d5c00}.bc{background:#EBF4FF;color:#1d5ca8}
+
+  /* Stage badges */
+  .stg{display:inline-block;padding:3px 10px;border-radius:6px;font-size:11px;font-weight:600}
+  .sN{background:#e8edf7;color:var(--navy-mid)}
+  .sC{background:var(--orange-light);color:var(--orange-dark)}
+  .sQ{background:#EAFAF0;color:#1a7a45}
+  .sP{background:#F0EBFF;color:#5a2fc2}
+  .sCl{background:#e8f5e9;color:#2e7d32}
+
+  /* ── Buttons ── */
+  .btn{padding:7px 16px;border-radius:8px;border:1px solid #d5d5cf;background:#fff;font-size:13px;cursor:pointer;color:#1a1a18;font-family:inherit;transition:all .15s}
+  .btn:hover{background:#f5f5f3;border-color:#bbb}
+  .btnp{background:var(--orange);color:#fff;border-color:var(--orange-dark)}
+  .btnp:hover{background:var(--orange-dark)}
+  .btnsm{padding:4px 10px;font-size:12px}
+  .btndanger{color:#A32D2D;border-color:#f0c0c0}
+  .btndanger:hover{background:#FCEBEB}
+
+  /* Forward button orange tint */
+  button[data-action="advance"]{color:var(--orange);border-color:var(--orange-border)}
+  button[data-action="advance"]:hover{background:var(--orange-light)}
+
+  /* ── Form ── */
+  .form-section{background:#fff;border:1px solid #e2e6ed;border-radius:12px;padding:1.5rem;margin-bottom:1.5rem;display:none;border-top:3px solid var(--orange)}
+  .fr{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:12px}
+  .fg{display:flex;flex-direction:column;gap:5px}
+  .fg label{font-size:12px;font-weight:600;color:var(--navy)}
+  .fg input,.fg select,.fg textarea{padding:8px 11px;border-radius:8px;border:1px solid #d5d5cf;font-size:13px;font-family:inherit;color:#1a1a18;background:#fff;transition:border .15s}
+  .fg input:focus,.fg select:focus,.fg textarea:focus{outline:none;border-color:var(--orange)}
+  .fg textarea{resize:vertical;min-height:64px}
+  .frow{display:flex;gap:8px;margin-bottom:1rem;flex-wrap:wrap;align-items:center}
+  .frow input,.frow select{padding:7px 11px;border-radius:8px;border:1px solid #d5d5cf;font-size:13px;font-family:inherit;color:#1a1a18}
+
+  /* ── AI ── */
+  .ai-box{background:#f0f2f5;border-radius:10px;padding:1rem;font-size:13px;line-height:1.75;min-height:80px;white-space:pre-wrap;color:#1a1a18;margin-top:12px;border-left:3px solid var(--orange)}
+  .dstep{border-left:3px solid var(--orange);padding-left:1rem;margin-bottom:1.25rem;margin-left:.5rem}
+  .dday{font-size:11px;font-weight:600;color:var(--orange);margin-bottom:3px;text-transform:uppercase;letter-spacing:.04em}
+  .dsbj{font-size:13px;font-weight:600;color:var(--navy);margin-bottom:5px}
+  .dbdy{font-size:13px;color:#555;line-height:1.7;white-space:pre-wrap}
+
+  /* ── Modal / Overlay ── */
+  .overlay{display:none;position:fixed;inset:0;background:rgba(10,22,40,.5);z-index:100;align-items:center;justify-content:center}
+  .overlay.on{display:flex}
+  .modal{background:#fff;border-radius:14px;padding:1.5rem;width:90%;max-width:500px;max-height:80vh;overflow-y:auto;box-shadow:0 24px 64px rgba(0,0,0,.25);border-top:4px solid var(--orange)}
+  .ntry{background:#f0f2f5;border-radius:8px;padding:.75rem 2.5rem .75rem .75rem;margin-bottom:8px;font-size:13px;line-height:1.6;color:#1a1a18;position:relative}
+  .nts{font-size:11px;color:#aaa;margin-top:4px}
+  .ndel{position:absolute;top:8px;right:8px;background:none;border:none;cursor:pointer;color:#ccc;font-size:14px}
+  .ndel:hover{color:#A32D2D}
+  .empty{text-align:center;padding:3rem;color:#aaa;font-size:13px}
+
+  /* ── Toast ── */
+  .toast{position:fixed;bottom:24px;right:24px;background:var(--navy);color:#fff;padding:10px 18px;border-radius:8px;font-size:13px;z-index:999;opacity:0;transform:translateY(8px);transition:all .25s;pointer-events:none;border-left:3px solid var(--orange)}
+  .toast.show{opacity:1;transform:translateY(0)}
+
+  /* ── API banner ── */
+  .api-banner{background:#FFF3CD;border:1px solid #f0d060;border-radius:10px;padding:.875rem 1rem;font-size:13px;color:#7d5c00;margin-bottom:1.5rem;display:flex;align-items:flex-start;gap:10px}
+  .api-key-row{display:flex;gap:8px;align-items:center;margin-top:8px}
+  .api-key-row input{flex:1;padding:7px 11px;border-radius:8px;border:1px solid #d5d5cf;font-size:13px;font-family:inherit}
+
+  .followup-due{color:#A32D2D!important;font-weight:600}
+  .spinner{display:inline-block;width:12px;height:12px;border:2px solid #ccc;border-top-color:var(--orange);border-radius:50%;animation:spin .6s linear infinite;vertical-align:middle;margin-right:6px}
+  @keyframes spin{to{transform:rotate(360deg)}}
+  @media(max-width:700px){.metrics{grid-template-columns:1fr 1fr}.fr{grid-template-columns:1fr}.container{padding:1rem}.topbar{padding:0 1rem}.topbar-sub{display:none}}
+</style>
+<script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
+</head>
+<body>
+
+<div class="topbar">
+  <div style="display:flex;align-items:center">
+    <span class="topbar-title">Lead Management</span>
+    <span class="topbar-sub">Marketing &amp; Sales CRM</span>
+  </div>
+  <div class="topbar-right">
+    <a href="/BVM-CRM/LeadGenerator.html" style="padding:7px 16px;border-radius:8px;border:1px solid rgba(255,255,255,.2);background:rgba(255,255,255,.1);font-size:13px;color:#fff;text-decoration:none;font-family:inherit">&#x1F50D; Lead Generator</a>
+    <span style="font-size:12px;color:#888;display:flex;align-items:center">
+      <span class="sync-dot loading" id="syncdot"></span>
+      <span id="syncstatus">Connecting...</span>
+    </span>
+    <button class="btn" onclick="downloadTemplate('csv')">&#x2b07; Template CSV</button>
+    <button class="btn" onclick="downloadTemplate('xlsx')">&#x2b07; Template Excel</button>
+    <button class="btn" onclick="exportCSV()">&#x2b07; Export CSV</button>
+    <button class="btn" onclick="triggerImport()">&#x2b06; Import CSV / Excel</button>
+    <input type="file" id="csvfile" accept=".csv,.xlsx" style="display:none" onchange="importCSV(event)"/>
+    <button class="btn" onclick="openIndustryManager()">&#x2699; Industries</button>
+    <button class="btn btnp" onclick="toggleForm()">+ Add lead</button>
+  </div>
+</div>
+
+<div class="container">
+
+  <div class="api-banner" id="apibanner">
+    <span>&#x2699;</span>
+    <div>
+      <strong>AI features need your Anthropic API key</strong> &mdash; paste it below to enable email drip generation and pipeline analysis. Stored only in your browser.
+      <div class="api-key-row">
+        <input type="password" id="apikey" placeholder="sk-ant-..." />
+        <button class="btn btnp" onclick="saveKey()">Save key</button>
+        <button class="btn" onclick="clearKey()">Clear</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="metrics">
+    <div class="mc"><div class="ml">Total leads</div><div class="mv" id="m1">&#x2014;</div></div>
+    <div class="mc"><div class="ml" style="color:var(--orange-dark)">Contacted leads</div><div class="mv" id="m2" style="color:var(--orange-dark)">&#x2014;</div></div>
+    <div class="mc"><div class="ml" style="color:#5a2fc2">In proposal</div><div class="mv" id="m3" style="color:#5a2fc2">&#x2014;</div></div>
+    <div class="mc"><div class="ml" style="color:#1a7a45">Pipeline value</div><div class="mv" id="m4" style="color:#1a7a45">&#x2014;</div></div>
+  </div>
+
+  <div class="form-section" id="addform">
+    <div style="font-size:15px;font-weight:600;margin-bottom:14px">New lead</div>
+    <div class="fr">
+      <div class="fg"><label>Name *</label><input id="fn" placeholder="Jane Smith"/></div>
+      <div class="fg"><label>Company *</label><input id="fc" placeholder="Acme Inc."/></div>
+    </div>
+    <div class="fr">
+      <div class="fg"><label>Email</label><input id="fe" placeholder="jane@acme.com"/></div>
+      <div class="fg"><label>Phone / Mobile</label><input id="fph" placeholder="+1 555-0100"/></div>
+    </div>
+    <div class="fr">
+      <div class="fg"><label>Deal value ($)</label><input id="fv" type="number" placeholder="5000"/></div>
+      <div class="fg"><label>Source</label>
+        <select id="fss"><option>Website</option><option>Referral</option><option>LinkedIn</option><option>Facebook</option><option>Instagram</option><option>Cold outreach</option><option>Event</option><option>Driving Community</option><option>Other</option></select>
+      </div>
+    </div>
+    <div class="fr">
+      <div class="fg"><label>Industry</label>
+        <select id="find"><option value="">— Select industry —</option></select>
+        <div style="display:flex;gap:6px;margin-top:6px"><input id="finew" placeholder="Add new industry..." style="flex:1;padding:6px 10px;border-radius:7px;border:1px solid #d5d5cf;font-size:12px;font-family:inherit"/><button type="button" class="btn btnsm" onclick="addIndustryFromForm()">+ Add</button></div>
+      </div>
+      <div class="fg"><label>Stage</label>
+        <select id="fst"><option>New</option><option>Contacted</option><option>Qualified</option><option>Proposal</option><option>Closed</option></select>
+      </div>
+    </div>
+    <div class="fr">
+      <div class="fg"><label>Contact date</label><input id="fcd" type="date"/></div>
+      <div class="fg"><label>Follow-up date</label><input id="ffu" type="date"/></div>
+    </div>
+    <div class="fr">
+      <div class="fg"><label>Website</label><input id="fweb" placeholder="https://example.com"/></div>
+      <div class="fg"><label>Social media</label><input id="fsoc" placeholder="e.g. linkedin.com/in/janesmith"/></div>
+    </div>
+    <div class="fg" style="margin-bottom:14px"><label>Notes</label><textarea id="fno" placeholder="How you met, key needs, context..."></textarea></div>
+    <div style="display:flex;gap:8px;justify-content:flex-end">
+      <button class="btn" onclick="toggleForm()">Cancel</button>
+      <button class="btn btnp" id="savebtn" onclick="addLead()">Save lead</button>
+    </div>
+  </div>
+
+  <div class="tabs">
+    <button class="tab on" onclick="showTab('leads',this)">All leads</button>
+    <button class="tab" onclick="showTab('drip',this)">Email drip</button>
+    <button class="tab" onclick="showTab('ai',this)">AI analyst</button>
+  </div>
+
+  <div class="pg on" id="tab-leads">
+    <div class="frow">
+      <input id="srch" placeholder="Search name or company..." oninput="render()" style="min-width:180px"/>
+      <select id="fsf" onchange="render()"><option value="">All stages</option><option>New</option><option>Contacted</option><option>Qualified</option><option>Proposal</option><option>Closed</option></select>
+      <select id="find-filter" onchange="render()"><option value="">All industries</option></select>
+      <select id="fsrc" onchange="render()"><option value="">All sources</option><option>Website</option><option>Referral</option><option>LinkedIn</option><option>Facebook</option><option>Instagram</option><option>Cold outreach</option><option>Event</option><option>Driving Community</option><option>Other</option></select>
+    </div>
+    <div class="card-scroll">
+      <table>
+        <thead><tr><th>Name</th><th>Company</th><th>Phone</th><th>Source</th><th>Industry</th><th>Stage</th><th>Value</th><th>Contacted</th><th>Follow-up</th><th>Notes</th><th class="col-actions">Actions</th></tr></thead>
+        <tbody id="tbody"></tbody>
+      </table>
+      <div id="empty" class="empty" style="display:none">No leads found.</div>
+    </div>
+  </div>
+
+  <div class="pg" id="tab-drip">
+    <div class="card">
+      <div style="font-size:15px;font-weight:600;margin-bottom:4px">Email drip sequences</div>
+      <div style="font-size:13px;color:#888;margin-bottom:14px">AI writes a personalized 4-email sequence based on your lead profile and notes.</div>
+      <div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center">
+        <select id="dlead" style="padding:8px 11px;border-radius:8px;border:1px solid #d5d5cf;font-size:13px;font-family:inherit;min-width:220px"></select>
+        <select id="dtype" style="padding:8px 11px;border-radius:8px;border:1px solid #d5d5cf;font-size:13px;font-family:inherit">
+          <option value="cold">Cold outreach</option>
+          <option value="followup">Follow-up</option>
+          <option value="nurture">Nurture / educate</option>
+          <option value="closing">Post-proposal close</option>
+        </select>
+        <button class="btn btnp" onclick="genDrip()">Generate sequence</button>
+      </div>
+      <div id="dldr" style="display:none;font-size:13px;color:#888;padding:10px 0"><span class="spinner"></span>Writing your email sequence...</div>
+      <div id="dout" style="margin-top:1rem"></div>
+    </div>
+  </div>
+
+  <div class="pg" id="tab-ai">
+    <div class="card">
+      <div style="font-size:15px;font-weight:600;margin-bottom:4px">AI pipeline analyst</div>
+      <div style="font-size:13px;color:#888;margin-bottom:14px">Instant insights based on your full pipeline including lead notes.</div>
+      <div style="display:flex;gap:8px;flex-wrap:wrap">
+        <button class="btn" onclick="ask('pipeline')">Analyze pipeline</button>
+        <button class="btn" onclick="ask('priority')">Who to call today?</button>
+        <button class="btn" onclick="ask('tips')">Sales tips</button>
+        <button class="btn" onclick="ask('email')">Draft best follow-up</button>
+      </div>
+      <div id="aildr" style="display:none;font-size:13px;color:#888;padding:10px 0"><span class="spinner"></span>Analyzing your pipeline...</div>
+      <div class="ai-box" id="aiout">Click a button above to get AI insights about your leads.</div>
+    </div>
+  </div>
+
+</div>
+
+<div class="overlay" id="overlay" onclick="overlayClick(event)">
+  <div class="modal">
+    <div style="font-size:15px;font-weight:600;color:#1a1a18;margin-bottom:2px" id="nt"></div>
+    <div style="font-size:12px;color:#888;margin-bottom:14px" id="ns"></div>
+    <div id="nl" style="max-height:240px;overflow-y:auto;margin-bottom:12px"></div>
+    <div class="fg" style="margin-bottom:12px"><label>Add note</label><textarea id="ni" placeholder="Call notes, next steps, meeting summary..."></textarea></div>
+    <div style="display:flex;gap:8px;justify-content:flex-end">
+      <button class="btn" onclick="closeNotes()">Close</button>
+      <button class="btn btnp" onclick="saveNote()">Add note</button>
+    </div>
+  </div>
+</div>
+
+
+<div class="overlay" id="ind-modal" onclick="if(event.target===this)closeIndustryManager()">
+  <div class="modal">
+    <div style="font-size:15px;font-weight:600;color:#1a1a18;margin-bottom:4px">Manage Industries</div>
+    <div style="font-size:12px;color:#888;margin-bottom:14px">Add or remove industries from the dropdown list.</div>
+    <div id="ind-list" style="max-height:260px;overflow-y:auto;margin-bottom:14px"></div>
+    <div style="display:flex;gap:8px;margin-bottom:14px">
+      <input id="ind-new" placeholder="New industry name..." style="flex:1;padding:8px 11px;border-radius:8px;border:1px solid #d5d5cf;font-size:13px;font-family:inherit" onkeydown="if(event.key==='Enter')addIndustryFromManager()"/>
+      <button class="btn btnp" onclick="addIndustryFromManager()">+ Add</button>
+    </div>
+    <div style="display:flex;justify-content:flex-end">
+      <button class="btn" onclick="closeIndustryManager()">Done</button>
+    </div>
+  </div>
+</div>
+
+<div class="overlay" id="edit-modal" onclick="if(event.target===this)closeEdit()">
+  <div class="modal" style="max-width:600px">
+    <div style="font-size:15px;font-weight:700;color:var(--navy);margin-bottom:14px">Edit Lead</div>
+    <div class="fr">
+      <div class="fg"><label>Name *</label><input id="ef-name" placeholder="Jane Smith"/></div>
+      <div class="fg"><label>Company *</label><input id="ef-company" placeholder="Acme Inc."/></div>
+    </div>
+    <div class="fr">
+      <div class="fg"><label>Email</label><input id="ef-email" placeholder="jane@acme.com"/></div>
+      <div class="fg"><label>Phone</label><input id="ef-phone" placeholder="+1 555-0100"/></div>
+    </div>
+    <div class="fr">
+      <div class="fg"><label>Deal value ($)</label><input id="ef-value" type="number" placeholder="5000"/></div>
+      <div class="fg"><label>Source</label>
+        <select id="ef-source"><option>Website</option><option>Referral</option><option>LinkedIn</option><option>Facebook</option><option>Instagram</option><option>Cold outreach</option><option>Event</option><option>Driving Community</option><option>Other</option></select>
+      </div>
+    </div>
+    <div class="fr">
+      <div class="fg"><label>Industry</label><select id="ef-industry"><option value="">— Select industry —</option></select></div>
+      <div class="fg"><label>Stage</label>
+        <select id="ef-stage"><option>New</option><option>Contacted</option><option>Qualified</option><option>Proposal</option><option>Closed</option></select>
+      </div>
+    </div>
+    <div class="fr">
+      <div class="fg"><label>Contact date</label><input id="ef-contact" type="date"/></div>
+      <div class="fg"><label>Follow-up date</label><input id="ef-followup" type="date"/></div>
+    </div>
+    <div class="fr">
+      <div class="fg"><label>Website</label><input id="ef-website" placeholder="https://example.com"/></div>
+      <div class="fg"><label>Social media</label><input id="ef-social" placeholder="e.g. linkedin.com/in/janesmith"/></div>
+    </div>
+    <div style="display:flex;gap:8px;justify-content:flex-end;margin-top:6px">
+      <button class="btn" onclick="closeEdit()">Cancel</button>
+      <button class="btn btnp" id="ef-savebtn" onclick="saveEdit()">Save changes</button>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+var SURL='https://zueydnbdfhshpuoqqxwi.supabase.co';
+var SKEY='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inp1ZXlkbmJkZmhzaHB1b3FxeHdpIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzU0OTQwNDIsImV4cCI6MjA5MTA3MDA0Mn0.wtTYE60EfJoo-BhhDJIGhR3pyXlLg9zHSnnr6exEkQg';
+var SBH={'Content-Type':'application/json','apikey':SKEY,'Authorization':'Bearer '+SKEY};
+var AK_KEY='lm_apikey';
+var leads=[],activeId=null;
+var stages=["New","Contacted","Qualified","Proposal","Closed"];
+
+async function sbFetch(path,opts){
+  opts=opts||{};
+  var r=await fetch(SURL+'/rest/v1/'+path,Object.assign({},opts,{headers:Object.assign({},SBH,opts.headers||{})}));
+  if(!r.ok){var e=await r.json().catch(function(){return{message:r.status}});throw new Error(e.message||r.status);}
+  return r.status===204?null:r.json();
+}
+
+async function loadLeads(){
+  setSS('loading','Connecting...');
+  try{
+    var data=await sbFetch('leads?order=created_at.desc');
+    leads=data.map(function(row){return Object.assign({},row,{notes:row.notes||[]});});
+    setSS('ok','Synced');render();populateIndustryDropdowns();
+  }catch(e){
+    setSS('err','Offline');
+    document.getElementById('empty').style.display='block';
+    document.getElementById('empty').textContent='Could not connect. Check your internet connection.';
+    toast('Connection error: '+e.message);
+  }
+}
+
+function setSS(state,text){
+  document.getElementById('syncdot').className='sync-dot '+state;
+  document.getElementById('syncstatus').textContent=text;
+}
+
+function tmp(s){return s>=70?'Hot':s>=45?'Warm':'Cold';}
+function tcl(s){return s>=70?'bh':s>=45?'bw':'bc';}
+function scl(st){return{New:'sN',Contacted:'sC',Qualified:'sQ',Proposal:'sP',Closed:'sCl'}[st]||'sN';}
+
+function metrics(){
+  document.getElementById('m1').textContent=leads.length;
+  document.getElementById('m2').textContent=leads.filter(function(l){return l.stage==='Contacted';}).length;
+  document.getElementById('m3').textContent=leads.filter(function(l){return l.stage==='Proposal';}).length;
+  document.getElementById('m4').textContent='$'+leads.reduce(function(s,l){return s+(l.value||0);},0).toLocaleString();
+}
+
+function populateDrip(){
+  document.getElementById('dlead').innerHTML=leads.map(function(l){return '<option value="'+l.id+'">'+l.name+' - '+l.company+'</option>';}).join('');
+}
+
+function render(){
+  var q=document.getElementById('srch').value.toLowerCase();
+  var sf=document.getElementById('fsf').value;
+  var src=document.getElementById('fsrc').value;
+  var ind=document.getElementById('find-filter').value;
+  var fl=leads.filter(function(l){
+    return(!q||l.name.toLowerCase().includes(q)||l.company.toLowerCase().includes(q))&&(!sf||l.stage===sf)&&(!src||l.source===src)&&(!ind||l.industry===ind);
+  });
+  document.getElementById('empty').style.display=fl.length?'none':'block';
+  document.getElementById('tbody').innerHTML=fl.map(function(l){
+    var nc=l.notes&&l.notes.length;
+    return '<tr><td><div style="font-weight:500">'+l.name+'</div><div style="font-size:11px;color:#888">'+(l.email||'')+'</div></td>'
+      +'<td>'+l.company+'</td>'
+      +'<td style="font-size:12px;color:#888">'+(l.phone||'&mdash;')+'</td>'
+      +'<td><select data-action="setsource" data-id="'+l.id+'" style="border:1px solid transparent;border-radius:6px;padding:3px 6px;font-size:13px;font-family:inherit;color:#1a1a18;background:transparent;cursor:pointer" onmouseover="this.style.borderColor=\'#d5d5cf\'" onmouseout="this.style.borderColor=\'transparent\'">'+['Website','Referral','LinkedIn','Facebook','Instagram','Cold outreach','Event','Driving Community','Other'].map(function(s){return'<option'+(s===l.source?' selected':'')+'>'+s+'</option>';}).join('')+'</select></td>'
+      +'<td>'+industryCell(l)+'</td>'
+      +'<td><span class="stg '+scl(l.stage)+'">'+l.stage+'</span></td>'
+      +'<td style="font-weight:600">$'+(l.value||0).toLocaleString()+'</td>'
+      +'<td style="font-size:12px;color:#888">'+(l.contact_date||'—')+'</td>'
+      +'<td><input type="date" class="fudate" data-action="setfollowup" data-id="'+l.id+'" value="'+(l.followup_date||'')+'" style="border:1px solid #d5d5cf;border-radius:6px;padding:3px 6px;font-size:12px;font-family:inherit;color:'+(l.followup_date&&new Date(l.followup_date)<new Date()?'#A32D2D':'#555')+';background:#fff;cursor:pointer"/></td>'
+      +'<td><button class="btn btnsm" data-action="notes" data-id="'+l.id+'" style="'+(nc?'color:#1d5ca8':'color:#aaa')+'">'+(nc?l.notes.length+' note'+(l.notes.length>1?'s':''):'Add note')+'</button></td>'
+      +'<td class="col-actions"><div style="display:flex;gap:5px;flex-wrap:nowrap">'
+      +'<button class="btn btnsm" data-action="edit" data-id="'+l.id+'" style="color:var(--navy);border-color:#b0bdd4">&#x270E; Edit</button>'
+      +(stages.indexOf(l.stage)<stages.length-1?'<button class="btn btnsm" data-action="advance" data-id="'+l.id+'">&#x2191; Forward</button>':'')
+      +(stages.indexOf(l.stage)>0?'<button class="btn btnsm" data-action="retreat" data-id="'+l.id+'" style="color:#7d5c00;border-color:#f0d060">&#x2193; Back</button>':'')
+      +'<button class="btn btnsm btndanger" data-action="del" data-id="'+l.id+'">Delete</button>'
+      +'</div></td></tr>';
+  }).join('');
+  metrics();populateDrip();
+}
+
+function toggleForm(){
+  var f=document.getElementById('addform');
+  f.style.display=f.style.display==='block'?'none':'block';
+  if(f.style.display==='block')document.getElementById('fn').focus();
+}
+
+async function addLead(){
+  var n=document.getElementById('fn').value.trim();
+  var c=document.getElementById('fc').value.trim();
+  if(!n||!c){toast('Name and company are required');return;}
+  var note=document.getElementById('fno').value.trim();
+  var btn=document.getElementById('savebtn');
+  btn.disabled=true;btn.textContent='Saving...';setSS('loading','Saving...');
+  try{
+    var row={name:n,company:c,email:document.getElementById('fe').value.trim()||null,
+      phone:document.getElementById('fph').value.trim()||null,
+      source:document.getElementById('fss').value,stage:document.getElementById('fst').value,
+      industry:document.getElementById('find').value||null,
+      website:document.getElementById('fweb').value.trim()||null,
+      social:document.getElementById('fsoc').value.trim()||null,
+      score:Math.floor(Math.random()*35)+30,value:parseInt(document.getElementById('fv').value)||0,notes:note?[note]:[],contact_date:document.getElementById('fcd').value||null,followup_date:document.getElementById('ffu').value||null};
+    var data=await sbFetch('leads?select=*',{method:'POST',headers:{'Prefer':'return=representation'},body:JSON.stringify(row)});
+    leads.unshift(Object.assign({},data[0],{notes:data[0].notes||[]}));
+    ['fn','fc','fe','fph','fv','fno','fcd','ffu','fweb','fsoc'].forEach(function(i){document.getElementById(i).value='';});
+    document.getElementById('find').value='';
+    toggleForm();render();setSS('ok','Synced');toast('Lead saved!');
+  }catch(e){setSS('err','Sync error');toast('Error: '+e.message);}
+  btn.disabled=false;btn.textContent='Save lead';
+}
+
+async function advance(id){
+  var l=leads.find(function(x){return x.id===id;});if(!l)return;
+  var i=stages.indexOf(l.stage);
+  if(i>=stages.length-1){toast('Already at final stage');return;}
+  var ns=stages[i+1];var nsc=Math.min(100,l.score+Math.floor(Math.random()*8)+4);
+  setSS('loading','Saving...');
+  try{
+    await sbFetch('leads?id=eq.'+id,{method:'PATCH',headers:{'Prefer':'return=minimal'},body:JSON.stringify({stage:ns,score:nsc})});
+    l.stage=ns;l.score=nsc;render();setSS('ok','Synced');toast('Stage updated!');
+  }catch(e){setSS('err','Sync error');toast('Error: '+e.message);}
+}
+
+async function setSource(id,source){
+  var l=leads.find(function(x){return x.id===id;});if(!l)return;
+  setSS('loading','Saving...');
+  try{
+    await sbFetch('leads?id=eq.'+id,{method:'PATCH',headers:{'Prefer':'return=minimal'},body:JSON.stringify({source:source})});
+    l.source=source;render();setSS('ok','Synced');toast('Source updated!');
+  }catch(e){setSS('err','Sync error');toast('Error: '+e.message);}
+}
+
+async function setFollowup(id,date){
+  var l=leads.find(function(x){return x.id===id;});if(!l)return;
+  setSS('loading','Saving...');
+  try{
+    await sbFetch('leads?id=eq.'+id,{method:'PATCH',headers:{'Prefer':'return=minimal'},body:JSON.stringify({followup_date:date||null})});
+    l.followup_date=date||null;render();setSS('ok','Synced');toast('Follow-up date updated!');
+  }catch(e){setSS('err','Sync error');toast('Error: '+e.message);}
+}
+
+async function retreat(id){
+  var l=leads.find(function(x){return x.id===id;});if(!l)return;
+  var i=stages.indexOf(l.stage);
+  if(i<=0){toast('Already at first stage');return;}
+  var ns=stages[i-1];var nsc=Math.max(0,l.score-Math.floor(Math.random()*5)-2);
+  setSS('loading','Saving...');
+  try{
+    await sbFetch('leads?id=eq.'+id,{method:'PATCH',headers:{'Prefer':'return=minimal'},body:JSON.stringify({stage:ns,score:nsc})});
+    l.stage=ns;l.score=nsc;render();setSS('ok','Synced');toast('Stage moved back.');
+  }catch(e){setSS('err','Sync error');toast('Error: '+e.message);}
+}
+
+async function del(id){
+  if(!confirm('Remove this lead? This cannot be undone.'))return;
+  setSS('loading','Deleting...');
+  try{
+    await sbFetch('leads?id=eq.'+id,{method:'DELETE'});
+    leads=leads.filter(function(l){return l.id!==id;});
+    render();setSS('ok','Synced');toast('Lead deleted');
+  }catch(e){setSS('err','Sync error');toast('Error: '+e.message);}
+}
+
+function showTab(n,el){
+  document.querySelectorAll('.pg').forEach(function(p){p.classList.remove('on');});
+  document.querySelectorAll('.tab').forEach(function(t){t.classList.remove('on');});
+  document.getElementById('tab-'+n).classList.add('on');el.classList.add('on');
+}
+
+function openNotes(id){
+  activeId=id;
+  var l=leads.find(function(x){return x.id===id;});
+  document.getElementById('nt').textContent=l.name;
+  document.getElementById('ns').textContent=l.company+' - '+l.stage+(l.phone?' - '+l.phone:'');
+  renderNotesList(l);
+  document.getElementById('overlay').classList.add('on');
+  setTimeout(function(){document.getElementById('ni').focus();},100);
+}
+
+function renderNotesList(l){
+  var nl=document.getElementById('nl');
+  if(!l.notes||!l.notes.length){nl.innerHTML='<div style="font-size:13px;color:#aaa;padding:6px 0">No notes yet.</div>';return;}
+  nl.innerHTML=l.notes.map(function(n,i){
+    return '<div class="ntry"><button class="ndel" data-action="delnote" data-idx="'+i+'">&#x2715;</button>'+n+'<div class="nts">Note '+(i+1)+'</div></div>';
+  }).join('');
+}
+
+async function saveNote(){
+  var txt=document.getElementById('ni').value.trim();if(!txt)return;
+  var l=leads.find(function(x){return x.id===activeId;});if(!l)return;
+  var newNotes=(l.notes||[]).concat([txt]);
+  setSS('loading','Saving...');
+  try{
+    await sbFetch('leads?id=eq.'+activeId,{method:'PATCH',headers:{'Prefer':'return=minimal'},body:JSON.stringify({notes:newNotes})});
+    l.notes=newNotes;document.getElementById('ni').value='';
+    renderNotesList(l);render();setSS('ok','Synced');toast('Note saved!');
+  }catch(e){setSS('err','Sync error');toast('Error: '+e.message);}
+}
+
+async function delNote(idx){
+  var l=leads.find(function(x){return x.id===activeId;});if(!l)return;
+  var newNotes=l.notes.filter(function(_,i){return i!==idx;});
+  setSS('loading','Saving...');
+  try{
+    await sbFetch('leads?id=eq.'+activeId,{method:'PATCH',headers:{'Prefer':'return=minimal'},body:JSON.stringify({notes:newNotes})});
+    l.notes=newNotes;renderNotesList(l);render();setSS('ok','Synced');
+  }catch(e){setSS('err','Sync error');toast('Error: '+e.message);}
+}
+
+function closeNotes(){document.getElementById('overlay').classList.remove('on');activeId=null;}
+function overlayClick(e){if(e.target===document.getElementById('overlay'))closeNotes();}
+
+function exportCSV(){
+  var hdr=["Name","Company","Email","Phone","Source","Industry","Stage","Value ($)","Contact Date","Follow-up Date","Notes"];
+  var rows=leads.map(function(l){
+    return[l.name,l.company,l.email||'',l.phone||'',l.source,l.industry||'',l.stage,l.value||0,l.contact_date||"",l.followup_date||"",(l.notes||[]).join(' | ')]
+      .map(function(v){return'"'+String(v).replace(/"/g,'""')+'"';}).join(',');
+  });
+  var csv=[hdr.join(',')].concat(rows).join('\n');
+  var a=document.createElement('a');
+  a.href=URL.createObjectURL(new Blob([csv],{type:'text/csv'}));
+  a.download='leads_'+new Date().toISOString().slice(0,10)+'.csv';
+  a.click();URL.revokeObjectURL(a.href);toast('CSV downloaded!');
+}
+
+function loadKey(){
+  var k=localStorage.getItem(AK_KEY)||'';
+  if(k){
+    document.getElementById('apikey').value=k;
+    var b=document.getElementById('apibanner');
+    b.style.background='#EAFAF0';b.style.borderColor='#90d4b0';b.style.color='#1a7a45';
+  }
+}
+function saveKey(){
+  var k=document.getElementById('apikey').value.trim();
+  if(!k){toast('Please enter your API key');return;}
+  localStorage.setItem(AK_KEY,k);
+  var b=document.getElementById('apibanner');
+  b.style.background='#EAFAF0';b.style.borderColor='#90d4b0';b.style.color='#1a7a45';
+  toast('API key saved!');
+}
+function clearKey(){
+  localStorage.removeItem(AK_KEY);
+  document.getElementById('apikey').value='';
+  var b=document.getElementById('apibanner');
+  b.style.background='';b.style.borderColor='';b.style.color='';
+  toast('API key cleared');
+}
+function getKey(){return localStorage.getItem(AK_KEY)||'';}
+
+async function callAI(prompt){
+  var key=getKey();
+  if(!key){toast('Please add your Anthropic API key in the banner above');return null;}
+  var r=await fetch('https://api.anthropic.com/v1/messages',{method:'POST',
+    headers:{'Content-Type':'application/json','x-api-key':key,'anthropic-version':'2023-06-01'},
+    body:JSON.stringify({model:'claude-sonnet-4-20250514',max_tokens:1500,messages:[{role:'user',content:prompt}]})});
+  var d=await r.json();
+  if(d.error)throw new Error(d.error.message);
+  var tb=d.content&&d.content.find(function(b){return b.type==='text';});
+  return tb?tb.text:'';
+}
+
+async function genDrip(){
+  var lid=document.getElementById('dlead').value;
+  var l=leads.find(function(x){return x.id===lid;});if(!l)return;
+  var dt=document.getElementById('dtype').value;
+  var dtl={cold:'cold outreach',followup:'follow-up',nurture:'nurture and education',closing:'post-proposal close'}[dt];
+  document.getElementById('dldr').style.display='block';
+  document.getElementById('dout').innerHTML='';
+  var prompt='You are a sales email copywriter. Write a 4-step email drip sequence ('+dtl+') for this lead:\n'
+    +'Name: '+l.name+', Company: '+l.company+', Email: '+(l.email||'N/A')+', Phone: '+(l.phone||'N/A')
+    +', Source: '+l.source+', Stage: '+l.stage+', Score: '+l.score+'/100, Deal value: $'+l.value
+    +', Notes: '+((l.notes||[]).join('; ')||'none')+'\n'
+    +'Return ONLY a valid JSON array with 4 objects. Each must have: day (number: 1, 3, 7, 14), subject (string), body (string, 2-4 sentences, conversational, personalized). No markdown, no code fences. Raw JSON only.';
+  try{
+    var txt=await callAI(prompt);
+    if(!txt){document.getElementById('dldr').style.display='none';return;}
+    txt=txt.replace(/```[a-z]*/g,'').replace(/```/g,'').trim();
+    var emails=JSON.parse(txt);
+    document.getElementById('dout').innerHTML='<div style="border-top:1px solid #e5e5e0;padding-top:1rem;margin-top:1rem">'
+      +'<div style="font-size:14px;font-weight:600;margin-bottom:4px">'+l.name+' &mdash; '+dtl+'</div>'
+      +'<div style="font-size:12px;color:#888;margin-bottom:1rem">'+l.company+' &middot; $'+l.value.toLocaleString()+' deal</div>'
+      +emails.map(function(e,i){return '<div class="dstep"><div class="dday">Day '+e.day+' &middot; Email '+(i+1)+'</div>'
+        +'<div class="dsbj">Subject: '+e.subject+'</div><div class="dbdy">'+e.body+'</div></div>';}).join('')+'</div>';
+    toast('Sequence generated!');
+  }catch(e){document.getElementById('dout').innerHTML='<div style="font-size:13px;color:#A32D2D;padding:8px 0">Could not generate. Check your API key or try again.</div>';}
+  document.getElementById('dldr').style.display='none';
+}
+
+async function ask(mode){
+  document.getElementById('aildr').style.display='block';
+  document.getElementById('aiout').textContent='';
+  var sum=leads.map(function(l){return l.name+' ('+l.company+'), stage:'+l.stage+', score:'+l.score+', value:$'+l.value+', source:'+l.source+', notes:'+((l.notes||[]).join('; ')||'none');}).join('\n');
+  var prompts={
+    pipeline:'My leads:\n'+sum+'\n\nGive a concise pipeline analysis: total value, stage breakdown, what needs attention, and 3 specific action items.',
+    priority:'My leads:\n'+sum+'\n\nTop 3 leads to contact today - give a reason and a suggested opening line for each.',
+    tips:'My leads:\n'+sum+'\n\n4 specific sales tips tailored to my current pipeline to help close more deals this week.',
+    email:'My leads:\n'+sum+'\n\nDraft a short personalized follow-up email (with subject line) for my highest-scoring lead. Under 5 sentences, friendly tone.'
+  };
+  try{
+    var txt=await callAI(prompts[mode]);
+    if(txt)document.getElementById('aiout').textContent=txt;
+  }catch(e){document.getElementById('aiout').textContent='Error: '+e.message;}
+  document.getElementById('aildr').style.display='none';
+}
+
+function toast(msg){
+  var t=document.getElementById('toast');
+  t.textContent=msg;t.classList.add('show');
+  setTimeout(function(){t.classList.remove('show');},2500);
+}
+
+
+function triggerImport(){document.getElementById('csvfile').click();}
+
+function downloadTemplate(fmt){
+  var hdr=['Name','Company','Email','Phone','Source','Industry','Stage','Value','Contact Date','Follow-up Date'];
+  var ex=[
+    ['Jane Smith','Acme Inc.','jane@acme.com','+1 555-0100','Referral','Healthcare','New','8000','2026-04-01','2026-04-15'],
+    ['Tom Lee','BrightCo','tom@brightco.com','+1 555-0200','LinkedIn','Technology','Contacted','15000','2026-04-03','2026-04-17']
+  ];
+  if(fmt==='xlsx'){
+    var wb=XLSX.utils.book_new();
+    var ws=XLSX.utils.aoa_to_sheet([hdr].concat(ex));
+    ws['!cols']=hdr.map(function(){return{wch:18};});
+    XLSX.utils.book_append_sheet(wb,ws,'Leads Template');
+    XLSX.writeFile(wb,'leads_import_template.xlsx');
+    toast('Excel template downloaded!');
+  }else{
+    var csv=[hdr.join(',')].concat(ex.map(function(r){return r.map(function(v){return '"'+v+'"';}).join(',');})).join('\n');
+    var a=document.createElement('a');
+    a.href=URL.createObjectURL(new Blob([csv],{type:'text/csv'}));
+    a.download='leads_import_template.csv';
+    a.click();URL.revokeObjectURL(a.href);
+    toast('CSV template downloaded!');
+  }
+}
+
+async function processRows(rows){
+  var col=function(row,name){
+    var alts={
+      name:['name','full name','contact name'],
+      company:['company','company name','organization','org'],
+      email:['email','email address','e-mail'],
+      phone:['phone','mobile','phone number','mobile number','cell'],
+      source:['source','lead source'],
+      stage:['stage','status','lead stage'],
+      score:['score','lead score'],
+      value:['value','deal value','deal size','amount'],
+      contact_date:['contact date','contacted','contact_date','date contacted'],
+      followup_date:['follow-up date','followup date','follow up date','followup_date','follow-up']
+    };
+    var opts=alts[name]||[name];
+    var rowKeys=Object.keys(row);
+    var rowLower=rowKeys.map(function(k){return k.toLowerCase().trim();});
+    for(var i=0;i<opts.length;i++){
+      var kidx=rowLower.indexOf(opts[i]);
+      if(kidx>=0){var v=row[rowKeys[kidx]];return v==null?'':String(v).trim();}
+    }
+    return '';
+  };
+  var existingEmails=leads.map(function(l){return(l.email||'').toLowerCase().trim();}).filter(Boolean);
+  var toImport=[];var skipped=0;
+  for(var i=0;i<rows.length;i++){
+    var row=rows[i];
+    var name=col(row,'name');
+    var company=col(row,'company');
+    if(!name&&!company)continue;
+    var email=col(row,'email');
+    if(email&&email.length>0&&existingEmails.indexOf(email.toLowerCase())>=0){skipped++;continue;}
+    var scoreRaw=parseInt(col(row,'score'));
+    var validStages=['New','Contacted','Qualified','Proposal','Closed'];
+    var stageRaw=col(row,'stage');
+    var stage=validStages.find(function(s){return s.toLowerCase()===stageRaw.toLowerCase();})||'New';
+    var cd=col(row,'contact_date');var fd=col(row,'followup_date');
+    toImport.push({
+      name:name||'Unknown',company:company||'Unknown',email:email,
+      phone:col(row,'phone'),source:col(row,'source')||'Other',stage:stage,
+      score:(!isNaN(scoreRaw)&&scoreRaw>=0&&scoreRaw<=100)?scoreRaw:Math.floor(Math.random()*35)+30,
+      value:parseInt(col(row,'value'))||0,notes:[],
+      contact_date:cd||null,followup_date:fd||null
+    });
+  }
+  if(toImport.length===0){
+    toast('No new leads to import. Rows checked: '+rows.length+', skipped duplicates: '+skipped);return;
+  }
+  setSS('loading','Importing...');
+  var imported=0;var errors=0;
+  for(var j=0;j<toImport.length;j++){
+    try{
+      var saved=await sbFetch('leads',{method:'POST',headers:{'Prefer':'return=representation'},body:JSON.stringify(toImport[j])});
+      var r2=Array.isArray(saved)?saved[0]:saved;
+      leads.unshift(Object.assign({},r2,{notes:r2.notes||[]}));
+      imported++;
+    }catch(err){errors++;}
+  }
+  setSS('ok','Synced');render();
+  var msg=imported+' lead'+(imported!==1?'s':'')+' imported!';
+  if(skipped)msg+=' '+skipped+' duplicate(s) skipped.';
+  if(errors)msg+=' '+errors+' row(s) failed.';
+  toast(msg);
+}
+
+
+function parseCSVRow(row){
+  var result=[];var cur='';var inQ=false;
+  for(var i=0;i<row.length;i++){
+    var c=row[i];
+    if(c==='"'){if(inQ&&row[i+1]==='"'){cur+='"';i++;}else{inQ=!inQ;}}
+    else if(c===','&&!inQ){result.push(cur.trim());cur='';}
+    else{cur+=c;}
+  }
+  result.push(cur.trim());
+  return result;
+}
+
+function importCSV(event){
+  var file=event.target.files[0];
+  if(!file)return;
+  var reader=new FileReader();
+  reader.onload=async function(e){
+    var text=e.target.result;
+    var lines=text.split(/\r?\n/).filter(function(l){return l.trim();});
+    if(lines.length<2){toast('File is empty or has no data rows.');return;}
+    var headers=parseCSVRow(lines[0]).map(function(h){return h.toLowerCase().trim();});
+    var col=function(name){
+      var alts={
+        name:['name','full name','contact name'],
+        company:['company','company name','organization','org'],
+        email:['email','email address','e-mail'],
+        phone:['phone','mobile','phone number','mobile number','cell'],
+        source:['source','lead source'],
+        stage:['stage','status','lead stage'],
+        score:['score','lead score'],
+        value:['value','deal value','deal size','amount'],
+        contact_date:['contact date','contacted','contact_date','date contacted'],
+        followup_date:['follow-up date','followup date','follow up date','followup_date','follow-up']
+      };
+      var opts=alts[name]||[name];
+      for(var i=0;i<opts.length;i++){var idx=headers.indexOf(opts[i]);if(idx>=0)return idx;}
+      return -1;
+    };
+    var existingEmails=leads.map(function(l){return(l.email||'').toLowerCase().trim();}).filter(Boolean);
+    var toImport=[];var skipped=0;
+    for(var i=1;i<lines.length;i++){
+      var row=parseCSVRow(lines[i]);
+      if(!row.length||row.every(function(c){return!c.trim();}))continue;
+      var name=col('name')>=0?row[col('name')]||'':'';
+      var company=col('company')>=0?row[col('company')]||'':'';
+      if(!name.trim()&&!company.trim())continue;
+      var email=col('email')>=0?(row[col('email')]||'').trim():'';
+      if(email&&existingEmails.indexOf(email.toLowerCase())>=0){skipped++;continue;}
+      var scoreRaw=parseInt(col('score')>=0?row[col('score')]:'');
+      var validStages=['New','Contacted','Qualified','Proposal','Closed'];
+      var stageRaw=col('stage')>=0?(row[col('stage')]||'').trim():'';
+      var stage=validStages.find(function(s){return s.toLowerCase()===stageRaw.toLowerCase();})||'New';
+      toImport.push({
+        name:name.trim()||'Unknown',
+        company:company.trim()||'Unknown',
+        email:email,
+        phone:col('phone')>=0?(row[col('phone')]||'').trim():'',
+        source:col('source')>=0?(row[col('source')]||'Other').trim():'Other',
+        stage:stage,
+        score:(!isNaN(scoreRaw)&&scoreRaw>=0&&scoreRaw<=100)?scoreRaw:Math.floor(Math.random()*35)+30,
+        value:parseInt(col('value')>=0?row[col('value')]:'')||0,
+        notes:[],
+        contact_date:col('contact_date')>=0&&row[col('contact_date')]?row[col('contact_date')].trim():null,
+        followup_date:col('followup_date')>=0&&row[col('followup_date')]?row[col('followup_date')].trim():null
+      });
+    }
+    if(toImport.length===0){
+      toast('No new leads to import.'+(skipped?' '+skipped+' duplicate(s) skipped.':''));
+      document.getElementById('csvfile').value='';return;
+    }
+    setSS('loading','Importing...');
+    var imported=0;var errors=0;
+    for(var j=0;j<toImport.length;j++){
+      try{
+        var saved=await sbFetch('leads?select=*',{method:'POST',headers:{'Prefer':'return=representation'},body:JSON.stringify(toImport[j])});
+        var r2=Array.isArray(saved)?saved[0]:saved;
+        leads.unshift(Object.assign({},r2,{notes:r2.notes||[]}));
+        imported++;
+      }catch(err){errors++;}
+    }
+    setSS('ok','Synced');render();
+    document.getElementById('csvfile').value='';
+    var msg=imported+' lead'+(imported!==1?'s':'')+' imported!';
+    if(skipped)msg+=' '+skipped+' duplicate(s) skipped.';
+    if(errors)msg+=' '+errors+' row(s) failed.';
+    toast(msg);
+  };
+  reader.readAsText(file);
+}
+
+document.getElementById('tbody').addEventListener('change',function(e){
+  var inp=e.target.closest('[data-action="setfollowup"]');
+  if(inp)return setFollowup(inp.getAttribute('data-id'),inp.value);
+  var sel=e.target.closest('[data-action="setsource"]');
+  if(sel)return setSource(sel.getAttribute('data-id'),sel.value);
+  var isel=e.target.closest('[data-action="setindustry"]');
+  if(isel)return setIndustry(isel.getAttribute('data-id'),isel.value);
+});
+
+document.getElementById('tbody').addEventListener('click',function(e){
+  var btn=e.target.closest('[data-action]');
+  if(!btn)return;
+  var id=btn.getAttribute('data-id');
+  var action=btn.getAttribute('data-action');
+  if(action==='advance')advance(id);
+  else if(action==='retreat')retreat(id);
+  else if(action==='edit')openEdit(id);
+  else if(action==='del')del(id);
+  else if(action==='notes')openNotes(id);
+});
+
+document.getElementById('overlay').addEventListener('click',function(e){
+  var btn=e.target.closest('[data-action]');
+  if(!btn)return;
+  var action=btn.getAttribute('data-action');
+  if(action==='delnote'){var idx=parseInt(btn.getAttribute('data-idx'));delNote(idx);}
+});
+// ── Edit lead ────────────────────────────────────────────────────────
+function openEdit(id){
+  var l=leads.find(function(x){return x.id===id;});if(!l)return;
+  activeId=id;
+  document.getElementById('ef-name').value=l.name||'';
+  document.getElementById('ef-company').value=l.company||'';
+  document.getElementById('ef-email').value=l.email||'';
+  document.getElementById('ef-phone').value=l.phone||'';
+  document.getElementById('ef-value').value=l.value||'';
+  document.getElementById('ef-source').value=l.source||'Other';
+  document.getElementById('ef-stage').value=l.stage||'New';
+  document.getElementById('ef-contact').value=l.contact_date||'';
+  document.getElementById('ef-followup').value=l.followup_date||'';
+  document.getElementById('ef-website').value=l.website||'';
+  document.getElementById('ef-social').value=l.social||'';
+  // populate industry dropdown
+  var inds=getIndustries();
+  var isel=document.getElementById('ef-industry');
+  isel.innerHTML='<option value="">— Select industry —</option>'+inds.map(function(i){return'<option'+(i===l.industry?' selected':'')+'>'+i+'</option>';}).join('');
+  document.getElementById('edit-modal').classList.add('on');
+  setTimeout(function(){document.getElementById('ef-name').focus();},100);
+}
+function closeEdit(){document.getElementById('edit-modal').classList.remove('on');activeId=null;}
+
+async function saveEdit(){
+  var n=document.getElementById('ef-name').value.trim();
+  var c=document.getElementById('ef-company').value.trim();
+  if(!n||!c){toast('Name and company are required');return;}
+  var btn=document.getElementById('ef-savebtn');
+  btn.disabled=true;btn.textContent='Saving...';setSS('loading','Saving...');
+  try{
+    var updates={
+      name:n,company:c,
+      email:document.getElementById('ef-email').value.trim()||null,
+      phone:document.getElementById('ef-phone').value.trim()||null,
+      value:parseInt(document.getElementById('ef-value').value)||0,
+      source:document.getElementById('ef-source').value,
+      industry:document.getElementById('ef-industry').value||null,
+      stage:document.getElementById('ef-stage').value,
+      contact_date:document.getElementById('ef-contact').value||null,
+      followup_date:document.getElementById('ef-followup').value||null,
+      website:document.getElementById('ef-website').value.trim()||null,
+      social:document.getElementById('ef-social').value.trim()||null
+    };
+    await sbFetch('leads?id=eq.'+activeId,{method:'PATCH',headers:{'Prefer':'return=minimal'},body:JSON.stringify(updates)});
+    var l=leads.find(function(x){return x.id===activeId;});
+    if(l)Object.assign(l,updates);
+    closeEdit();render();setSS('ok','Synced');toast('Lead updated!');
+  }catch(e){setSS('err','Sync error');toast('Error: '+e.message);}
+  btn.disabled=false;btn.textContent='Save changes';
+}
+
+
+var IND_KEY='lm_industries';
+var DEFAULT_INDUSTRIES=['Automotive','Construction','Financial Services','Healthcare','Home Services','Hospitality','Legal','Manufacturing','Real Estate','Restaurant','Retail','Technology','Other'];
+
+function getIndustries(){
+  try{var s=localStorage.getItem(IND_KEY);return s?JSON.parse(s):DEFAULT_INDUSTRIES.slice();}catch(e){return DEFAULT_INDUSTRIES.slice();}
+}
+function saveIndustries(arr){localStorage.setItem(IND_KEY,JSON.stringify(arr));}
+
+function populateIndustryDropdowns(){
+  var inds=getIndustries();
+  // form dropdown
+  var fd=document.getElementById('find');
+  var fval=fd.value;
+  fd.innerHTML='<option value="">— Select industry —</option>'+inds.map(function(i){return'<option'+(i===fval?' selected':'')+'>'+i+'</option>';}).join('');
+  // filter dropdown
+  var ff=document.getElementById('find-filter');
+  var ffval=ff.value;
+  ff.innerHTML='<option value="">All industries</option>'+inds.map(function(i){return'<option'+(i===ffval?' selected':'')+'>'+i+'</option>';}).join('');
+}
+
+function industryCell(l){
+  var inds=getIndustries();
+  return '<select data-action="setindustry" data-id="'+l.id+'" style="border:1px solid transparent;border-radius:6px;padding:3px 6px;font-size:13px;font-family:inherit;color:#1a1a18;background:transparent;cursor:pointer" onmouseover="this.style.borderColor=\'#d5d5cf\'" onmouseout="this.style.borderColor=\'transparent\'">'
+    +'<option value="">—</option>'
+    +inds.map(function(i){return'<option'+(i===l.industry?' selected':'')+'>'+i+'</option>';}).join('')
+    +'</select>';
+}
+
+function addIndustryFromForm(){
+  var inp=document.getElementById('finew');
+  var val=inp.value.trim();
+  if(!val)return;
+  var inds=getIndustries();
+  if(inds.indexOf(val)<0){inds.push(val);saveIndustries(inds);}
+  populateIndustryDropdowns();
+  document.getElementById('find').value=val;
+  inp.value='';
+  toast('Industry added!');
+}
+
+async function setIndustry(id,industry){
+  var l=leads.find(function(x){return x.id===id;});if(!l)return;
+  setSS('loading','Saving...');
+  try{
+    await sbFetch('leads?id=eq.'+id,{method:'PATCH',headers:{'Prefer':'return=minimal'},body:JSON.stringify({industry:industry||null})});
+    l.industry=industry||null;render();setSS('ok','Synced');toast('Industry updated!');
+  }catch(e){setSS('err','Sync error');toast('Error: '+e.message);}
+}
+
+function openIndustryManager(){
+  var inds=getIndustries();
+  var modal=document.getElementById('ind-modal');
+  renderIndustryList();
+  modal.classList.add('on');
+}
+function closeIndustryManager(){document.getElementById('ind-modal').classList.remove('on');}
+
+function renderIndustryList(){
+  var inds=getIndustries();
+  document.getElementById('ind-list').innerHTML=inds.map(function(ind,i){
+    return '<div style="display:flex;align-items:center;justify-content:space-between;padding:6px 0;border-bottom:1px solid #f0f0ec">'
+      +'<span style="font-size:13px">'+ind+'</span>'
+      +'<button onclick="removeIndustry('+i+')" style="background:none;border:none;cursor:pointer;color:#ccc;font-size:14px" onmouseover="this.style.color=\'#A32D2D\'" onmouseout="this.style.color=\'#ccc\'">&#x2715;</button>'
+      +'</div>';
+  }).join('');
+}
+function removeIndustry(idx){
+  var inds=getIndustries();
+  inds.splice(idx,1);
+  saveIndustries(inds);
+  renderIndustryList();
+  populateIndustryDropdowns();
+  toast('Industry removed');
+}
+function addIndustryFromManager(){
+  var inp=document.getElementById('ind-new');
+  var val=inp.value.trim();
+  if(!val)return;
+  var inds=getIndustries();
+  if(inds.indexOf(val)>=0){toast('Already exists');return;}
+  inds.push(val);saveIndustries(inds);
+  renderIndustryList();populateIndustryDropdowns();
+  inp.value='';toast('Industry added!');
+}
+
+loadKey();loadLeads();populateIndustryDropdowns();
+</script>
+</body>
+</html>
