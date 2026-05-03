@@ -1,0 +1,561 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Reach Mendham & Chester Homeowners — Get Your Free Media Kit</title>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700;900&family=DM+Sans:wght@400;500;600&display=swap" rel="stylesheet"/>
+<style>
+:root {
+  --navy: #0f1f3d;
+  --navy-mid: #1a3160;
+  --orange: #e86a2a;
+  --orange-dark: #c95a1e;
+  --orange-light: #fdf0e8;
+  --cream: #faf8f4;
+  --text: #1a1a18;
+  --muted: #6b6b65;
+  --border: #ddd9d2;
+}
+
+* { box-sizing: border-box; margin: 0; padding: 0; }
+
+body {
+  font-family: 'DM Sans', sans-serif;
+  background: var(--navy);
+  color: var(--text);
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: flex-start;
+  padding: 0 0 2rem;
+}
+
+/* ── TOP BAR ── */
+.topbar {
+  width: 100%;
+  background: var(--navy);
+  padding: 1rem 1.25rem 0.75rem;
+  text-align: center;
+  border-bottom: 1px solid rgba(255,255,255,0.08);
+}
+
+.topbar-label {
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: .12em;
+  text-transform: uppercase;
+  color: var(--orange);
+  margin-bottom: 0.35rem;
+}
+
+.topbar-headline {
+  font-family: 'Playfair Display', serif;
+  font-size: clamp(1.3rem, 5vw, 1.75rem);
+  font-weight: 900;
+  color: #fff;
+  line-height: 1.2;
+  margin-bottom: 0.5rem;
+}
+
+.topbar-headline em {
+  color: var(--orange);
+  font-style: italic;
+}
+
+.topbar-sub {
+  font-size: 13px;
+  color: rgba(255,255,255,0.65);
+  line-height: 1.6;
+  max-width: 400px;
+  margin: 0 auto;
+}
+
+/* ── PROOF STRIP ── */
+.proof-strip {
+  width: 100%;
+  background: var(--orange);
+  display: flex;
+  justify-content: center;
+  gap: 0;
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+}
+
+.proof-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 0.6rem 1.25rem;
+  border-right: 1px solid rgba(255,255,255,0.25);
+  white-space: nowrap;
+  flex: 1;
+  min-width: 80px;
+}
+
+.proof-item:last-child { border-right: none; }
+
+.proof-num {
+  font-family: 'Playfair Display', serif;
+  font-size: 1.1rem;
+  font-weight: 900;
+  color: #fff;
+  line-height: 1;
+}
+
+.proof-label {
+  font-size: 10px;
+  font-weight: 600;
+  color: rgba(255,255,255,0.85);
+  text-transform: uppercase;
+  letter-spacing: .04em;
+  text-align: center;
+  margin-top: 2px;
+  line-height: 1.3;
+}
+
+/* ── FORM CARD ── */
+.card-wrap {
+  width: 100%;
+  max-width: 480px;
+  padding: 1rem 1rem 0;
+}
+
+.form-card {
+  background: #fff;
+  border-radius: 16px;
+  overflow: hidden;
+  box-shadow: 0 8px 40px rgba(0,0,0,0.35);
+}
+
+.form-head {
+  background: var(--cream);
+  padding: 1.25rem 1.5rem 1rem;
+  border-bottom: 1px solid var(--border);
+}
+
+.form-title {
+  font-family: 'Playfair Display', serif;
+  font-size: 1.1rem;
+  font-weight: 700;
+  color: var(--navy);
+  margin-bottom: 0.3rem;
+}
+
+.form-sub {
+  font-size: 12.5px;
+  color: var(--muted);
+  line-height: 1.55;
+}
+
+.form-body {
+  padding: 1.25rem 1.5rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.85rem;
+}
+
+.fg {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.fg-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0.75rem;
+}
+
+label {
+  font-size: 11.5px;
+  font-weight: 600;
+  color: var(--navy);
+  letter-spacing: .02em;
+}
+
+input, select {
+  width: 100%;
+  padding: 0.65rem 0.85rem;
+  border: 1.5px solid var(--border);
+  border-radius: 8px;
+  font-family: 'DM Sans', sans-serif;
+  font-size: 15px;
+  color: var(--text);
+  background: #fff;
+  transition: border-color .2s;
+  -webkit-appearance: none;
+  appearance: none;
+}
+
+input:focus, select:focus {
+  outline: none;
+  border-color: var(--orange);
+  box-shadow: 0 0 0 3px rgba(232,106,42,.12);
+}
+
+input::placeholder { color: #bbb; }
+
+/* select arrow */
+.select-wrap {
+  position: relative;
+}
+.select-wrap::after {
+  content: '▾';
+  position: absolute;
+  right: 12px;
+  top: 50%;
+  transform: translateY(-50%);
+  color: var(--muted);
+  pointer-events: none;
+  font-size: 13px;
+}
+
+/* ── SERVICE CHECKBOXES ── */
+.checkbox-label {
+  font-size: 11.5px;
+  font-weight: 600;
+  color: var(--navy);
+  letter-spacing: .02em;
+  margin-bottom: 4px;
+  display: block;
+}
+
+.svc-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0.5rem;
+}
+
+.svc-opt input[type="checkbox"] { display: none; }
+
+.svc-opt label {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  padding: 0.55rem 0.75rem;
+  border: 1.5px solid var(--border);
+  border-radius: 8px;
+  cursor: pointer;
+  font-size: 12.5px;
+  font-weight: 500;
+  color: var(--text);
+  transition: border-color .2s, background .2s;
+  letter-spacing: 0;
+}
+
+.svc-opt input:checked + label {
+  border-color: var(--orange);
+  background: var(--orange-light);
+  color: var(--orange-dark);
+  font-weight: 600;
+}
+
+.svc-icon { font-size: 15px; }
+
+/* ── SUBMIT ── */
+.submit-btn {
+  width: 100%;
+  padding: 1rem;
+  background: var(--orange);
+  color: #fff;
+  border: none;
+  border-radius: 10px;
+  font-family: 'DM Sans', sans-serif;
+  font-size: 16px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: background .2s, transform .1s;
+  margin-top: 0.25rem;
+  letter-spacing: .01em;
+}
+
+.submit-btn:hover { background: var(--orange-dark); }
+.submit-btn:active { transform: scale(.98); }
+.submit-btn:disabled { opacity: .6; cursor: not-allowed; }
+
+.privacy-note {
+  font-size: 11px;
+  color: var(--muted);
+  text-align: center;
+  line-height: 1.5;
+  padding: 0 1.5rem 1.25rem;
+}
+
+/* ── SUCCESS ── */
+#success-wrap {
+  display: none;
+  padding: 2.5rem 1.5rem;
+  text-align: center;
+}
+
+.success-icon {
+  width: 60px;
+  height: 60px;
+  background: var(--orange);
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: 0 auto 1rem;
+  font-size: 1.75rem;
+}
+
+.success-title {
+  font-family: 'Playfair Display', serif;
+  font-size: 1.4rem;
+  font-weight: 900;
+  color: var(--navy);
+  margin-bottom: 0.5rem;
+}
+
+.success-sub {
+  font-size: 14px;
+  color: var(--muted);
+  line-height: 1.6;
+}
+
+/* ── FOOTER ── */
+.footer {
+  margin-top: 1.25rem;
+  font-size: 11px;
+  color: rgba(255,255,255,0.35);
+  text-align: center;
+  padding: 0 1rem;
+}
+
+/* ── TOAST ── */
+.toast {
+  position: fixed;
+  bottom: 1.5rem;
+  left: 50%;
+  transform: translateX(-50%) translateY(80px);
+  background: var(--navy);
+  color: #fff;
+  padding: .65rem 1.25rem;
+  border-radius: 8px;
+  font-size: 13.5px;
+  font-weight: 500;
+  opacity: 0;
+  transition: opacity .25s, transform .25s;
+  z-index: 999;
+  white-space: nowrap;
+  box-shadow: 0 4px 20px rgba(0,0,0,0.3);
+}
+.toast.show {
+  opacity: 1;
+  transform: translateX(-50%) translateY(0);
+}
+
+/* ── MOBILE TWEAKS ── */
+@media (max-width: 400px) {
+  .fg-row { grid-template-columns: 1fr; }
+  .svc-grid { grid-template-columns: 1fr; }
+  .topbar { padding: 0.85rem 1rem 0.65rem; }
+  .form-body { padding: 1rem 1.1rem; }
+  .form-head { padding: 1rem 1.1rem 0.85rem; }
+}
+</style>
+</head>
+<body>
+
+<!-- TOP BAR -->
+<div class="topbar">
+  <div class="topbar-label">Mendham Neighbors &amp; Chester Neighbors</div>
+  <div class="topbar-headline">Is Mendham &amp; Chester an<br><em>important market</em> to your business?</div>
+  <div class="topbar-sub">6,000+ households. Print + digital + social. Built for local businesses like yours.</div>
+</div>
+
+<!-- PROOF STRIP -->
+<div class="proof-strip">
+  <div class="proof-item">
+    <span class="proof-num">6,000+</span>
+    <span class="proof-label">Homes<br>Monthly</span>
+  </div>
+  <div class="proof-item">
+    <span class="proof-num">100%</span>
+    <span class="proof-label">Mailbox<br>Delivery</span>
+  </div>
+  <div class="proof-item">
+    <span class="proof-num">Since<br>2019</span>
+    <span class="proof-label">Serving<br>the Area</span>
+  </div>
+  <div class="proof-item">
+    <span class="proof-num">1 Day</span>
+    <span class="proof-label">Response<br>Time</span>
+  </div>
+</div>
+
+<!-- FORM CARD -->
+<div class="card-wrap">
+  <div class="form-card">
+
+    <div id="form-wrap">
+      <div class="form-head">
+        <div class="form-title">Get your free media kit</div>
+        <div class="form-sub">Tell us about your business and Traci or Dave will reach out within one business day.</div>
+      </div>
+
+      <div class="form-body">
+
+        <div class="fg-row">
+          <div class="fg">
+            <label for="f-name">Your name *</label>
+            <input type="text" id="f-name" placeholder="John Smith" autocomplete="name"/>
+          </div>
+          <div class="fg">
+            <label for="f-company">Business name *</label>
+            <input type="text" id="f-company" placeholder="Smith Plumbing" autocomplete="organization"/>
+          </div>
+        </div>
+
+        <div class="fg">
+          <label for="f-email">Email address *</label>
+          <input type="email" id="f-email" placeholder="john@smithplumbing.com" autocomplete="email"/>
+        </div>
+
+        <div class="fg">
+          <label for="f-phone">Phone number *</label>
+          <input type="tel" id="f-phone" placeholder="(908) 555-0100" autocomplete="tel"/>
+        </div>
+
+        <div class="fg">
+          <label for="f-town">Community of interest</label>
+          <div class="select-wrap">
+            <select id="f-town">
+              <option value="">-- Select a community --</option>
+              <option value="Mendham">Mendham, NJ</option>
+              <option value="Chester">Chester, NJ</option>
+              <option value="Randolph">Randolph, NJ</option>
+              <option value="Morristown">Morristown, NJ</option>
+              <option value="Kinnelon">Kinnelon, NJ</option>
+              <option value="Sparta">Sparta, NJ</option>
+              <option value="Vernon">Vernon, NJ</option>
+              <option value="Other">Other nearby town</option>
+            </select>
+          </div>
+        </div>
+
+        <div>
+          <span class="checkbox-label">I'm interested in (select all that apply)</span>
+          <div class="svc-grid">
+            <div class="svc-opt">
+              <input type="checkbox" class="service-option" id="svc-print" value="Print Magazine"/>
+              <label for="svc-print"><span class="svc-icon">📰</span> Print Magazine</label>
+            </div>
+            <div class="svc-opt">
+              <input type="checkbox" class="service-option" id="svc-digital" value="Digital Impression"/>
+              <label for="svc-digital"><span class="svc-icon">📱</span> Digital Impression</label>
+            </div>
+            <div class="svc-opt">
+              <input type="checkbox" class="service-option" id="svc-listings" value="Online Listings"/>
+              <label for="svc-listings"><span class="svc-icon">📍</span> Online Listings</label>
+            </div>
+            <div class="svc-opt">
+              <input type="checkbox" class="service-option" id="svc-reviews" value="Review Management"/>
+              <label for="svc-reviews"><span class="svc-icon">⭐</span> Review Management</label>
+            </div>
+            <div class="svc-opt" style="grid-column: 1 / -1;">
+              <input type="checkbox" class="service-option" id="svc-website" value="AIO/SEO Lead-Generating Website"/>
+              <label for="svc-website"><span class="svc-icon">🌐</span> AIO/SEO Lead-Generating Website</label>
+            </div>
+          </div>
+        </div>
+
+        <button class="submit-btn" id="submit-btn" onclick="submitForm()">Send my info →</button>
+
+      </div>
+
+      <div class="privacy-note">
+        🔒 Your info is never shared or sold. We'll only use it to follow up about your inquiry.
+      </div>
+    </div>
+
+    <!-- SUCCESS STATE -->
+    <div id="success-wrap">
+      <div class="success-icon">✓</div>
+      <div class="success-title">You're all set!</div>
+      <div class="success-sub">Thanks for reaching out. Traci or Dave will be in touch within one business day to walk you through what's possible in Mendham and Chester.</div>
+    </div>
+
+  </div>
+</div>
+
+<div class="footer">
+  © 2025 Mendham Neighbors &amp; Chester Neighbors &nbsp;·&nbsp; Best Version Media
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+var SURL='https://zueydnbdfhshpuoqqxwi.supabase.co';
+var SKEY='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inp1ZXlkbmJkZmhzaHB1b3FxeHdpIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzU0OTQwNDIsImV4cCI6MjA5MTA3MDA0Mn0.wtTYE60EfJoo-BhhDJIGhR3pyXlLg9zHSnnr6exEkQg';
+var SBH={'Content-Type':'application/json','apikey':SKEY,'Authorization':'Bearer '+SKEY};
+
+function toast(msg){
+  var t=document.getElementById('toast');
+  t.textContent=msg;
+  t.classList.add('show');
+  setTimeout(function(){t.classList.remove('show');},3000);
+}
+
+async function submitForm(){
+  var name=document.getElementById('f-name').value.trim();
+  var company=document.getElementById('f-company').value.trim();
+  var email=document.getElementById('f-email').value.trim();
+  var phone=document.getElementById('f-phone').value.trim();
+  var town=document.getElementById('f-town').value;
+
+  if(!name){toast('Please enter your name');return;}
+  if(!company){toast('Please enter your business name');return;}
+  if(!email||!email.includes('@')){toast('Please enter a valid email');return;}
+  if(!phone){toast('Please enter your phone number');return;}
+
+  var services=[];
+  document.querySelectorAll('.service-option:checked').forEach(function(el){
+    services.push(el.value);
+  });
+
+  var btn=document.getElementById('submit-btn');
+  btn.disabled=true;
+  btn.textContent='Sending...';
+
+  var notes=['Inbound inquiry from campaign landing page.'];
+  if(services.length) notes.push('Interested in: '+services.join(', ')+'.');
+  if(town) notes.push('Town: '+town+'.');
+
+  var followup=new Date(Date.now()+86400000).toISOString().slice(0,10);
+
+  var row={
+    name:name,
+    company:company,
+    email:email,
+    phone:phone,
+    source:'Website',
+    industry:'Other',
+    stage:'New',
+    value:0,
+    score:65,
+    notes:notes,
+    contact_date:new Date().toISOString().slice(0,10),
+    followup_date:followup
+  };
+
+  try{
+    await fetch(SURL+'/rest/v1/leads',{
+      method:'POST',
+      headers:Object.assign({'Prefer':'return=minimal'},SBH),
+      body:JSON.stringify(row)
+    });
+    document.getElementById('form-wrap').style.display='none';
+    document.getElementById('success-wrap').style.display='block';
+  }catch(e){
+    btn.disabled=false;
+    btn.textContent='Send my info →';
+    toast('Something went wrong. Please try again.');
+  }
+}
+</script>
+</body>
+</html>
