@@ -487,6 +487,16 @@
         </div>
       </div>
 
+      <div class="card">
+        <div style="font-size:15px;font-weight:600;margin-bottom:12px">Your yearly summary</div>
+        <div class="card-scroll" style="border:none;box-shadow:none">
+          <table>
+            <thead><tr><th>Year</th><th>Calls</th><th>DM Yeses</th><th>Appts Set</th><th>Appts Done</th><th>Sales Closed</th><th>$ Earned</th><th>Conf Calls</th></tr></thead>
+            <tbody id="m-yearly-body"></tbody>
+          </table>
+        </div>
+      </div>
+
       <div class="card" id="m-team-card" style="display:none">
         <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px">
           <div style="font-size:15px;font-weight:600">Team summary</div>
@@ -1710,6 +1720,7 @@ async function mLoadEntries(){
   mRenderEntries();
   mRenderPeriodSummary('m-weekly-body',mGroupBy(mEntries,mWeekOf));
   mRenderPeriodSummary('m-monthly-body',mGroupBy(mEntries,mMonthOf));
+  mRenderPeriodSummary('m-yearly-body',mGroupBy(mEntries,mYearOf));
 }
 
 async function mSaveEntry(){
@@ -1761,6 +1772,9 @@ function mWeekOf(dateStr){
 }
 function mMonthOf(dateStr){
   return dateStr.slice(0,7)+'-01';
+}
+function mYearOf(dateStr){
+  return dateStr.slice(0,4);
 }
 
 function mGroupBy(entries,keyFn){
