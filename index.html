@@ -863,9 +863,14 @@ async function bulkReassign(){
   repName=repName?(repName.rep_name||repName.email):'that rep';
   if(!confirm('Reassign '+ids.length+' lead'+(ids.length!==1?'s':'')+' to '+repName+'?'))return;
   setSS('loading','Reassigning...');
+  var CHUNK=200;
   try{
-    var {error}=await sbClient.from('leads').update({owner_id:newOwner}).in('id',ids);
-    if(error)throw new Error(error.message);
+    for(var i=0;i<ids.length;i+=CHUNK){
+      var batch=ids.slice(i,i+CHUNK);
+      var {error}=await sbClient.from('leads').update({owner_id:newOwner}).in('id',batch);
+      if(error)throw new Error(error.message);
+      if(ids.length>CHUNK)setSS('loading','Reassigning... ('+Math.min(i+CHUNK,ids.length)+'/'+ids.length+')');
+    }
     ids.forEach(function(id){
       var l=leads.find(function(x){return x.id===id;});
       if(l){logActivity(id,l.name,l.company,'reassigned owner (bulk)','(to '+repName+')');l.owner_id=newOwner;}
