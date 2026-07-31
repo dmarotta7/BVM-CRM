@@ -251,6 +251,15 @@
       <div class="fg"><label>Website</label><input id="fweb" placeholder="https://example.com"/></div>
       <div class="fg"><label>Social media</label><input id="fsoc" placeholder="e.g. linkedin.com/in/janesmith"/></div>
     </div>
+    <div style="font-size:13px;font-weight:600;color:var(--navy);margin:10px 0 8px">Company address</div>
+    <div class="fr">
+      <div class="fg"><label>Street address</label><input id="faddr" placeholder="123 Main St"/></div>
+      <div class="fg"><label>City</label><input id="fcity" placeholder="Chester"/></div>
+    </div>
+    <div class="fr">
+      <div class="fg"><label>Zip code</label><input id="fzip" placeholder="07930"/></div>
+      <div></div>
+    </div>
     <div class="fg" style="margin-bottom:14px"><label>Notes</label><textarea id="fno" placeholder="How you met, key needs, context..."></textarea></div>
     <div style="display:flex;gap:8px;justify-content:flex-end">
       <button class="btn" onclick="toggleForm()">Cancel</button>
@@ -299,7 +308,7 @@
     </div>
     <div class="card-scroll" id="cardscroll">
       <table>
-        <thead><tr><th id="th-select" style="display:none;width:30px"><input type="checkbox" id="select-all-page" onchange="toggleSelectAllPage(this.checked)"/></th><th>Name</th><th>Company</th><th>Phone</th><th>Source</th><th>Industry</th><th>Stage</th><th>Value</th><th>Contacted</th><th>Follow-up</th><th>Notes</th><th id="th-owner" style="display:none">Owner</th><th class="col-actions">Actions</th></tr></thead>
+        <thead><tr><th id="th-select" style="display:none;width:30px"><input type="checkbox" id="select-all-page" onchange="toggleSelectAllPage(this.checked)"/></th><th>Name</th><th>Company</th><th>Phone</th><th class="sortable" onclick="setSort('city')" style="cursor:pointer;user-select:none">City<span id="sort-arrow-city"></span></th><th class="sortable" onclick="setSort('zip')" style="cursor:pointer;user-select:none">Zip<span id="sort-arrow-zip"></span></th><th>Source</th><th>Industry</th><th>Stage</th><th>Value</th><th>Contacted</th><th>Follow-up</th><th>Notes</th><th id="th-owner" style="display:none">Owner</th><th class="col-actions">Actions</th></tr></thead>
         <tbody id="tbody"></tbody>
       </table>
       <div id="empty" class="empty" style="display:none">No leads found.</div>
@@ -562,6 +571,15 @@
       <div class="fg"><label>Website</label><input id="ef-website" placeholder="https://example.com"/></div>
       <div class="fg"><label>Social media</label><input id="ef-social" placeholder="e.g. linkedin.com/in/janesmith"/></div>
     </div>
+    <div style="font-size:13px;font-weight:600;color:var(--navy);margin:10px 0 8px">Company address</div>
+    <div class="fr">
+      <div class="fg"><label>Street address</label><input id="ef-address" placeholder="123 Main St"/></div>
+      <div class="fg"><label>City</label><input id="ef-city" placeholder="Chester"/></div>
+    </div>
+    <div class="fr">
+      <div class="fg"><label>Zip code</label><input id="ef-zip" placeholder="07930"/></div>
+      <div></div>
+    </div>
     <div class="fr" id="ef-owner-row" style="display:none">
       <div class="fg"><label>Owner (rep)</label><select id="ef-owner"></select></div>
       <div></div>
@@ -683,15 +701,41 @@ function populateDrip(){
   document.getElementById('dlead').innerHTML=leads.map(function(l){return '<option value="'+l.id+'">'+l.name+' - '+l.company+'</option>';}).join('');
 }
 
+var sortState={key:null,dir:1};
+function setSort(key){
+  if(sortState.key===key)sortState.dir*=-1;
+  else{sortState.key=key;sortState.dir=1;}
+  currentPage=1;
+  ['city','zip'].forEach(function(k){
+    var el=document.getElementById('sort-arrow-'+k);
+    if(!el)return;
+    el.textContent=(sortState.key===k)?(sortState.dir===1?' \u25B2':' \u25BC'):'';
+  });
+  render();
+}
+
 function getFilteredLeads(){
   var q=document.getElementById('srch').value.toLowerCase();
   var sf=document.getElementById('fsf').value;
   var src=document.getElementById('fsrc').value;
   var ind=document.getElementById('find-filter').value;
   var own=document.getElementById('fowner').value;
-  return leads.filter(function(l){
+  var fl=leads.filter(function(l){
     return(!q||l.name.toLowerCase().includes(q)||l.company.toLowerCase().includes(q))&&(!sf||l.stage===sf)&&(!src||l.source===src)&&(!ind||l.industry===ind)&&(!own||l.owner_id===own);
   });
+  if(sortState.key){
+    var key=sortState.key,dir=sortState.dir;
+    fl.sort(function(a,b){
+      var av=(a[key]||'').toString().toLowerCase();
+      var bv=(b[key]||'').toString().toLowerCase();
+      if(!av&&bv)return 1;
+      if(av&&!bv)return -1;
+      if(av<bv)return -1*dir;
+      if(av>bv)return 1*dir;
+      return 0;
+    });
+  }
+  return fl;
 }
 
 function render(){
@@ -709,6 +753,8 @@ function render(){
       +'<td><div style="font-weight:500">'+l.name+'</div><div style="font-size:11px;color:#888">'+(l.email||'')+'</div></td>'
       +'<td>'+l.company+'</td>'
       +'<td style="font-size:12px;color:#888">'+(l.phone?normalizePhone(l.phone):'&mdash;')+'</td>'
+      +'<td style="font-size:12px;color:#555">'+(l.city||'&mdash;')+'</td>'
+      +'<td style="font-size:12px;color:#555">'+(l.zip||'&mdash;')+'</td>'
       +'<td><select data-action="setsource" data-id="'+l.id+'" style="border:1px solid transparent;border-radius:6px;padding:3px 6px;font-size:13px;font-family:inherit;color:#1a1a18;background:transparent;cursor:pointer" onmouseover="this.style.borderColor=\'#d5d5cf\'" onmouseout="this.style.borderColor=\'transparent\'">'+['Website','Referral','LinkedIn','Facebook','Instagram','Cold outreach','Event','Driving Community','Other'].map(function(s){return'<option'+(s===l.source?' selected':'')+'>'+s+'</option>';}).join('')+'</select></td>'
       +'<td>'+industryCell(l)+'</td>'
       +'<td>'+stageCell(l)+'</td>'
@@ -868,13 +914,16 @@ async function addLead(){
       industry:document.getElementById('find').value||null,
       website:document.getElementById('fweb').value.trim()||null,
       social:document.getElementById('fsoc').value.trim()||null,
+      address:document.getElementById('faddr').value.trim()||null,
+      city:document.getElementById('fcity').value.trim()||null,
+      zip:document.getElementById('fzip').value.trim()||null,
       score:Math.floor(Math.random()*35)+30,value:parseInt(document.getElementById('fv').value)||0,notes:note?[note]:[],contact_date:document.getElementById('fcd').value||null,followup_date:document.getElementById('ffu').value||null,
       owner_id:mUser.id};
     var {data,error}=await sbClient.from('leads').insert(row).select().single();
     if(error)throw new Error(error.message);
     leads.unshift(Object.assign({},data,{notes:data.notes||[]}));
     logActivity(data.id,data.name,data.company,'created this lead');
-    ['fn','fc','fe','fph','fv','fno','fcd','ffu','fweb','fsoc'].forEach(function(i){document.getElementById(i).value='';});
+    ['fn','fc','fe','fph','fv','fno','fcd','ffu','fweb','fsoc','faddr','fcity','fzip'].forEach(function(i){document.getElementById(i).value='';});
     document.getElementById('find').value='';
     toggleForm();render();renderTaskLeadDropdown();setSS('ok','Synced');toast('Lead saved!');
   }catch(e){setSS('err','Sync error');toast('Error: '+e.message);}
@@ -1820,9 +1869,9 @@ function closeNotes(){document.getElementById('overlay').classList.remove('on');
 function overlayClick(e){if(e.target===document.getElementById('overlay'))closeNotes();}
 
 function exportLeads(fmt){
-  var hdr=["Name","Company","Email","Phone","Source","Industry","Stage","Value ($)","Contact Date","Follow-up Date","Notes"];
+  var hdr=["Name","Company","Email","Phone","Address","City","Zip","Source","Industry","Stage","Value ($)","Contact Date","Follow-up Date","Notes"];
   var dataRows=leads.map(function(l){
-    return[l.name,l.company,l.email||'',l.phone||'',l.source,l.industry||'',l.stage,l.value||0,l.contact_date||"",l.followup_date||"",(l.notes||[]).join(' | ')];
+    return[l.name,l.company,l.email||'',l.phone||'',l.address||'',l.city||'',l.zip||'',l.source,l.industry||'',l.stage,l.value||0,l.contact_date||"",l.followup_date||"",(l.notes||[]).join(' | ')];
   });
   var datestamp=new Date().toISOString().slice(0,10);
   if(fmt==='xlsx'){
@@ -1947,7 +1996,10 @@ async function processRows(rows){
       score:['score','lead score'],
       value:['value','deal value','deal size','amount'],
       contact_date:['contact date','contacted','contact_date','date contacted'],
-      followup_date:['follow-up date','followup date','follow up date','followup_date','follow-up']
+      followup_date:['follow-up date','followup date','follow up date','followup_date','follow-up'],
+      address:['address','street address','company address'],
+      city:['city','company city'],
+      zip:['zip','zip code','postal code','zipcode']
     };
     var opts=alts[name]||[name];
     var rowKeys=Object.keys(row);
@@ -1979,6 +2031,7 @@ async function processRows(rows){
       score:(!isNaN(scoreRaw)&&scoreRaw>=0&&scoreRaw<=100)?scoreRaw:Math.floor(Math.random()*35)+30,
       value:parseInt(col(row,'value'))||0,notes:[],
       contact_date:cd||null,followup_date:fd||null,
+      address:col(row,'address')||null,city:col(row,'city')||null,zip:col(row,'zip')||null,
       owner_id:mUser.id
     });
   }
@@ -2091,6 +2144,9 @@ function openEdit(id){
   document.getElementById('ef-followup').value=l.followup_date||'';
   document.getElementById('ef-website').value=l.website||'';
   document.getElementById('ef-social').value=l.social||'';
+  document.getElementById('ef-address').value=l.address||'';
+  document.getElementById('ef-city').value=l.city||'';
+  document.getElementById('ef-zip').value=l.zip||'';
   if(mIsAdmin)document.getElementById('ef-owner').value=l.owner_id||'';
   // populate industry dropdown
   var inds=getIndustries();
@@ -2129,7 +2185,10 @@ async function saveEdit(){
       contact_date:document.getElementById('ef-contact').value||null,
       followup_date:document.getElementById('ef-followup').value||null,
       website:document.getElementById('ef-website').value.trim()||null,
-      social:document.getElementById('ef-social').value.trim()||null
+      social:document.getElementById('ef-social').value.trim()||null,
+      address:document.getElementById('ef-address').value.trim()||null,
+      city:document.getElementById('ef-city').value.trim()||null,
+      zip:document.getElementById('ef-zip').value.trim()||null
     };
     if(mIsAdmin)updates.owner_id=document.getElementById('ef-owner').value;
     await sbLeadUpdate(activeId,updates);
