@@ -287,7 +287,7 @@
       <div id="fu-widget-list"></div>
     </div>
     <div class="frow">
-      <input id="srch" placeholder="Search name or company..." oninput="filterChanged()" style="min-width:180px"/>
+      <input id="srch" placeholder="Search name, company, city, or zip..." oninput="filterChanged()" style="min-width:180px"/>
       <select id="fsf" onchange="filterChanged()"><option value="">All stages</option><option>New</option><option>Contacted</option><option>Qualified</option><option>Proposal</option><option>Closed</option><option>Lost</option></select>
       <select id="find-filter" onchange="filterChanged()"><option value="">All industries</option></select>
       <select id="fsrc" onchange="filterChanged()"><option value="">All sources</option><option>Website</option><option>Referral</option><option>LinkedIn</option><option>Facebook</option><option>Instagram</option><option>Cold outreach</option><option>Event</option><option>Driving Community</option><option>Other</option></select>
@@ -721,7 +721,7 @@ function getFilteredLeads(){
   var ind=document.getElementById('find-filter').value;
   var own=document.getElementById('fowner').value;
   var fl=leads.filter(function(l){
-    return(!q||l.name.toLowerCase().includes(q)||l.company.toLowerCase().includes(q))&&(!sf||l.stage===sf)&&(!src||l.source===src)&&(!ind||l.industry===ind)&&(!own||l.owner_id===own);
+    return(!q||l.name.toLowerCase().includes(q)||l.company.toLowerCase().includes(q)||(l.city||'').toLowerCase().includes(q)||(l.zip||'').toLowerCase().includes(q))&&(!sf||l.stage===sf)&&(!src||l.source===src)&&(!ind||l.industry===ind)&&(!own||l.owner_id===own);
   });
   if(sortState.key){
     var key=sortState.key,dir=sortState.dir;
