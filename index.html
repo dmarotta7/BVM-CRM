@@ -603,6 +603,14 @@
       <div></div>
     </div>
     <div style="border-top:1px solid #eee;margin-top:10px;padding-top:12px">
+      <div style="font-size:13px;font-weight:600;color:var(--navy);margin-bottom:8px">Notes</div>
+      <div id="ef-nl" style="max-height:180px;overflow-y:auto;margin-bottom:10px"></div>
+      <div style="display:flex;gap:6px">
+        <textarea id="ef-note-input" placeholder="Call notes, next steps, meeting summary..." style="flex:1;padding:6px 10px;border-radius:7px;border:1px solid #d5d5cf;font-size:12px;font-family:inherit;min-height:36px;resize:vertical"></textarea>
+        <button type="button" class="btn btnsm" onclick="saveNoteFromEdit()">+ Add</button>
+      </div>
+    </div>
+    <div style="border-top:1px solid #eee;margin-top:10px;padding-top:12px">
       <div style="font-size:13px;font-weight:600;color:var(--navy);margin-bottom:8px">Tasks for this lead</div>
       <div id="ef-tasks-list" style="margin-bottom:10px"></div>
       <div style="display:flex;gap:6px">
@@ -1882,17 +1890,23 @@ function openNotes(id){
   var l=leads.find(function(x){return x.id===id;});
   document.getElementById('nt').textContent=l.name;
   document.getElementById('ns').textContent=l.company+' - '+l.stage+(l.phone?' - '+l.phone:'');
-  renderNotesList(l);
+  renderAllNotesLists(l);
   document.getElementById('overlay').classList.add('on');
   setTimeout(function(){document.getElementById('ni').focus();},100);
 }
 
-function renderNotesList(l){
-  var nl=document.getElementById('nl');
+function renderNotesList(l,elId){
+  elId=elId||'nl';
+  var nl=document.getElementById(elId);
+  if(!nl)return;
   if(!l.notes||!l.notes.length){nl.innerHTML='<div style="font-size:13px;color:#aaa;padding:6px 0">No notes yet.</div>';return;}
   nl.innerHTML=l.notes.map(function(n,i){
     return '<div class="ntry"><button class="ndel" data-action="delnote" data-idx="'+i+'">&#x2715;</button>'+n+'<div class="nts">Note '+(i+1)+'</div></div>';
   }).join('');
+}
+function renderAllNotesLists(l){
+  renderNotesList(l,'nl');
+  renderNotesList(l,'ef-nl');
 }
 
 async function saveNote(){
@@ -1903,7 +1917,20 @@ async function saveNote(){
   try{
     await sbLeadUpdate(activeId,{notes:newNotes});
     l.notes=newNotes;document.getElementById('ni').value='';
-    renderNotesList(l);render();setSS('ok','Synced');toast('Note saved!');
+    renderAllNotesLists(l);render();setSS('ok','Synced');toast('Note saved!');
+  }catch(e){setSS('err','Sync error');toast('Error: '+e.message);}
+}
+
+async function saveNoteFromEdit(){
+  var ta=document.getElementById('ef-note-input');
+  var txt=ta.value.trim();if(!txt)return;
+  var l=leads.find(function(x){return x.id===activeId;});if(!l)return;
+  var newNotes=(l.notes||[]).concat([txt]);
+  setSS('loading','Saving...');
+  try{
+    await sbLeadUpdate(activeId,{notes:newNotes});
+    l.notes=newNotes;ta.value='';
+    renderAllNotesLists(l);render();setSS('ok','Synced');toast('Note saved!');
   }catch(e){setSS('err','Sync error');toast('Error: '+e.message);}
 }
 
@@ -1913,7 +1940,7 @@ async function delNote(idx){
   setSS('loading','Saving...');
   try{
     await sbLeadUpdate(activeId,{notes:newNotes});
-    l.notes=newNotes;renderNotesList(l);render();setSS('ok','Synced');
+    l.notes=newNotes;renderAllNotesLists(l);render();setSS('ok','Synced');
   }catch(e){setSS('err','Sync error');toast('Error: '+e.message);}
 }
 
@@ -2207,6 +2234,8 @@ function openEdit(id){
   document.getElementById('ef-task-title').value='';
   document.getElementById('ef-task-due').value='';
   renderEfTasks();
+  document.getElementById('ef-note-input').value='';
+  renderNotesList(l,'ef-nl');
   document.getElementById('ef-upload-status').textContent='';
   document.getElementById('ef-summary-line').textContent='';
   loadAttachments();
