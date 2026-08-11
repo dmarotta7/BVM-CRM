@@ -2064,18 +2064,33 @@ function downloadTemplate(fmt){
 }
 
 async function processRows(rows){
+  function parseImportDate(str){
+    if(!str)return null;
+    str=String(str).trim();
+    if(!str)return null;
+    if(/^\d{4}-\d{2}-\d{2}$/.test(str))return str;
+    var m=str.match(/^(\d{1,2})\/(\d{1,2})\/(\d{2,4})$/);
+    if(m){
+      var mo=parseInt(m[1],10),da=parseInt(m[2],10),yr=parseInt(m[3],10);
+      if(yr<100)yr+=(yr<70?2000:1900);
+      if(mo>=1&&mo<=12&&da>=1&&da<=31){
+        return yr+'-'+String(mo).padStart(2,'0')+'-'+String(da).padStart(2,'0');
+      }
+    }
+    return null;
+  }
   var col=function(row,name){
     var alts={
-      name:['name','full name','contact name'],
-      company:['company','company name','organization','org'],
+      name:['name','full name','contact name','decision-maker name','decision maker name','decision maker','dm name','contact person','contact'],
+      company:['company','company name','organization','org','business name','business'],
       email:['email','email address','e-mail'],
-      phone:['phone','mobile','phone number','mobile number','cell'],
+      phone:['phone','mobile','phone number','mobile number','cell','phone #','phone#','tel','telephone'],
       source:['source','lead source'],
       stage:['stage','status','lead stage'],
       score:['score','lead score'],
       value:['value','deal value','deal size','amount'],
       contact_date:['contact date','contacted','contact_date','date contacted'],
-      followup_date:['follow-up date','followup date','follow up date','followup_date','follow-up'],
+      followup_date:['follow-up date','followup date','follow up date','followup_date','follow-up','next call date','next call','callback date'],
       address:['address','street address','company address'],
       city:['city','company city'],
       zip:['zip','zip code','postal code','zipcode']
@@ -2103,7 +2118,7 @@ async function processRows(rows){
     var validStages=['New','Contacted','Qualified','Proposal','Closed','Lost'];
     var stageRaw=col(row,'stage');
     var stage=validStages.find(function(s){return s.toLowerCase()===stageRaw.toLowerCase();})||'New';
-    var cd=col(row,'contact_date');var fd=col(row,'followup_date');
+    var cd=parseImportDate(col(row,'contact_date'));var fd=parseImportDate(col(row,'followup_date'));
     toImport.push({
       name:name||'Unknown',company:company||'Unknown',email:email,
       phone:normalizePhone(col(row,'phone')),source:col(row,'source')||'Other',stage:stage,
