@@ -729,12 +729,13 @@ function tmp(s){return s>=70?'Hot':s>=45?'Warm':'Cold';}
 function tcl(s){return s>=70?'bh':s>=45?'bw':'bc';}
 function scl(st){return{New:'sN',Contacted:'sC',Qualified:'sQ',Proposal:'sP',Closed:'sCl',Lost:'sLost'}[st]||'sN';}
 
-function metrics(){
-  document.getElementById('m1').textContent=leads.length;
-  document.getElementById('m2').textContent=leads.filter(function(l){return l.stage==='Contacted';}).length;
-  document.getElementById('m3').textContent=leads.filter(function(l){return l.stage==='Proposal';}).length;
+function metrics(fl){
+  fl=fl||getFilteredLeads();
+  document.getElementById('m1').textContent=fl.length;
+  document.getElementById('m2').textContent=fl.filter(function(l){return l.stage==='Contacted';}).length;
+  document.getElementById('m3').textContent=fl.filter(function(l){return l.stage==='Proposal';}).length;
   var activeStages=['New','Contacted','Qualified','Proposal'];
-  document.getElementById('m4').textContent='$'+leads.filter(function(l){return activeStages.indexOf(l.stage)>=0;}).reduce(function(s,l){return s+(l.value||0);},0).toLocaleString();
+  document.getElementById('m4').textContent='$'+fl.filter(function(l){return activeStages.indexOf(l.stage)>=0;}).reduce(function(s,l){return s+(l.value||0);},0).toLocaleString();
 }
 
 function populateDrip(){
@@ -811,7 +812,7 @@ function render(){
   renderPagination(fl.length,totalPages);
   updateBulkBar();
   syncScrollWidth();
-  metrics();populateDrip();
+  metrics(fl);populateDrip();
 }
 
 function renderPagination(totalCount,totalPages){
