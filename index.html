@@ -313,7 +313,6 @@
       <select id="fsf" onchange="filterChanged()"><option value="">All stages</option><option>New</option><option>Contacted</option><option>Qualified</option><option>Proposal</option><option>Closed</option><option>Lost</option></select>
       <select id="find-filter" onchange="filterChanged()"><option value="">All industries</option></select>
       <select id="fsrc" onchange="filterChanged()"><option value="">All sources</option><option>Website</option><option>Referral</option><option>LinkedIn</option><option>Facebook</option><option>Instagram</option><option>Cold outreach</option><option>Event</option><option>Driving Community</option><option>Other</option></select>
-      <select id="fowner" onchange="filterChanged()" style="display:none"><option value="">All owners</option></select>
       <button class="btn btnsm" id="select-all-filter-btn" onclick="selectAllMatchingFilter()" style="display:none">Select all matching filter</button>
     </div>
     <div id="bulk-bar" style="display:none;align-items:center;gap:10px;background:var(--orange-light);border:1px solid var(--orange-border);border-radius:10px;padding:10px 14px;margin-bottom:10px;font-size:13px">
@@ -681,6 +680,8 @@ function repNameById(id){
 }
 function adminViewChanged(){
   adminViewOwnerId=document.getElementById('admin-view-select').value;
+  currentPage=1;
+  render();
   renderFollowupWidget();renderTasks();
   if(mInitDone)mLoadEntries();
   if(document.getElementById('tab-reports').classList.contains('on'))renderReports();
@@ -774,7 +775,7 @@ function getFilteredLeads(){
   var sf=document.getElementById('fsf').value;
   var src=document.getElementById('fsrc').value;
   var ind=document.getElementById('find-filter').value;
-  var own=document.getElementById('fowner').value;
+  var own=adminViewOwnerId;
   var fl=leads.filter(function(l){
     return(!q||l.name.toLowerCase().includes(q)||l.company.toLowerCase().includes(q)||(l.city||'').toLowerCase().includes(q)||(l.zip||'').toLowerCase().includes(q))&&(!sf||l.stage===sf)&&(!src||l.source===src)&&(!ind||l.industry===ind)&&(!own||l.owner_id===own);
   });
@@ -1764,12 +1765,10 @@ async function afterLogin(user){
   mIsAdmin=!!(profile&&profile.is_admin);
   document.getElementById('m-team-card').style.display=mIsAdmin?'block':'none';
   document.getElementById('th-owner').style.display=mIsAdmin?'':'none';
-  document.getElementById('fowner').style.display=mIsAdmin?'':'none';
   document.getElementById('ef-owner-row').style.display=mIsAdmin?'flex':'none';
   if(mIsAdmin){
     var {data:profiles}=await sbClient.from('profiles').select('id,rep_name,email').order('rep_name');
     allProfiles=profiles||[];
-    document.getElementById('fowner').innerHTML='<option value="">All owners</option>'+allProfiles.map(function(p){return'<option value="'+p.id+'">'+(p.rep_name||p.email)+'</option>';}).join('');
     document.getElementById('ef-owner').innerHTML=allProfiles.map(function(p){return'<option value="'+p.id+'">'+(p.rep_name||p.email)+'</option>';}).join('');
     document.getElementById('bulk-owner-select').innerHTML=allProfiles.map(function(p){return'<option value="'+p.id+'">'+(p.rep_name||p.email)+'</option>';}).join('');
     var ownerOpts=allProfiles.map(function(p){return'<option value="'+p.id+'"'+(p.id===mUser.id?' selected':'')+'>'+(p.rep_name||p.email)+(p.id===mUser.id?' (me)':'')+'</option>';}).join('');
