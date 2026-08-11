@@ -208,6 +208,17 @@
       </div>
     </div>
     <input type="file" id="csvfile" accept=".csv,.xlsx" style="display:none" onchange="importCSV(event)"/>
+    <div class="overlay" id="import-owner-modal" onclick="if(event.target===this)cancelImportOwner()">
+      <div class="modal" style="max-width:380px">
+        <div style="font-size:15px;font-weight:700;color:var(--navy);margin-bottom:4px">Who should these leads go to?</div>
+        <div style="font-size:12px;color:#888;margin-bottom:14px">Every lead in the file will be assigned to this person. You can still reassign individually afterward.</div>
+        <div class="fg" style="margin-bottom:14px"><select id="import-owner-select" style="width:100%"></select></div>
+        <div style="display:flex;gap:8px;justify-content:flex-end">
+          <button class="btn" onclick="cancelImportOwner()">Cancel</button>
+          <button class="btn btnp" onclick="confirmImportOwner()">Continue</button>
+        </div>
+      </div>
+    </div>
     <button class="btn btnp" onclick="toggleForm()">+ Add lead</button>
     <span style="font-size:12px;color:rgba(255,255,255,.7);display:flex;align-items:center;gap:8px;margin-left:4px;border-left:1px solid rgba(255,255,255,.2);padding-left:12px">
       <span id="app-who"></span>
@@ -391,6 +402,7 @@
         <div style="font-size:15px;font-weight:600" id="fl-results-title">Results</div>
         <div style="display:flex;gap:8px;align-items:center">
           <span id="fl-selected-count" style="font-size:12px;color:#888"></span>
+          <select id="fl-owner-select" style="display:none;padding:5px 8px;border-radius:6px;border:1px solid #d5d5cf;font-size:12px;font-family:inherit"></select>
           <button class="btn btnp btnsm" onclick="importSelectedPlaces()" id="fl-import-btn">Import selected</button>
         </div>
       </div>
@@ -1511,7 +1523,7 @@ async function importSelectedPlaces(){
         website:p.website||null,
         score:Math.floor(Math.random()*35)+30,
         value:0,notes:p.address?[p.address]:[],
-        owner_id:mUser.id
+        owner_id:(document.getElementById('fl-owner-select').value)||mUser.id
       };
       var {data,error}=await sbClient.from('leads').insert(row).select().single();
       if(error)throw new Error(error.message);
@@ -1738,6 +1750,10 @@ async function afterLogin(user){
     document.getElementById('fowner').innerHTML='<option value="">All owners</option>'+allProfiles.map(function(p){return'<option value="'+p.id+'">'+(p.rep_name||p.email)+'</option>';}).join('');
     document.getElementById('ef-owner').innerHTML=allProfiles.map(function(p){return'<option value="'+p.id+'">'+(p.rep_name||p.email)+'</option>';}).join('');
     document.getElementById('bulk-owner-select').innerHTML=allProfiles.map(function(p){return'<option value="'+p.id+'">'+(p.rep_name||p.email)+'</option>';}).join('');
+    var ownerOpts=allProfiles.map(function(p){return'<option value="'+p.id+'"'+(p.id===mUser.id?' selected':'')+'>'+(p.rep_name||p.email)+(p.id===mUser.id?' (me)':'')+'</option>';}).join('');
+    document.getElementById('import-owner-select').innerHTML=ownerOpts;
+    document.getElementById('fl-owner-select').innerHTML=ownerOpts;
+    document.getElementById('fl-owner-select').style.display='';
     document.getElementById('th-select').style.display='';
     document.getElementById('select-all-filter-btn').style.display='';
   }
@@ -2038,7 +2054,22 @@ function toast(msg){
 }
 
 
-function triggerImport(){document.getElementById('csvfile').click();}
+var importTargetOwner=null;
+function triggerImport(){
+  if(mIsAdmin){
+    document.getElementById('import-owner-select').value=mUser.id;
+    document.getElementById('import-owner-modal').classList.add('on');
+  }else{
+    importTargetOwner=mUser.id;
+    document.getElementById('csvfile').click();
+  }
+}
+function cancelImportOwner(){document.getElementById('import-owner-modal').classList.remove('on');}
+function confirmImportOwner(){
+  importTargetOwner=document.getElementById('import-owner-select').value||mUser.id;
+  document.getElementById('import-owner-modal').classList.remove('on');
+  document.getElementById('csvfile').click();
+}
 
 function downloadTemplate(fmt){
   var hdr=['Name','Company','Email','Phone','Source','Industry','Stage','Value','Contact Date','Follow-up Date'];
@@ -2126,7 +2157,7 @@ async function processRows(rows){
       value:parseInt(col(row,'value'))||0,notes:[],
       contact_date:cd||null,followup_date:fd||null,
       address:col(row,'address')||null,city:col(row,'city')||null,zip:col(row,'zip')||null,
-      owner_id:mUser.id
+      owner_id:importTargetOwner||mUser.id
     });
   }
   if(toImport.length===0){
