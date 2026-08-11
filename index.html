@@ -188,6 +188,9 @@
       <option value="40">Show 40</option>
       <option value="50">Show 50</option>
     </select>
+    <select id="admin-view-select" onchange="adminViewChanged()" style="display:none;padding:7px 10px;border-radius:8px;border:1px solid rgba(255,255,255,.2);background:rgba(255,255,255,.1);font-size:13px;color:#fff;font-family:inherit">
+      <option value="">Viewing: Everyone</option>
+    </select>
     <span style="font-size:12px;color:#888;display:flex;align-items:center">
       <span class="sync-dot loading" id="syncdot"></span>
       <span id="syncstatus">Connecting...</span>
@@ -348,7 +351,7 @@
 
     <div class="card">
       <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px">
-        <div style="font-size:15px;font-weight:600">Your tasks</div>
+        <div style="font-size:15px;font-weight:600" id="tasks-title">Your tasks</div>
         <label style="font-size:12px;color:#666;display:flex;align-items:center;gap:6px"><input type="checkbox" id="task-show-done" onchange="renderTasks()" style="width:auto"/> Show completed</label>
       </div>
       <div id="tasks-list"></div>
@@ -455,7 +458,7 @@
   <div class="pg" id="tab-metrics">
 
     <div id="m-dash">
-      <div class="card">
+      <div class="card" id="m-entry-card">
         <div style="font-size:15px;font-weight:600;margin-bottom:12px">Log today's numbers</div>
         <div class="fr">
           <div class="fg"><label>Date</label><input id="m-date" type="date"/></div>
@@ -478,7 +481,7 @@
       </div>
 
       <div class="card">
-        <div style="font-size:15px;font-weight:600;margin-bottom:12px">Your recent entries</div>
+        <div style="font-size:15px;font-weight:600;margin-bottom:12px" id="m-entries-title">Your recent entries</div>
         <div class="card-scroll" style="border:none;box-shadow:none">
           <table>
             <thead><tr><th>Date</th><th>Calls</th><th>DM Yeses</th><th>Appts Set</th><th>Appts Done</th><th>Sales Closed</th><th>$ Earned</th><th>Conf Call</th><th></th></tr></thead>
@@ -488,7 +491,7 @@
       </div>
 
       <div class="card">
-        <div style="font-size:15px;font-weight:600;margin-bottom:12px">Your weekly summary</div>
+        <div style="font-size:15px;font-weight:600;margin-bottom:12px" id="m-weekly-title">Your weekly summary</div>
         <div class="card-scroll" style="border:none;box-shadow:none">
           <table>
             <thead><tr><th>Week Of</th><th>Calls</th><th>DM Yeses</th><th>Appts Set</th><th>Appts Done</th><th>Sales Closed</th><th>$ Earned</th><th>Conf Calls</th></tr></thead>
@@ -498,7 +501,7 @@
       </div>
 
       <div class="card">
-        <div style="font-size:15px;font-weight:600;margin-bottom:12px">Your monthly summary</div>
+        <div style="font-size:15px;font-weight:600;margin-bottom:12px" id="m-monthly-title">Your monthly summary</div>
         <div class="card-scroll" style="border:none;box-shadow:none">
           <table>
             <thead><tr><th>Month</th><th>Calls</th><th>DM Yeses</th><th>Appts Set</th><th>Appts Done</th><th>Sales Closed</th><th>$ Earned</th><th>Conf Calls</th></tr></thead>
@@ -508,7 +511,7 @@
       </div>
 
       <div class="card">
-        <div style="font-size:15px;font-weight:600;margin-bottom:12px">Your yearly summary</div>
+        <div style="font-size:15px;font-weight:600;margin-bottom:12px" id="m-yearly-title">Your yearly summary</div>
         <div class="card-scroll" style="border:none;box-shadow:none">
           <table>
             <thead><tr><th>Year</th><th>Calls</th><th>DM Yeses</th><th>Appts Set</th><th>Appts Done</th><th>Sales Closed</th><th>$ Earned</th><th>Conf Calls</th></tr></thead>
@@ -671,6 +674,17 @@ var tasks=[];
 var pageSize=20,currentPage=1;
 var stages=["New","Contacted","Qualified","Proposal","Closed"];
 var sbClient=null,mUser=null,mIsAdmin=false,allProfiles=[];
+var adminViewOwnerId='';
+function repNameById(id){
+  var p=allProfiles.find(function(x){return x.id===id;});
+  return p?(p.rep_name||p.email):'Unknown';
+}
+function adminViewChanged(){
+  adminViewOwnerId=document.getElementById('admin-view-select').value;
+  renderFollowupWidget();renderTasks();
+  if(mInitDone)mLoadEntries();
+  if(document.getElementById('tab-reports').classList.contains('on'))renderReports();
+}
 var selectedLeadIds=new Set();
 var pendingAuthType=(function(){
   var m=window.location.hash.match(/type=([^&]+)/);
@@ -1109,7 +1123,8 @@ function renderTaskLeadDropdown(){
 }
 
 function renderFollowupWidget(){
-  var b=taskBuckets(tasks);
+  var viewTasks=(mIsAdmin&&adminViewOwnerId)?tasks.filter(function(t){return t.owner_id===adminViewOwnerId;}):tasks;
+  var b=taskBuckets(viewTasks);
   var urgent=b.overdue.concat(b.today);
   var badge=document.getElementById('fu-badge');
   if(urgent.length){badge.textContent=urgent.length;badge.style.display='inline-block';}
@@ -1146,7 +1161,9 @@ function taskRowHTML(k,compact){
 
 function renderTasks(){
   var showDone=document.getElementById('task-show-done').checked;
-  var b=taskBuckets(tasks);
+  var viewTasks=(mIsAdmin&&adminViewOwnerId)?tasks.filter(function(t){return t.owner_id===adminViewOwnerId;}):tasks;
+  document.getElementById('tasks-title').textContent=(mIsAdmin&&adminViewOwnerId)?repNameById(adminViewOwnerId)+"'s tasks":'Your tasks';
+  var b=taskBuckets(viewTasks);
   var html='';
   function section(title,list){
     if(!list.length)return;
@@ -1361,6 +1378,10 @@ function showTab(n,el){
 }
 
 // ===================== Reports =====================
+function getViewLeads(){
+  return (mIsAdmin&&adminViewOwnerId)?leads.filter(function(l){return l.owner_id===adminViewOwnerId;}):leads;
+}
+
 function renderReports(){
   renderFunnel();
   renderSourceReport();
@@ -1372,7 +1393,7 @@ function renderFunnel(){
   var counts={};
   stages.forEach(function(s){counts[s]=0;});
   counts['Lost']=0;
-  leads.forEach(function(l){if(counts[l.stage]!==undefined)counts[l.stage]++;});
+  getViewLeads().forEach(function(l){if(counts[l.stage]!==undefined)counts[l.stage]++;});
   var allStages=stages.concat(['Lost']);
   var max=Math.max.apply(null,allStages.map(function(s){return counts[s];}))||1;
   document.getElementById('funnel-chart').innerHTML=allStages.map(function(s){
@@ -1407,15 +1428,15 @@ function computeGroup(list,keyFn){
 }
 
 function renderSourceReport(){
-  var rows=computeGroup(leads,function(l){return l.source;});
+  var rows=computeGroup(getViewLeads(),function(l){return l.source;});
   document.getElementById('source-report-body').innerHTML=rows.map(function(g){
     return '<tr><td>'+g.key+'</td><td>'+g.total+'</td><td>'+g.closed+'</td><td>'+g.lost+'</td><td>'+g.closeRate+'%</td><td>$'+g.valueClosed.toLocaleString()+'</td><td>$'+g.avgDeal.toLocaleString()+'</td></tr>';
   }).join('')||'<tr><td colspan="7" style="color:#888;text-align:center;padding:14px">No leads yet.</td></tr>';
-  document.getElementById('source-report-sub').textContent=mIsAdmin?'Across all reps.':'Across your own leads.';
+  document.getElementById('source-report-sub').textContent=(mIsAdmin&&adminViewOwnerId)?('Viewing '+repNameById(adminViewOwnerId)+' only.'):(mIsAdmin?'Across all reps.':'Across your own leads.');
 }
 
 function renderRepReport(){
-  var rows=computeGroup(leads,function(l){
+  var rows=computeGroup(getViewLeads(),function(l){
     var p=allProfiles.find(function(x){return x.id===l.owner_id;});
     return p?(p.rep_name||p.email):'Unassigned';
   });
@@ -1755,6 +1776,8 @@ async function afterLogin(user){
     document.getElementById('import-owner-select').innerHTML=ownerOpts;
     document.getElementById('fl-owner-select').innerHTML=ownerOpts;
     document.getElementById('fl-owner-select').style.display='';
+    document.getElementById('admin-view-select').style.display='';
+    document.getElementById('admin-view-select').innerHTML='<option value="">Viewing: Everyone</option>'+allProfiles.map(function(p){return'<option value="'+p.id+'">Viewing: '+(p.rep_name||p.email)+'</option>';}).join('');
     document.getElementById('th-select').style.display='';
     document.getElementById('select-all-filter-btn').style.display='';
   }
@@ -1777,13 +1800,21 @@ function mInit(){
 
 var mEntries=[];
 async function mLoadEntries(){
-  var {data,error}=await sbClient.from('daily_metrics').select('*').eq('user_id',mUser.id).order('entry_date',{ascending:false});
-  if(error){toast('Could not load your entries: '+error.message);return;}
+  var targetUser=(mIsAdmin&&adminViewOwnerId)?adminViewOwnerId:mUser.id;
+  var {data,error}=await sbClient.from('daily_metrics').select('*').eq('user_id',targetUser).order('entry_date',{ascending:false});
+  if(error){toast('Could not load entries: '+error.message);return;}
   mEntries=data||[];
   mRenderEntries();
   mRenderPeriodSummary('m-weekly-body',mGroupBy(mEntries,mWeekOf));
   mRenderPeriodSummary('m-monthly-body',mGroupBy(mEntries,mMonthOf));
   mRenderPeriodSummary('m-yearly-body',mGroupBy(mEntries,mYearOf));
+  var viewingOther=mIsAdmin&&adminViewOwnerId;
+  var label=viewingOther?repNameById(adminViewOwnerId)+"'s":'Your';
+  document.getElementById('m-entry-card').style.display=viewingOther?'none':'block';
+  document.getElementById('m-entries-title').textContent=label+' recent entries';
+  document.getElementById('m-weekly-title').textContent=label+' weekly summary';
+  document.getElementById('m-monthly-title').textContent=label+' monthly summary';
+  document.getElementById('m-yearly-title').textContent=label+' yearly summary';
 }
 
 async function mSaveEntry(){
