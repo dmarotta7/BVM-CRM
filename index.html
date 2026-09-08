@@ -470,14 +470,20 @@
       <div class="mc"><div class="ml" style="color:#8a6d00">Yellow + Red + Purple</div><div class="mv" id="dp-m-atrisk" style="color:#8a6d00">&#x2014;</div></div>
     </div>
 
-    <div class="card" style="margin-bottom:20px">
-      <div style="font-size:13px;font-weight:600;color:var(--navy);margin-bottom:10px">Health breakdown (by magazine, days since last sale)</div>
-      <div style="display:flex;gap:18px;flex-wrap:wrap;font-size:13px">
-        <div><span style="display:inline-block;width:10px;height:10px;border-radius:50%;background:#1a7a45;margin-right:6px"></span>Green (0&ndash;21 days): <b id="dp-h-green">0</b></div>
-        <div><span style="display:inline-block;width:10px;height:10px;border-radius:50%;background:#c99a00;margin-right:6px"></span>Yellow (22&ndash;33 days): <b id="dp-h-yellow">0</b></div>
-        <div><span style="display:inline-block;width:10px;height:10px;border-radius:50%;background:#A32D2D;margin-right:6px"></span>Red (34&ndash;45 days): <b id="dp-h-red">0</b></div>
-        <div><span style="display:inline-block;width:10px;height:10px;border-radius:50%;background:#5a2fc2;margin-right:6px"></span>Purple (46+ days): <b id="dp-h-purple">0</b></div>
-      </div>
+    <div style="font-size:12px;font-weight:600;color:#888;text-transform:uppercase;letter-spacing:.04em;margin:4px 0 6px">Magazines &mdash; by days since last sale</div>
+    <div class="metrics">
+      <div class="mc" style="border-top:3px solid #1a7a45"><div class="ml" style="color:#1a7a45">Green</div><div class="mv" id="dp-h-green" style="color:#1a7a45">&#x2014;</div></div>
+      <div class="mc" style="border-top:3px solid #c99a00"><div class="ml" style="color:#8a6d00">Yellow</div><div class="mv" id="dp-h-yellow" style="color:#8a6d00">&#x2014;</div></div>
+      <div class="mc" style="border-top:3px solid #A32D2D"><div class="ml" style="color:#A32D2D">Red</div><div class="mv" id="dp-h-red" style="color:#A32D2D">&#x2014;</div></div>
+      <div class="mc" style="border-top:3px solid #5a2fc2"><div class="ml" style="color:#5a2fc2">Purple</div><div class="mv" id="dp-h-purple" style="color:#5a2fc2">&#x2014;</div></div>
+    </div>
+
+    <div style="font-size:12px;font-weight:600;color:#888;text-transform:uppercase;letter-spacing:.04em;margin:16px 0 6px">People &mdash; by their own last sale</div>
+    <div class="metrics" style="margin-bottom:20px">
+      <div class="mc" style="border-top:3px solid #1a7a45"><div class="ml" style="color:#1a7a45">Green</div><div class="mv" id="dp-pm-green" style="color:#1a7a45">&#x2014;</div></div>
+      <div class="mc" style="border-top:3px solid #c99a00"><div class="ml" style="color:#8a6d00">Yellow</div><div class="mv" id="dp-pm-yellow" style="color:#8a6d00">&#x2014;</div></div>
+      <div class="mc" style="border-top:3px solid #A32D2D"><div class="ml" style="color:#A32D2D">Red</div><div class="mv" id="dp-pm-red" style="color:#A32D2D">&#x2014;</div></div>
+      <div class="mc" style="border-top:3px solid #5a2fc2"><div class="ml" style="color:#5a2fc2">Purple</div><div class="mv" id="dp-pm-purple" style="color:#5a2fc2">&#x2014;</div></div>
     </div>
 
     <div class="tabs">
@@ -554,9 +560,7 @@
         <div class="fr">
           <div class="fg"><label>Due date</label><input id="dp-tp-due" type="date"/></div>
           <div class="fg"><label>Type</label><select id="dp-tp-type">
-            <option>PDS Call - Personal</option>
-            <option>PDS Call - Daily</option>
-            <option>PDS Call - Support</option>
+            <option>PDS (Personal Daily Support)</option>
             <option>Ride Along</option>
             <option>Other</option>
           </select></div>
@@ -634,9 +638,7 @@
         <div style="font-size:13px;font-weight:600;color:var(--navy);margin-bottom:8px">Log a touchpoint</div>
         <div class="fr">
           <div class="fg"><label>Type</label><select id="dpd-tp-type">
-            <option>PDS Call - Personal</option>
-            <option>PDS Call - Daily</option>
-            <option>PDS Call - Support</option>
+            <option>PDS (Personal Daily Support)</option>
             <option>Ride Along</option>
             <option>Other</option>
           </select></div>
@@ -1342,6 +1344,16 @@ function renderDivisionSummary(){
   document.getElementById('dp-h-red').textContent=counts.Red;
   document.getElementById('dp-h-purple').textContent=counts.Purple;
   document.getElementById('dp-m-atrisk').textContent=counts.Yellow+counts.Red+counts.Purple;
+
+  var pcounts={Green:0,Yellow:0,Red:0,Purple:0};
+  dpPeople.forEach(function(p){
+    var ph=dpHealthOf(p.last_sale_date);
+    if(pcounts[ph.label]!==undefined)pcounts[ph.label]++;
+  });
+  document.getElementById('dp-pm-green').textContent=pcounts.Green;
+  document.getElementById('dp-pm-yellow').textContent=pcounts.Yellow;
+  document.getElementById('dp-pm-red').textContent=pcounts.Red;
+  document.getElementById('dp-pm-purple').textContent=pcounts.Purple;
 }
 
 // --- People ---
@@ -1781,7 +1793,7 @@ function openDpPersonDetail(id){
       +'</div>';
   }).join('')||'<div style="color:#aaa;font-size:13px">No magazines assigned.</div>';
   document.getElementById('dpd-last-touchpoint').textContent=dpLastTouchpointText(id);
-  document.getElementById('dpd-tp-type').value='PDS Call - Personal';
+  document.getElementById('dpd-tp-type').value='PDS (Personal Daily Support)';
   document.getElementById('dpd-tp-due').value='';
   document.getElementById('dpd-tp-title').value='';
   renderDpPersonDetailTouchpoints();
@@ -1832,7 +1844,7 @@ function dpTargetLabel(tp){
 
 function dpTypeBadge(type){
   var t=type||'Other';
-  var colors={'PDS Call - Personal':'#1a4d8f','PDS Call - Daily':'#0e7a5f','PDS Call - Support':'#8a6d00','Ride Along':'#5a2fc2','Other':'#666'};
+  var colors={'PDS (Personal Daily Support)':'#1a4d8f','Ride Along':'#5a2fc2','Other':'#666'};
   var c=colors[t]||'#666';
   return '<span style="display:inline-block;padding:1px 8px;border-radius:99px;font-size:10px;font-weight:600;color:'+c+';background:'+c+'1a;margin-right:6px;white-space:nowrap">'+t+'</span>';
 }
