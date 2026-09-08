@@ -488,6 +488,13 @@
 
     <div class="divpg on" id="divsub-people">
       <div class="card">
+        <div style="font-size:15px;font-weight:600;margin-bottom:6px">Import Pulse Report</div>
+        <div style="font-size:12px;color:#888;margin-bottom:12px">Updates each person's contact info and personal health from BVM's Pulse Report (one number per publisher, across all their magazines). Matches by name &mdash; updates existing people, adds new ones (including Associate Publishers), never deletes. Rows titled Division Leader / Market Leader / Associate Market Leader are skipped automatically.</div>
+        <input type="file" id="dp-pulse-file" accept=".xlsx" style="display:none" onchange="importPulseReport(event)"/>
+        <button class="btn btnp" onclick="document.getElementById('dp-pulse-file').click()">Choose file to import</button>
+        <span id="dp-pulse-status" style="font-size:12px;color:#666;margin-left:10px"></span>
+      </div>
+      <div class="card">
         <div style="font-size:15px;font-weight:600;margin-bottom:12px" id="dp-person-form-title">Add a person</div>
         <div class="fr">
           <div class="fg"><label>Name</label><input id="dp-person-name" placeholder="Full name"/></div>
@@ -505,7 +512,7 @@
         <div style="font-size:15px;font-weight:600;margin-bottom:12px">Your people</div>
         <div class="card-scroll" style="border:none;box-shadow:none">
           <table>
-            <thead><tr><th>Name</th><th>Role</th><th>Email</th><th>Phone</th><th># Magazines</th><th>Notes</th><th class="col-actions">Actions</th></tr></thead>
+            <thead><tr><th>Name</th><th>Role</th><th>Personal health</th><th>Email</th><th>Phone</th><th># Magazines</th><th>Notes</th><th class="col-actions">Actions</th></tr></thead>
             <tbody id="dp-people-body"></tbody>
           </table>
         </div>
@@ -513,6 +520,13 @@
     </div>
 
     <div class="divpg" id="divsub-magazines">
+      <div class="card">
+        <div style="font-size:15px;font-weight:600;margin-bottom:6px">Import from BVM Back Office (Publication Health report)</div>
+        <div style="font-size:12px;color:#888;margin-bottom:12px">Upload the same report anytime to refresh everyone's health. Matches people and magazines by name &mdash; updates existing ones, adds new ones, never deletes anything. Health is calculated from each publisher's <b>own</b> last sale (Days Since Last Publisher/Flip Sale), not just any sale on the magazine.</div>
+        <input type="file" id="dp-import-file" accept=".xlsx" style="display:none" onchange="importDivisionReport(event)"/>
+        <button class="btn btnp" onclick="document.getElementById('dp-import-file').click()">Choose file to import</button>
+        <span id="dp-import-status" style="font-size:12px;color:#666;margin-left:10px"></span>
+      </div>
       <div class="card">
         <div style="font-size:15px;font-weight:600;margin-bottom:12px" id="dp-mag-form-title">Add a magazine</div>
         <div class="fr">
@@ -581,6 +595,7 @@
         <button class="btn btnsm" onclick="closeDpPersonDetail()">Close</button>
       </div>
       <div style="font-size:13px;color:#555;margin:10px 0 4px" id="dpd-contact"></div>
+      <div style="margin-bottom:4px" id="dpd-personal-health"></div>
       <div style="font-size:13px;color:#666;margin-bottom:16px" id="dpd-notes"></div>
 
       <div style="font-size:13px;font-weight:600;color:var(--navy);margin-bottom:8px">Magazines</div>
@@ -1307,10 +1322,12 @@ function renderDivisionSummary(){
 function renderDpPeople(){
   document.getElementById('dp-people-body').innerHTML=dpPeople.map(function(p){
     var magCount=dpMagazines.filter(function(m){return m.person_id===p.id;}).length;
-    return '<tr><td><a href="#" onclick="event.preventDefault();openDpPersonDetail(\''+p.id+'\')" style="color:var(--navy);font-weight:600;text-decoration:none">'+p.name+'</a></td><td>'+p.role+'</td><td>'+(p.email||'&mdash;')+'</td><td>'+(p.phone||'&mdash;')+'</td><td>'+magCount+'</td>'
+    var h=dpHealthOf(p.last_sale_date);
+    var healthCell=p.last_sale_date?('<span style="display:inline-block;padding:2px 10px;border-radius:99px;font-size:12px;font-weight:600;color:'+h.color+';background:'+h.bg+'">'+h.label+' &middot; '+h.days+'d</span>'):'<span style="color:#aaa;font-size:12px">&mdash;</span>';
+    return '<tr><td><a href="#" onclick="event.preventDefault();openDpPersonDetail(\''+p.id+'\')" style="color:var(--navy);font-weight:600;text-decoration:none">'+p.name+'</a></td><td>'+p.role+'</td><td>'+healthCell+'</td><td>'+(p.email||'&mdash;')+'</td><td>'+(p.phone||'&mdash;')+'</td><td>'+magCount+'</td>'
       +'<td style="max-width:220px;font-size:12px;color:#666">'+(p.notes||'&mdash;')+'</td>'
       +'<td class="col-actions"><button class="btn btnsm" onclick="editDpPerson(\''+p.id+'\')">Edit</button> <button class="btn btnsm btndanger" onclick="deleteDpPerson(\''+p.id+'\')">Delete</button></td></tr>';
-  }).join('')||'<tr><td colspan="7" style="color:#888;text-align:center;padding:16px">No one added yet.</td></tr>';
+  }).join('')||'<tr><td colspan="8" style="color:#888;text-align:center;padding:16px">No one added yet.</td></tr>';
 }
 
 async function saveDpPerson(){
@@ -1375,6 +1392,174 @@ function dpPopulatePersonSelects(){
   var cur=magSel.value;
   magSel.innerHTML=opts;
   if(cur)magSel.value=cur;
+}
+
+// --- Import from BVM Back Office (Publication Health report) ---
+function dpCol(row,names){
+  for(var i=0;i<names.length;i++){
+    if(row[names[i]]!==undefined&&row[names[i]]!=='')return row[names[i]];
+  }
+  return '';
+}
+function dpNormName(s){return(s||'').toString().trim().toLowerCase();}
+
+function importDivisionReport(event){
+  var file=event.target.files[0];
+  if(!file)return;
+  var statusEl=document.getElementById('dp-import-status');
+  statusEl.textContent='Reading file...';
+  var reader=new FileReader();
+  reader.onload=function(e){
+    try{
+      var wb=XLSX.read(e.target.result,{type:'binary',codepage:65001});
+      var ws=wb.Sheets[wb.SheetNames[0]];
+      var rows=XLSX.utils.sheet_to_json(ws,{defval:'',raw:false});
+      processDivisionImportRows(rows,statusEl);
+    }catch(err){
+      statusEl.textContent='Error reading file: '+err.message;
+    }
+  };
+  reader.readAsBinaryString(file);
+  event.target.value='';
+}
+
+async function processDivisionImportRows(rows,statusEl){
+  var peopleNeeded={}; // normName -> {name, role}
+  var magsNeeded=[]; // {name, personName, days}
+  var skipped=0;
+
+  rows.forEach(function(row){
+    var pubName=dpCol(row,['Publication']);
+    var status=dpCol(row,['Publication Status']).toString().trim().toLowerCase();
+    if(!pubName)return;
+    var personName=null,role=null,days=null;
+    if(status==='publisher'){
+      var pn=dpCol(row,['Publisher']);
+      if(pn&&pn!=='Best Version Media'){
+        personName=pn;role='Publisher';
+        var d=dpCol(row,['Days Since Last Publisher Sale']);
+        days=(d===''||d===null)?null:parseInt(d,10);
+      }
+    }else if(status==='flip'){
+      var fn=dpCol(row,['Flip Publisher']);
+      if(fn){
+        personName=fn;role='Flip Publisher';
+        var d2=dpCol(row,['Days Since Last Flip Sale']);
+        days=(d2===''||d2===null)?null:parseInt(d2,10);
+      }
+    }else if(status==='vacant'){
+      var d3=dpCol(row,['Days Since Last Sale']);
+      days=(d3===''||d3===null)?null:parseInt(d3,10);
+    }else{
+      skipped++;return;
+    }
+    if(personName)peopleNeeded[dpNormName(personName)]={name:personName,role:role};
+    magsNeeded.push({name:pubName,personName:personName,days:(isNaN(days)?null:days)});
+  });
+
+  statusEl.textContent='Matching people...';
+  var peopleAdded=0;
+  for(var key in peopleNeeded){
+    var pn=peopleNeeded[key];
+    var existing=dpPeople.find(function(p){return dpNormName(p.name)===key;});
+    if(!existing){
+      var {data,error}=await sbClient.from('division_people').insert({name:pn.name,role:pn.role}).select().single();
+      if(!error&&data){dpPeople.push(data);peopleAdded++;}
+    }else if(existing.role!==pn.role){
+      await sbClient.from('division_people').update({role:pn.role}).eq('id',existing.id);
+      existing.role=pn.role;
+    }
+  }
+
+  statusEl.textContent='Updating magazines...';
+  var magsAdded=0,magsUpdated=0;
+  for(var i=0;i<magsNeeded.length;i++){
+    var m=magsNeeded[i];
+    var personId=null;
+    if(m.personName){
+      var per=dpPeople.find(function(p){return dpNormName(p.name)===dpNormName(m.personName);});
+      personId=per?per.id:null;
+    }
+    var lastSale=null;
+    if(m.days!==null){
+      var dt=new Date(todayStr()+'T00:00:00');
+      dt.setDate(dt.getDate()-m.days);
+      lastSale=dt.toISOString().slice(0,10);
+    }
+    var existingMag=dpMagazines.find(function(x){return dpNormName(x.name)===dpNormName(m.name);});
+    if(existingMag){
+      var {error}=await sbClient.from('division_magazines').update({person_id:personId,last_sale_date:lastSale}).eq('id',existingMag.id);
+      if(!error){existingMag.person_id=personId;existingMag.last_sale_date=lastSale;magsUpdated++;}
+    }else{
+      var {data,error}=await sbClient.from('division_magazines').insert({name:m.name,person_id:personId,last_sale_date:lastSale}).select().single();
+      if(!error&&data){dpMagazines.push(data);magsAdded++;}
+    }
+    if(i%10===0)statusEl.textContent='Updating magazines... ('+(i+1)+'/'+magsNeeded.length+')';
+  }
+
+  await loadDivisionData();
+  statusEl.textContent=peopleAdded+' people added, '+magsUpdated+' magazines updated, '+magsAdded+' magazines added'+(skipped?', '+skipped+' rows skipped':'')+'.';
+  toast('Import complete!');
+}
+
+// --- Import Pulse Report (person-level health, contact info, Associate Publishers) ---
+var DP_PULSE_SKIP_TITLES=['division leader','market leader','associate market leader'];
+var DP_PULSE_ROLE_MAP={'publisher':'Publisher','flip publisher':'Flip Publisher','associate publisher':'Associate Publisher'};
+
+function importPulseReport(event){
+  var file=event.target.files[0];
+  if(!file)return;
+  var statusEl=document.getElementById('dp-pulse-status');
+  statusEl.textContent='Reading file...';
+  var reader=new FileReader();
+  reader.onload=function(e){
+    try{
+      var wb=XLSX.read(e.target.result,{type:'binary',codepage:65001});
+      var ws=wb.Sheets[wb.SheetNames[0]];
+      var rows=XLSX.utils.sheet_to_json(ws,{defval:'',raw:false,header:1});
+      processPulseImportRows(rows,statusEl);
+    }catch(err){
+      statusEl.textContent='Error reading file: '+err.message;
+    }
+  };
+  reader.readAsBinaryString(file);
+  event.target.value='';
+}
+
+async function processPulseImportRows(rows,statusEl){
+  // header:1 mode gives raw arrays; row 0 = column titles, row 1 = sub-header (# Sold/Total), data starts row 2
+  var added=0,updated=0,skipped=0;
+  for(var i=2;i<rows.length;i++){
+    var r=rows[i];
+    if(!r||!r[0])continue;
+    var name=(r[0]||'').toString().trim();
+    var titleRaw=(r[3]||'').toString().trim().toLowerCase();
+    if(DP_PULSE_SKIP_TITLES.indexOf(titleRaw)>=0){skipped++;continue;}
+    var role=DP_PULSE_ROLE_MAP[titleRaw];
+    if(!role){skipped++;continue;}
+    var phone=r[1]?normalizePhone(r[1]):null;
+    var email=r[2]||null;
+    var lastSaleRaw=r[9];
+    var lastSale=null;
+    if(lastSaleRaw){
+      var d=new Date(lastSaleRaw);
+      if(!isNaN(d.getTime()))lastSale=d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');
+    }
+    var row={role:role,email:email,phone:phone,last_sale_date:lastSale};
+    var existing=dpPeople.find(function(p){return dpNormName(p.name)===dpNormName(name);});
+    if(existing){
+      var {error}=await sbClient.from('division_people').update(row).eq('id',existing.id);
+      if(!error){Object.assign(existing,row);updated++;}
+    }else{
+      row.name=name;
+      var {data,error}=await sbClient.from('division_people').insert(row).select().single();
+      if(!error&&data){dpPeople.push(data);added++;}
+    }
+    if(i%10===0)statusEl.textContent='Updating people... ('+(i-1)+'/'+(rows.length-2)+')';
+  }
+  await loadDivisionData();
+  statusEl.textContent=added+' people added, '+updated+' updated'+(skipped?', '+skipped+' rows skipped (not Publisher/Flip/Associate)':'')+'.';
+  toast('Pulse Report import complete!');
 }
 
 // --- Magazines ---
@@ -1502,6 +1687,10 @@ function openDpPersonDetail(id){
   document.getElementById('dpd-name').textContent=p.name;
   document.getElementById('dpd-role').textContent=p.role;
   document.getElementById('dpd-contact').textContent=[p.email,p.phone].filter(Boolean).join('   •   ')||'No contact info on file.';
+  var ph=dpHealthOf(p.last_sale_date);
+  document.getElementById('dpd-personal-health').innerHTML=p.last_sale_date
+    ?('<span style="font-size:11px;color:#888">Personal health: </span><span style="display:inline-block;padding:2px 10px;border-radius:99px;font-size:12px;font-weight:600;color:'+ph.color+';background:'+ph.bg+'">'+ph.label+' &middot; '+ph.days+'d since last personal sale</span>')
+    :'<span style="font-size:11px;color:#aaa">No personal health on file yet &mdash; import a Pulse Report to populate it.</span>';
   document.getElementById('dpd-notes').textContent=p.notes||'';
   var mags=dpMagazines.filter(function(m){return m.person_id===id;});
   document.getElementById('dpd-magazines').innerHTML=mags.map(function(m){
