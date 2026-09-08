@@ -512,7 +512,7 @@
         <div style="font-size:15px;font-weight:600;margin-bottom:12px">Your people</div>
         <div class="card-scroll" style="border:none;box-shadow:none">
           <table>
-            <thead><tr><th>Name</th><th>Role</th><th class="sortable" onclick="setDpPersonSort('health')" style="cursor:pointer;user-select:none">Personal health<span id="dp-psort-arrow-health"></span></th><th>Email</th><th>Phone</th><th># Magazines</th><th>Notes</th><th class="col-actions">Actions</th></tr></thead>
+            <thead><tr><th>Name</th><th class="sortable" onclick="setDpPersonSort('role')" style="cursor:pointer;user-select:none">Role<span id="dp-psort-arrow-role"></span></th><th class="sortable" onclick="setDpPersonSort('health')" style="cursor:pointer;user-select:none">Personal health<span id="dp-psort-arrow-health"></span></th><th>Email</th><th>Phone</th><th># Magazines</th><th>Notes</th><th class="col-actions">Actions</th></tr></thead>
             <tbody id="dp-people-body"></tbody>
           </table>
         </div>
@@ -1323,8 +1323,11 @@ var dpPersonSortState={key:null,dir:1};
 function setDpPersonSort(key){
   if(dpPersonSortState.key===key)dpPersonSortState.dir*=-1;
   else{dpPersonSortState.key=key;dpPersonSortState.dir=1;}
-  var el=document.getElementById('dp-psort-arrow-health');
-  if(el)el.textContent=(dpPersonSortState.key==='health')?(dpPersonSortState.dir===1?' \u25B2':' \u25BC'):'';
+  ['role','health'].forEach(function(k){
+    var el=document.getElementById('dp-psort-arrow-'+k);
+    if(!el)return;
+    el.textContent=(dpPersonSortState.key===k)?(dpPersonSortState.dir===1?' \u25B2':' \u25BC'):'';
+  });
   renderDpPeople();
 }
 
@@ -1338,6 +1341,14 @@ function renderDpPeople(){
       var ra=healthRank[ha.label]!==undefined?healthRank[ha.label]:4;
       var rb=healthRank[hb.label]!==undefined?healthRank[hb.label]:4;
       return (ra-rb)*dir;
+    });
+  }else if(dpPersonSortState.key==='role'){
+    var dir2=dpPersonSortState.dir;
+    list=list.slice().sort(function(a,b){
+      var ra=(a.role||'').toLowerCase(),rb=(b.role||'').toLowerCase();
+      if(ra<rb)return -1*dir2;
+      if(ra>rb)return 1*dir2;
+      return 0;
     });
   }
   document.getElementById('dp-people-body').innerHTML=list.map(function(p){
@@ -1705,7 +1716,7 @@ function openDpPersonDetail(id){
   if(!p)return;
   dpDetailPersonId=id;
   document.getElementById('dpd-name').textContent=p.name;
-  document.getElementById('dpd-role').textContent=p.role;
+  document.getElementById('dpd-role').textContent='Role: '+p.role;
   document.getElementById('dpd-contact').textContent=[p.email,p.phone].filter(Boolean).join('   •   ')||'No contact info on file.';
   var ph=dpHealthOf(p.last_sale_date);
   document.getElementById('dpd-personal-health').innerHTML=p.last_sale_date
