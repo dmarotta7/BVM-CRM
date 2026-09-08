@@ -527,23 +527,12 @@
         <span id="dp-import-status" style="font-size:12px;color:#666;margin-left:10px"></span>
       </div>
       <div class="card">
-        <div style="font-size:15px;font-weight:600;margin-bottom:12px" id="dp-mag-form-title">Add a magazine</div>
-        <div class="fr">
-          <div class="fg"><label>Magazine name</label><input id="dp-mag-name" placeholder="e.g. Mendham Neighbors"/></div>
-          <div class="fg"><label>Assigned publisher</label><select id="dp-mag-person"><option value="">&#x2014; Unmanned &#x2014;</option></select></div>
-        </div>
-        <div class="fr">
-          <div class="fg"><label>Last sale date</label><input id="dp-mag-lastsale" type="date"/></div>
-          <div></div>
-        </div>
-        <div class="fg" style="margin-bottom:14px"><label>Notes</label><textarea id="dp-mag-notes" placeholder="Recruiting notes, market context, etc."></textarea></div>
-        <button class="btn btnp" id="dp-mag-savebtn" onclick="saveDpMagazine()">Add magazine</button>
-        <button class="btn" id="dp-mag-cancelbtn" style="display:none" onclick="cancelDpMagazineEdit()">Cancel</button>
-      </div>
-      <div class="card">
         <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px">
           <div style="font-size:15px;font-weight:600">Your magazines</div>
-          <label style="font-size:12px;color:#666;display:flex;align-items:center;gap:6px"><input type="checkbox" id="dp-mag-unmanned-only" onchange="renderDpMagazines()" style="width:auto"/> Unmanned only</label>
+          <div style="display:flex;align-items:center;gap:14px">
+            <label style="font-size:12px;color:#666;display:flex;align-items:center;gap:6px"><input type="checkbox" id="dp-mag-unmanned-only" onchange="renderDpMagazines()" style="width:auto"/> Unmanned only</label>
+            <button class="btn btnp btnsm" onclick="openDpAddMagazine()">+ Add magazine</button>
+          </div>
         </div>
         <div class="card-scroll" style="border:none;box-shadow:none">
           <table>
@@ -578,6 +567,20 @@
           <label style="font-size:12px;color:#666;display:flex;align-items:center;gap:6px"><input type="checkbox" id="dp-tp-show-done" onchange="renderDpTouchpoints()" style="width:auto"/> Show completed</label>
         </div>
         <div id="dp-tp-list"></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="overlay" id="dp-magazine-modal" onclick="if(event.target===this)closeDpMagazineModal()">
+    <div class="modal" style="max-width:420px">
+      <div style="font-size:16px;font-weight:700;color:var(--navy);margin-bottom:14px" id="dp-mag-form-title">Add a magazine</div>
+      <div class="fg"><label>Magazine name</label><input id="dp-mag-name" placeholder="e.g. Mendham Neighbors"/></div>
+      <div class="fg"><label>Assigned publisher</label><select id="dp-mag-person"><option value="">&#x2014; Unmanned &#x2014;</option></select></div>
+      <div class="fg"><label>Last sale date</label><input id="dp-mag-lastsale" type="date"/></div>
+      <div class="fg" style="margin-bottom:14px"><label>Notes</label><textarea id="dp-mag-notes" placeholder="Recruiting notes, market context, etc."></textarea></div>
+      <div style="display:flex;gap:8px;justify-content:flex-end">
+        <button class="btn" onclick="closeDpMagazineModal()">Cancel</button>
+        <button class="btn btnp" id="dp-mag-savebtn" onclick="saveDpMagazine()">Add magazine</button>
       </div>
     </div>
   </div>
@@ -1700,6 +1703,35 @@ function renderDpMagazines(){
   }).join('')||'<tr><td colspan="7" style="color:#888;text-align:center;padding:16px">No magazines added yet.</td></tr>';
 }
 
+function openDpAddMagazine(){
+  dpEditingMagazineId=null;
+  document.getElementById('dp-mag-name').value='';
+  document.getElementById('dp-mag-person').value='';
+  document.getElementById('dp-mag-lastsale').value='';
+  document.getElementById('dp-mag-notes').value='';
+  document.getElementById('dp-mag-form-title').textContent='Add a magazine';
+  document.getElementById('dp-mag-savebtn').textContent='Add magazine';
+  document.getElementById('dp-magazine-modal').classList.add('on');
+}
+
+function editDpMagazine(id){
+  var m=dpMagazines.find(function(x){return x.id===id;});
+  if(!m)return;
+  dpEditingMagazineId=id;
+  document.getElementById('dp-mag-name').value=m.name;
+  document.getElementById('dp-mag-person').value=m.person_id||'';
+  document.getElementById('dp-mag-lastsale').value=m.last_sale_date||'';
+  document.getElementById('dp-mag-notes').value=m.notes||'';
+  document.getElementById('dp-mag-form-title').textContent='Edit magazine';
+  document.getElementById('dp-mag-savebtn').textContent='Save changes';
+  document.getElementById('dp-magazine-modal').classList.add('on');
+}
+
+function closeDpMagazineModal(){
+  document.getElementById('dp-magazine-modal').classList.remove('on');
+  dpEditingMagazineId=null;
+}
+
 async function saveDpMagazine(){
   var name=document.getElementById('dp-mag-name').value.trim();
   if(!name){toast('Enter a magazine name.');return;}
@@ -1718,33 +1750,8 @@ async function saveDpMagazine(){
     if(error){toast('Could not add: '+error.message);return;}
     toast('Magazine added!');
   }
-  cancelDpMagazineEdit();
+  closeDpMagazineModal();
   await loadDivisionData();
-}
-
-function editDpMagazine(id){
-  var m=dpMagazines.find(function(x){return x.id===id;});
-  if(!m)return;
-  dpEditingMagazineId=id;
-  document.getElementById('dp-mag-name').value=m.name;
-  document.getElementById('dp-mag-person').value=m.person_id||'';
-  document.getElementById('dp-mag-lastsale').value=m.last_sale_date||'';
-  document.getElementById('dp-mag-notes').value=m.notes||'';
-  document.getElementById('dp-mag-form-title').textContent='Edit magazine';
-  document.getElementById('dp-mag-savebtn').textContent='Save changes';
-  document.getElementById('dp-mag-cancelbtn').style.display='inline-block';
-  document.getElementById('dp-mag-name').scrollIntoView({behavior:'smooth',block:'center'});
-}
-
-function cancelDpMagazineEdit(){
-  dpEditingMagazineId=null;
-  document.getElementById('dp-mag-name').value='';
-  document.getElementById('dp-mag-person').value='';
-  document.getElementById('dp-mag-lastsale').value='';
-  document.getElementById('dp-mag-notes').value='';
-  document.getElementById('dp-mag-form-title').textContent='Add a magazine';
-  document.getElementById('dp-mag-savebtn').textContent='Add magazine';
-  document.getElementById('dp-mag-cancelbtn').style.display='none';
 }
 
 async function deleteDpMagazine(id){
