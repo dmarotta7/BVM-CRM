@@ -534,7 +534,7 @@
         </div>
         <div class="card-scroll" style="border:none;box-shadow:none">
           <table>
-            <thead><tr><th>Magazine</th><th>Publisher</th><th>Health</th><th>Days since sale</th><th>Last sale</th><th>Notes</th><th class="col-actions">Actions</th></tr></thead>
+            <thead><tr><th>Magazine</th><th>Publisher</th><th class="sortable" onclick="setDpMagSort('health')" style="cursor:pointer;user-select:none">Health<span id="dp-sort-arrow-health"></span></th><th class="sortable" onclick="setDpMagSort('days')" style="cursor:pointer;user-select:none">Days since sale<span id="dp-sort-arrow-days"></span></th><th>Last sale</th><th>Notes</th><th class="col-actions">Actions</th></tr></thead>
             <tbody id="dp-mags-body"></tbody>
           </table>
         </div>
@@ -1378,9 +1378,36 @@ function dpPopulatePersonSelects(){
 }
 
 // --- Magazines ---
+var dpMagSortState={key:null,dir:1};
+function setDpMagSort(key){
+  if(dpMagSortState.key===key)dpMagSortState.dir*=-1;
+  else{dpMagSortState.key=key;dpMagSortState.dir=1;}
+  ['health','days'].forEach(function(k){
+    var el=document.getElementById('dp-sort-arrow-'+k);
+    if(!el)return;
+    el.textContent=(dpMagSortState.key===k)?(dpMagSortState.dir===1?' \u25B2':' \u25BC'):'';
+  });
+  renderDpMagazines();
+}
+
 function renderDpMagazines(){
   var unmannedOnly=document.getElementById('dp-mag-unmanned-only').checked;
   var list=unmannedOnly?dpMagazines.filter(function(m){return!m.person_id;}):dpMagazines;
+  if(dpMagSortState.key){
+    var dir=dpMagSortState.dir;
+    var healthRank={Green:0,Yellow:1,Red:2,Purple:3};
+    list=list.slice().sort(function(a,b){
+      var ha=dpHealthOf(a.last_sale_date),hb=dpHealthOf(b.last_sale_date);
+      if(dpMagSortState.key==='health'){
+        var ra=healthRank[ha.label]!==undefined?healthRank[ha.label]:4;
+        var rb=healthRank[hb.label]!==undefined?healthRank[hb.label]:4;
+        return (ra-rb)*dir;
+      }
+      var da=ha.days===null?Infinity:ha.days;
+      var db=hb.days===null?Infinity:hb.days;
+      return (da-db)*dir;
+    });
+  }
   document.getElementById('dp-mags-body').innerHTML=list.map(function(m){
     var p=dpPeople.find(function(x){return x.id===m.person_id;});
     var h=dpHealthOf(m.last_sale_date);
