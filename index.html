@@ -592,7 +592,10 @@
           <div style="font-size:18px;font-weight:700;color:var(--navy)" id="dpd-name"></div>
           <div style="font-size:12px;color:#888" id="dpd-role"></div>
         </div>
-        <button class="btn btnsm" onclick="closeDpPersonDetail()">Close</button>
+        <div style="display:flex;gap:6px">
+          <button class="btn btnsm" onclick="editDpPersonFromDetail()">Edit</button>
+          <button class="btn btnsm" onclick="closeDpPersonDetail()">Close</button>
+        </div>
       </div>
       <div style="font-size:13px;color:#555;margin:10px 0 4px" id="dpd-contact"></div>
       <div style="margin-bottom:4px" id="dpd-personal-health"></div>
@@ -1750,6 +1753,15 @@ function renderDpPersonDetailTouchpoints(){
 function closeDpPersonDetail(){
   document.getElementById('dp-person-detail-modal').classList.remove('on');
   dpDetailPersonId=null;
+}
+
+function editDpPersonFromDetail(){
+  var id=dpDetailPersonId;
+  if(!id)return;
+  closeDpPersonDetail();
+  var peopleTabBtn=document.querySelector('.divtab[onclick*="showDivSubTab(\'people\'"]');
+  if(peopleTabBtn)showDivSubTab('people',peopleTabBtn);
+  editDpPerson(id);
 }
 
 async function addDpTouchpointFromDetail(){
