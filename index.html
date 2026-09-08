@@ -463,6 +463,14 @@
   <div class="pg" id="tab-division">
     <div style="font-size:12px;color:#888;margin-bottom:14px">Private to you — no one else, including other admins, can see this section or its data.</div>
 
+    <div class="card" id="dp-tp-widget" style="display:none;border-top:3px solid var(--orange);margin-bottom:20px">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px">
+        <div style="font-size:14px;font-weight:600" id="dp-tp-widget-title">Touchpoints</div>
+        <button class="btn btnsm" onclick="showDivSubTab('touchpoints',document.querySelector('.divtab[onclick*=touchpoints]'))">View all</button>
+      </div>
+      <div id="dp-tp-widget-list"></div>
+    </div>
+
     <div class="metrics">
       <div class="mc"><div class="ml">People</div><div class="mv" id="dp-m-people">&#x2014;</div></div>
       <div class="mc"><div class="ml">Magazines</div><div class="mv" id="dp-m-mags">&#x2014;</div></div>
@@ -1324,6 +1332,7 @@ async function loadDivisionData(){
   renderDpMagazines();
   dpTouchpointTargetChanged();
   renderDpTouchpoints();
+  renderDpTouchpointWidget();
 }
 
 function dpHealthOf(lastSaleDate){
@@ -1875,6 +1884,22 @@ function dpTouchpointRowHTML(tp,compact){
     +'</div>';
 }
 
+function renderDpTouchpointWidget(){
+  var b=taskBuckets(dpTouchpoints);
+  var widget=document.getElementById('dp-tp-widget');
+  var totalOpen=b.overdue.length+b.today.length+b.upcoming.length+b.noDate.length;
+  if(!totalOpen){widget.style.display='none';return;}
+  widget.style.display='block';
+  document.getElementById('dp-tp-widget-title').textContent=
+    (b.overdue.length?b.overdue.length+' overdue':'')+
+    (b.overdue.length&&b.today.length?', ':'')+
+    (b.today.length?b.today.length+' due today':'')+
+    (!b.overdue.length&&!b.today.length?'Upcoming touchpoints':'');
+  var preview=b.overdue.concat(b.today,b.upcoming).slice(0,5);
+  document.getElementById('dp-tp-widget-list').innerHTML=preview.map(function(tp){return dpTouchpointRowHTML(tp,true);}).join('')
+    ||'<div style="color:#888;font-size:13px">Nothing due.</div>';
+}
+
 function renderDpTouchpoints(){
   var showDone=document.getElementById('dp-tp-show-done').checked;
   var b=taskBuckets(dpTouchpoints);
@@ -1920,6 +1945,7 @@ async function toggleDpTouchpoint(id,checked){
   var tp=dpTouchpoints.find(function(x){return x.id===id;});
   if(tp){tp.completed=checked;tp.completed_at=checked?new Date().toISOString():null;}
   renderDpTouchpoints();
+  renderDpTouchpointWidget();
   if(document.getElementById('dp-person-detail-modal').classList.contains('on')){
     renderDpPersonDetailTouchpoints();
     document.getElementById('dpd-last-touchpoint').textContent=dpLastTouchpointText(dpDetailPersonId);
@@ -1932,6 +1958,7 @@ async function deleteDpTouchpoint(id){
   if(error){toast('Could not delete: '+error.message);return;}
   dpTouchpoints=dpTouchpoints.filter(function(x){return x.id!==id;});
   renderDpTouchpoints();
+  renderDpTouchpointWidget();
   if(document.getElementById('dp-person-detail-modal').classList.contains('on')){
     renderDpPersonDetailTouchpoints();
     document.getElementById('dpd-last-touchpoint').textContent=dpLastTouchpointText(dpDetailPersonId);
