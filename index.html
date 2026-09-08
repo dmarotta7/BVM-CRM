@@ -58,6 +58,10 @@
   .tab.on{color:#fff;background:var(--navy);box-shadow:0 2px 6px rgba(15,31,61,.3)}
   .tab:hover:not(.on){background:#f0f2f5;color:var(--navy)}
   .pg{display:none}.pg.on{display:block}
+  .divtab{padding:9px 20px;font-size:14px;cursor:pointer;border:none;background:none;color:#555;border-radius:7px;font-family:inherit;font-weight:600;transition:all .15s}
+  .divtab.on{color:#fff;background:var(--navy);box-shadow:0 2px 6px rgba(15,31,61,.3)}
+  .divtab:hover:not(.on){background:#f0f2f5;color:var(--navy)}
+  .divpg{display:none}.divpg.on{display:block}
 
   /* ── Cards ── */
   .card{background:#fff;border:1px solid #e2e6ed;border-radius:12px;padding:1.25rem;margin-bottom:1rem}
@@ -298,6 +302,8 @@
     <button class="tab" onclick="showTab('findleads',this)">Find Leads</button>
     <button class="tab" onclick="showTab('drip',this)">Email drip</button>
     <button class="tab" onclick="showTab('ai',this)">AI analyst</button>
+    <span style="width:1px;background:#e2e6ed;margin:6px 4px;display:none" id="division-sep"></span>
+    <button class="tab" id="tab-btn-division" style="display:none" onclick="showTab('division',this)">My Division</button>
   </div>
 
   <div class="pg on" id="tab-leads">
@@ -451,6 +457,111 @@
       </div>
       <div id="aildr" style="display:none;font-size:13px;color:#888;padding:10px 0"><span class="spinner"></span>Analyzing your pipeline...</div>
       <div class="ai-box" id="aiout">Click a button above to get AI insights about your leads.</div>
+    </div>
+  </div>
+
+  <div class="pg" id="tab-division">
+    <div style="font-size:12px;color:#888;margin-bottom:14px">Private to you — no one else, including other admins, can see this section or its data.</div>
+
+    <div class="metrics">
+      <div class="mc"><div class="ml">People</div><div class="mv" id="dp-m-people">&#x2014;</div></div>
+      <div class="mc"><div class="ml">Magazines</div><div class="mv" id="dp-m-mags">&#x2014;</div></div>
+      <div class="mc"><div class="ml" style="color:#A32D2D">Unmanned</div><div class="mv" id="dp-m-unmanned" style="color:#A32D2D">&#x2014;</div></div>
+      <div class="mc"><div class="ml" style="color:#8a6d00">Yellow + Red + Purple</div><div class="mv" id="dp-m-atrisk" style="color:#8a6d00">&#x2014;</div></div>
+    </div>
+
+    <div class="card" style="margin-bottom:20px">
+      <div style="font-size:13px;font-weight:600;color:var(--navy);margin-bottom:10px">Health breakdown (by magazine, days since last sale)</div>
+      <div style="display:flex;gap:18px;flex-wrap:wrap;font-size:13px">
+        <div><span style="display:inline-block;width:10px;height:10px;border-radius:50%;background:#1a7a45;margin-right:6px"></span>Green (0&ndash;21 days): <b id="dp-h-green">0</b></div>
+        <div><span style="display:inline-block;width:10px;height:10px;border-radius:50%;background:#c99a00;margin-right:6px"></span>Yellow (22&ndash;33 days): <b id="dp-h-yellow">0</b></div>
+        <div><span style="display:inline-block;width:10px;height:10px;border-radius:50%;background:#A32D2D;margin-right:6px"></span>Red (34&ndash;45 days): <b id="dp-h-red">0</b></div>
+        <div><span style="display:inline-block;width:10px;height:10px;border-radius:50%;background:#5a2fc2;margin-right:6px"></span>Purple (46+ days): <b id="dp-h-purple">0</b></div>
+      </div>
+    </div>
+
+    <div class="tabs">
+      <button class="divtab on" onclick="showDivSubTab('people',this)">People</button>
+      <button class="divtab" onclick="showDivSubTab('magazines',this)">Magazines</button>
+      <button class="divtab" onclick="showDivSubTab('touchpoints',this)">Touchpoints <span id="dp-tp-badge" style="display:none;background:#e86a2a;color:#fff;border-radius:99px;padding:1px 7px;font-size:11px;margin-left:4px"></span></button>
+    </div>
+
+    <div class="divpg on" id="divsub-people">
+      <div class="card">
+        <div style="font-size:15px;font-weight:600;margin-bottom:12px" id="dp-person-form-title">Add a person</div>
+        <div class="fr">
+          <div class="fg"><label>Name</label><input id="dp-person-name" placeholder="Full name"/></div>
+          <div class="fg"><label>Role</label><select id="dp-person-role"><option>Publisher</option><option>Flip Publisher</option><option>Associate Publisher</option></select></div>
+        </div>
+        <div class="fr">
+          <div class="fg"><label>Email</label><input id="dp-person-email" placeholder="jane@example.com"/></div>
+          <div class="fg"><label>Phone</label><input id="dp-person-phone" placeholder="(973) 555-0100"/></div>
+        </div>
+        <div class="fg" style="margin-bottom:14px"><label>Notes</label><textarea id="dp-person-notes" placeholder="Anything worth remembering about them"></textarea></div>
+        <button class="btn btnp" id="dp-person-savebtn" onclick="saveDpPerson()">Add person</button>
+        <button class="btn" id="dp-person-cancelbtn" style="display:none" onclick="cancelDpPersonEdit()">Cancel</button>
+      </div>
+      <div class="card">
+        <div style="font-size:15px;font-weight:600;margin-bottom:12px">Your people</div>
+        <div class="card-scroll" style="border:none;box-shadow:none">
+          <table>
+            <thead><tr><th>Name</th><th>Role</th><th>Email</th><th>Phone</th><th># Magazines</th><th>Notes</th><th class="col-actions">Actions</th></tr></thead>
+            <tbody id="dp-people-body"></tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <div class="divpg" id="divsub-magazines">
+      <div class="card">
+        <div style="font-size:15px;font-weight:600;margin-bottom:12px" id="dp-mag-form-title">Add a magazine</div>
+        <div class="fr">
+          <div class="fg"><label>Magazine name</label><input id="dp-mag-name" placeholder="e.g. Mendham Neighbors"/></div>
+          <div class="fg"><label>Assigned publisher</label><select id="dp-mag-person"><option value="">&#x2014; Unmanned &#x2014;</option></select></div>
+        </div>
+        <div class="fr">
+          <div class="fg"><label>Last sale date</label><input id="dp-mag-lastsale" type="date"/></div>
+          <div></div>
+        </div>
+        <div class="fg" style="margin-bottom:14px"><label>Notes</label><textarea id="dp-mag-notes" placeholder="Recruiting notes, market context, etc."></textarea></div>
+        <button class="btn btnp" id="dp-mag-savebtn" onclick="saveDpMagazine()">Add magazine</button>
+        <button class="btn" id="dp-mag-cancelbtn" style="display:none" onclick="cancelDpMagazineEdit()">Cancel</button>
+      </div>
+      <div class="card">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px">
+          <div style="font-size:15px;font-weight:600">Your magazines</div>
+          <label style="font-size:12px;color:#666;display:flex;align-items:center;gap:6px"><input type="checkbox" id="dp-mag-unmanned-only" onchange="renderDpMagazines()" style="width:auto"/> Unmanned only</label>
+        </div>
+        <div class="card-scroll" style="border:none;box-shadow:none">
+          <table>
+            <thead><tr><th>Magazine</th><th>Publisher</th><th>Health</th><th>Days since sale</th><th>Last sale</th><th>Notes</th><th class="col-actions">Actions</th></tr></thead>
+            <tbody id="dp-mags-body"></tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <div class="divpg" id="divsub-touchpoints">
+      <div class="card">
+        <div style="font-size:15px;font-weight:600;margin-bottom:12px">Add a touchpoint</div>
+        <div class="fr">
+          <div class="fg"><label>About</label><select id="dp-tp-target-type" onchange="dpTouchpointTargetChanged()"><option value="person">A person</option><option value="magazine">A magazine (e.g. recruiting)</option></select></div>
+          <div class="fg"><label id="dp-tp-target-label">Person</label><select id="dp-tp-target"></select></div>
+        </div>
+        <div class="fr">
+          <div class="fg"><label>Due date</label><input id="dp-tp-due" type="date"/></div>
+          <div></div>
+        </div>
+        <div class="fg" style="margin-bottom:14px"><label>What needs to happen?</label><input id="dp-tp-title" placeholder="e.g. Monthly check-in call, Follow up with candidate"/></div>
+        <button class="btn btnp" onclick="addDpTouchpoint()">Add touchpoint</button>
+      </div>
+      <div class="card">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px">
+          <div style="font-size:15px;font-weight:600">Touchpoints</div>
+          <label style="font-size:12px;color:#666;display:flex;align-items:center;gap:6px"><input type="checkbox" id="dp-tp-show-done" onchange="renderDpTouchpoints()" style="width:auto"/> Show completed</label>
+        </div>
+        <div id="dp-tp-list"></div>
+      </div>
     </div>
   </div>
 
@@ -1098,6 +1209,290 @@ async function loadTasks(){
   renderTasks();
 }
 
+// ===================== My Division data (private, Dave only) =====================
+async function loadDivisionData(){
+  if(!isDivisionLeader)return;
+  var [peopleRes,magsRes,tpRes]=await Promise.all([
+    sbClient.from('division_people').select('*').order('name'),
+    sbClient.from('division_magazines').select('*').order('name'),
+    sbClient.from('division_touchpoints').select('*').order('due_date',{ascending:true,nullsFirst:false})
+  ]);
+  if(peopleRes.error){toast('Could not load people: '+peopleRes.error.message);return;}
+  if(magsRes.error){toast('Could not load magazines: '+magsRes.error.message);return;}
+  if(tpRes.error){toast('Could not load touchpoints: '+tpRes.error.message);return;}
+  dpPeople=peopleRes.data||[];
+  dpMagazines=magsRes.data||[];
+  dpTouchpoints=tpRes.data||[];
+  renderDivisionSummary();
+  renderDpPeople();
+  dpPopulatePersonSelects();
+  renderDpMagazines();
+  dpTouchpointTargetChanged();
+  renderDpTouchpoints();
+}
+
+function dpHealthOf(lastSaleDate){
+  if(!lastSaleDate)return{label:'No sales logged',color:'#888',bg:'#f0f0f0',days:null};
+  var days=Math.floor((new Date(todayStr()+'T00:00:00')-new Date(lastSaleDate+'T00:00:00'))/86400000);
+  if(days<0)days=0;
+  if(days<=21)return{label:'Green',color:'#1a7a45',bg:'#e6f7ec',days:days};
+  if(days<=33)return{label:'Yellow',color:'#8a6d00',bg:'#fff8e0',days:days};
+  if(days<=45)return{label:'Red',color:'#A32D2D',bg:'#fdeaea',days:days};
+  return{label:'Purple',color:'#5a2fc2',bg:'#f2ebfc',days:days};
+}
+
+function renderDivisionSummary(){
+  document.getElementById('dp-m-people').textContent=dpPeople.length;
+  document.getElementById('dp-m-mags').textContent=dpMagazines.length;
+  var unmanned=dpMagazines.filter(function(m){return!m.person_id;});
+  document.getElementById('dp-m-unmanned').textContent=unmanned.length;
+  var counts={Green:0,Yellow:0,Red:0,Purple:0};
+  dpMagazines.forEach(function(m){
+    var h=dpHealthOf(m.last_sale_date);
+    if(counts[h.label]!==undefined)counts[h.label]++;
+  });
+  document.getElementById('dp-h-green').textContent=counts.Green;
+  document.getElementById('dp-h-yellow').textContent=counts.Yellow;
+  document.getElementById('dp-h-red').textContent=counts.Red;
+  document.getElementById('dp-h-purple').textContent=counts.Purple;
+  document.getElementById('dp-m-atrisk').textContent=counts.Yellow+counts.Red+counts.Purple;
+}
+
+// --- People ---
+function renderDpPeople(){
+  document.getElementById('dp-people-body').innerHTML=dpPeople.map(function(p){
+    var magCount=dpMagazines.filter(function(m){return m.person_id===p.id;}).length;
+    return '<tr><td>'+p.name+'</td><td>'+p.role+'</td><td>'+(p.email||'&mdash;')+'</td><td>'+(p.phone||'&mdash;')+'</td><td>'+magCount+'</td>'
+      +'<td style="max-width:220px;font-size:12px;color:#666">'+(p.notes||'&mdash;')+'</td>'
+      +'<td class="col-actions"><button class="btn btnsm" onclick="editDpPerson(\''+p.id+'\')">Edit</button> <button class="btn btnsm btndanger" onclick="deleteDpPerson(\''+p.id+'\')">Delete</button></td></tr>';
+  }).join('')||'<tr><td colspan="7" style="color:#888;text-align:center;padding:16px">No one added yet.</td></tr>';
+}
+
+async function saveDpPerson(){
+  var name=document.getElementById('dp-person-name').value.trim();
+  if(!name){toast('Enter a name.');return;}
+  var row={
+    name:name,
+    role:document.getElementById('dp-person-role').value,
+    email:document.getElementById('dp-person-email').value.trim()||null,
+    phone:document.getElementById('dp-person-phone').value.trim()||null,
+    notes:document.getElementById('dp-person-notes').value.trim()||null
+  };
+  if(dpEditingPersonId){
+    var {error}=await sbClient.from('division_people').update(row).eq('id',dpEditingPersonId);
+    if(error){toast('Could not save: '+error.message);return;}
+    toast('Person updated!');
+  }else{
+    var {error}=await sbClient.from('division_people').insert(row);
+    if(error){toast('Could not add: '+error.message);return;}
+    toast('Person added!');
+  }
+  cancelDpPersonEdit();
+  await loadDivisionData();
+}
+
+function editDpPerson(id){
+  var p=dpPeople.find(function(x){return x.id===id;});
+  if(!p)return;
+  dpEditingPersonId=id;
+  document.getElementById('dp-person-name').value=p.name;
+  document.getElementById('dp-person-role').value=p.role;
+  document.getElementById('dp-person-email').value=p.email||'';
+  document.getElementById('dp-person-phone').value=p.phone||'';
+  document.getElementById('dp-person-notes').value=p.notes||'';
+  document.getElementById('dp-person-form-title').textContent='Edit person';
+  document.getElementById('dp-person-savebtn').textContent='Save changes';
+  document.getElementById('dp-person-cancelbtn').style.display='inline-block';
+  document.getElementById('dp-person-name').scrollIntoView({behavior:'smooth',block:'center'});
+}
+
+function cancelDpPersonEdit(){
+  dpEditingPersonId=null;
+  ['dp-person-name','dp-person-email','dp-person-phone','dp-person-notes'].forEach(function(id){document.getElementById(id).value='';});
+  document.getElementById('dp-person-role').value='Publisher';
+  document.getElementById('dp-person-form-title').textContent='Add a person';
+  document.getElementById('dp-person-savebtn').textContent='Add person';
+  document.getElementById('dp-person-cancelbtn').style.display='none';
+}
+
+async function deleteDpPerson(id){
+  var magCount=dpMagazines.filter(function(m){return m.person_id===id;}).length;
+  var msg=magCount?('This person has '+magCount+' magazine'+(magCount!==1?'s':'')+' assigned — they\'ll become unmanned. Delete anyway?'):'Delete this person?';
+  if(!confirm(msg))return;
+  var {error}=await sbClient.from('division_people').delete().eq('id',id);
+  if(error){toast('Could not delete: '+error.message);return;}
+  await loadDivisionData();
+}
+
+function dpPopulatePersonSelects(){
+  var opts='<option value="">&#x2014; Unmanned &#x2014;</option>'+dpPeople.map(function(p){return'<option value="'+p.id+'">'+p.name+' ('+p.role+')</option>';}).join('');
+  var magSel=document.getElementById('dp-mag-person');
+  var cur=magSel.value;
+  magSel.innerHTML=opts;
+  if(cur)magSel.value=cur;
+}
+
+// --- Magazines ---
+function renderDpMagazines(){
+  var unmannedOnly=document.getElementById('dp-mag-unmanned-only').checked;
+  var list=unmannedOnly?dpMagazines.filter(function(m){return!m.person_id;}):dpMagazines;
+  document.getElementById('dp-mags-body').innerHTML=list.map(function(m){
+    var p=dpPeople.find(function(x){return x.id===m.person_id;});
+    var h=dpHealthOf(m.last_sale_date);
+    var pubCell=p?p.name:'<span style="color:#A32D2D;font-weight:600">UNMANNED</span>';
+    return '<tr><td>'+m.name+'</td><td>'+pubCell+'</td>'
+      +'<td><span style="display:inline-block;padding:2px 10px;border-radius:99px;font-size:12px;font-weight:600;color:'+h.color+';background:'+h.bg+'">'+h.label+'</span></td>'
+      +'<td>'+(h.days===null?'&mdash;':h.days)+'</td>'
+      +'<td>'+(m.last_sale_date||'&mdash;')+'</td>'
+      +'<td style="max-width:200px;font-size:12px;color:#666">'+(m.notes||'&mdash;')+'</td>'
+      +'<td class="col-actions"><button class="btn btnsm" onclick="editDpMagazine(\''+m.id+'\')">Edit</button> <button class="btn btnsm btndanger" onclick="deleteDpMagazine(\''+m.id+'\')">Delete</button></td></tr>';
+  }).join('')||'<tr><td colspan="7" style="color:#888;text-align:center;padding:16px">No magazines added yet.</td></tr>';
+}
+
+async function saveDpMagazine(){
+  var name=document.getElementById('dp-mag-name').value.trim();
+  if(!name){toast('Enter a magazine name.');return;}
+  var row={
+    name:name,
+    person_id:document.getElementById('dp-mag-person').value||null,
+    last_sale_date:document.getElementById('dp-mag-lastsale').value||null,
+    notes:document.getElementById('dp-mag-notes').value.trim()||null
+  };
+  if(dpEditingMagazineId){
+    var {error}=await sbClient.from('division_magazines').update(row).eq('id',dpEditingMagazineId);
+    if(error){toast('Could not save: '+error.message);return;}
+    toast('Magazine updated!');
+  }else{
+    var {error}=await sbClient.from('division_magazines').insert(row);
+    if(error){toast('Could not add: '+error.message);return;}
+    toast('Magazine added!');
+  }
+  cancelDpMagazineEdit();
+  await loadDivisionData();
+}
+
+function editDpMagazine(id){
+  var m=dpMagazines.find(function(x){return x.id===id;});
+  if(!m)return;
+  dpEditingMagazineId=id;
+  document.getElementById('dp-mag-name').value=m.name;
+  document.getElementById('dp-mag-person').value=m.person_id||'';
+  document.getElementById('dp-mag-lastsale').value=m.last_sale_date||'';
+  document.getElementById('dp-mag-notes').value=m.notes||'';
+  document.getElementById('dp-mag-form-title').textContent='Edit magazine';
+  document.getElementById('dp-mag-savebtn').textContent='Save changes';
+  document.getElementById('dp-mag-cancelbtn').style.display='inline-block';
+  document.getElementById('dp-mag-name').scrollIntoView({behavior:'smooth',block:'center'});
+}
+
+function cancelDpMagazineEdit(){
+  dpEditingMagazineId=null;
+  document.getElementById('dp-mag-name').value='';
+  document.getElementById('dp-mag-person').value='';
+  document.getElementById('dp-mag-lastsale').value='';
+  document.getElementById('dp-mag-notes').value='';
+  document.getElementById('dp-mag-form-title').textContent='Add a magazine';
+  document.getElementById('dp-mag-savebtn').textContent='Add magazine';
+  document.getElementById('dp-mag-cancelbtn').style.display='none';
+}
+
+async function deleteDpMagazine(id){
+  if(!confirm('Delete this magazine?'))return;
+  var {error}=await sbClient.from('division_magazines').delete().eq('id',id);
+  if(error){toast('Could not delete: '+error.message);return;}
+  await loadDivisionData();
+}
+
+// --- Touchpoints ---
+function dpTouchpointTargetChanged(){
+  var type=document.getElementById('dp-tp-target-type').value;
+  var sel=document.getElementById('dp-tp-target');
+  document.getElementById('dp-tp-target-label').textContent=type==='person'?'Person':'Magazine';
+  if(type==='person'){
+    sel.innerHTML=dpPeople.map(function(p){return'<option value="'+p.id+'">'+p.name+'</option>';}).join('');
+  }else{
+    sel.innerHTML=dpMagazines.map(function(m){return'<option value="'+m.id+'">'+m.name+(m.person_id?'':' (unmanned)')+'</option>';}).join('');
+  }
+}
+
+function dpTargetLabel(tp){
+  if(tp.person_id){
+    var p=dpPeople.find(function(x){return x.id===tp.person_id;});
+    return p?p.name:'(deleted person)';
+  }
+  var m=dpMagazines.find(function(x){return x.id===tp.magazine_id;});
+  return m?(m.name+' (recruiting)'):'(deleted magazine)';
+}
+
+function dpTouchpointRowHTML(tp,compact){
+  var overdue=!tp.completed&&tp.due_date&&tp.due_date<todayStr();
+  var dueToday=!tp.completed&&tp.due_date===todayStr();
+  var color=tp.completed?'#aaa':overdue?'#A32D2D':dueToday?'#c95a1e':'#1a1a18';
+  return '<div style="display:flex;align-items:center;gap:10px;padding:'+(compact?'6px 0':'8px 0')+';border-bottom:1px solid #f0f2f5">'
+    +'<input type="checkbox" style="width:auto" '+(tp.completed?'checked':'')+' onchange="toggleDpTouchpoint(\''+tp.id+'\',this.checked)"/>'
+    +'<div style="flex:1;min-width:0">'
+      +'<div style="font-size:13px;color:'+color+';text-decoration:'+(tp.completed?'line-through':'none')+'">'+tp.title+'</div>'
+      +'<div style="font-size:11px;color:#888">'+dpTargetLabel(tp)+'</div>'
+    +'</div>'
+    +'<div style="font-size:11px;color:'+(overdue?'#A32D2D':'#888')+';white-space:nowrap">'+(tp.due_date||'No date')+'</div>'
+    +(compact?'':'<button class="btn btnsm btndanger" onclick="deleteDpTouchpoint(\''+tp.id+'\')">Delete</button>')
+    +'</div>';
+}
+
+function renderDpTouchpoints(){
+  var showDone=document.getElementById('dp-tp-show-done').checked;
+  var b=taskBuckets(dpTouchpoints);
+  var urgent=b.overdue.concat(b.today);
+  var badge=document.getElementById('dp-tp-badge');
+  if(urgent.length){badge.textContent=urgent.length;badge.style.display='inline-block';}
+  else badge.style.display='none';
+  var html='';
+  function section(title,list){
+    if(!list.length)return;
+    html+='<div style="font-size:12px;font-weight:600;color:#666;text-transform:uppercase;letter-spacing:.04em;margin:14px 0 4px">'+title+'</div>';
+    list.forEach(function(tp){html+=dpTouchpointRowHTML(tp,false);});
+  }
+  section('Overdue',b.overdue);
+  section('Due today',b.today);
+  section('Upcoming',b.upcoming);
+  section('No date',b.noDate);
+  if(showDone)section('Completed',b.done);
+  document.getElementById('dp-tp-list').innerHTML=html||'<div style="color:#888;font-size:13px;text-align:center;padding:20px">No touchpoints yet.</div>';
+}
+
+async function addDpTouchpoint(){
+  var type=document.getElementById('dp-tp-target-type').value;
+  var targetId=document.getElementById('dp-tp-target').value;
+  var title=document.getElementById('dp-tp-title').value.trim();
+  var due=document.getElementById('dp-tp-due').value||null;
+  if(!targetId){toast('Add a person or magazine first.');return;}
+  if(!title){toast('Enter what needs to happen.');return;}
+  var row={title:title,due_date:due};
+  row[type==='person'?'person_id':'magazine_id']=targetId;
+  var {error}=await sbClient.from('division_touchpoints').insert(row);
+  if(error){toast('Could not add: '+error.message);return;}
+  document.getElementById('dp-tp-title').value='';
+  document.getElementById('dp-tp-due').value='';
+  await loadDivisionData();
+  toast('Touchpoint added!');
+}
+
+async function toggleDpTouchpoint(id,checked){
+  var {error}=await sbClient.from('division_touchpoints').update({completed:checked,completed_at:checked?new Date().toISOString():null}).eq('id',id);
+  if(error){toast('Could not update: '+error.message);return;}
+  var tp=dpTouchpoints.find(function(x){return x.id===id;});
+  if(tp)tp.completed=checked;
+  renderDpTouchpoints();
+}
+
+async function deleteDpTouchpoint(id){
+  if(!confirm('Delete this touchpoint?'))return;
+  var {error}=await sbClient.from('division_touchpoints').delete().eq('id',id);
+  if(error){toast('Could not delete: '+error.message);return;}
+  dpTouchpoints=dpTouchpoints.filter(function(x){return x.id!==id;});
+  renderDpTouchpoints();
+}
+
 function leadLabel(id){
   var l=leads.find(function(x){return x.id===id;});
   return l?(l.name+' — '+l.company):'(deleted lead)';
@@ -1376,7 +1771,19 @@ function showTab(n,el){
   document.getElementById('tab-'+n).classList.add('on');el.classList.add('on');
   if(n==='metrics')mInit();
   if(n==='reports')renderReports();
+  if(n==='division')loadDivisionData();
 }
+
+function showDivSubTab(n,el){
+  document.querySelectorAll('.divpg').forEach(function(p){p.classList.remove('on');});
+  document.querySelectorAll('.divtab').forEach(function(t){t.classList.remove('on');});
+  document.getElementById('divsub-'+n).classList.add('on');el.classList.add('on');
+}
+
+// ===================== My Division (private) =====================
+var isDivisionLeader=false;
+var dpPeople=[],dpMagazines=[],dpTouchpoints=[];
+var dpEditingPersonId=null,dpEditingMagazineId=null;
 
 // ===================== Reports =====================
 function getViewLeads(){
@@ -1763,6 +2170,9 @@ async function afterLogin(user){
   document.getElementById('app-shell').style.display='block';
   document.getElementById('app-who').textContent=user.email;
   mIsAdmin=!!(profile&&profile.is_admin);
+  isDivisionLeader=(user.email==='dmarotta@bestversionmedia.com');
+  document.getElementById('tab-btn-division').style.display=isDivisionLeader?'':'none';
+  document.getElementById('division-sep').style.display=isDivisionLeader?'':'none';
   document.getElementById('m-team-card').style.display=mIsAdmin?'block':'none';
   document.getElementById('th-owner').style.display=mIsAdmin?'':'none';
   document.getElementById('ef-owner-row').style.display=mIsAdmin?'flex':'none';
