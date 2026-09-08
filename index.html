@@ -495,21 +495,10 @@
         <span id="dp-pulse-status" style="font-size:12px;color:#666;margin-left:10px"></span>
       </div>
       <div class="card">
-        <div style="font-size:15px;font-weight:600;margin-bottom:12px" id="dp-person-form-title">Add a person</div>
-        <div class="fr">
-          <div class="fg"><label>Name</label><input id="dp-person-name" placeholder="Full name"/></div>
-          <div class="fg"><label>Role</label><select id="dp-person-role"><option>Publisher</option><option>Flip Publisher</option><option>Associate Publisher</option><option>Market Leader</option><option>Associate Market Leader</option></select></div>
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px">
+          <div style="font-size:15px;font-weight:600">Your people</div>
+          <button class="btn btnp btnsm" onclick="openDpAddPerson()">+ Add person</button>
         </div>
-        <div class="fr">
-          <div class="fg"><label>Email</label><input id="dp-person-email" placeholder="jane@example.com"/></div>
-          <div class="fg"><label>Phone</label><input id="dp-person-phone" placeholder="(973) 555-0100"/></div>
-        </div>
-        <div class="fg" style="margin-bottom:14px"><label>Notes</label><textarea id="dp-person-notes" placeholder="Anything worth remembering about them"></textarea></div>
-        <button class="btn btnp" id="dp-person-savebtn" onclick="saveDpPerson()">Add person</button>
-        <button class="btn" id="dp-person-cancelbtn" style="display:none" onclick="cancelDpPersonEdit()">Cancel</button>
-      </div>
-      <div class="card">
-        <div style="font-size:15px;font-weight:600;margin-bottom:12px">Your people</div>
         <div class="card-scroll" style="border:none;box-shadow:none">
           <table>
             <thead><tr><th>Name</th><th class="sortable" onclick="setDpPersonSort('role')" style="cursor:pointer;user-select:none">Role<span id="dp-psort-arrow-role"></span></th><th class="sortable" onclick="setDpPersonSort('health')" style="cursor:pointer;user-select:none">Personal health<span id="dp-psort-arrow-health"></span></th><th>Email</th><th>Phone</th><th># Magazines</th><th>Notes</th><th class="col-actions">Actions</th></tr></thead>
@@ -585,21 +574,55 @@
     </div>
   </div>
 
+  <div class="overlay" id="dp-add-person-modal" onclick="if(event.target===this)closeDpAddPerson()">
+    <div class="modal" style="max-width:420px">
+      <div style="font-size:16px;font-weight:700;color:var(--navy);margin-bottom:14px">Add a person</div>
+      <div class="fg"><label>Name</label><input id="dp-add-name" placeholder="Full name"/></div>
+      <div class="fg"><label>Role</label><select id="dp-add-role"><option>Publisher</option><option>Flip Publisher</option><option>Associate Publisher</option><option>Market Leader</option><option>Associate Market Leader</option></select></div>
+      <div class="fg"><label>Email</label><input id="dp-add-email" placeholder="jane@example.com"/></div>
+      <div class="fg"><label>Phone</label><input id="dp-add-phone" placeholder="(973) 555-0100"/></div>
+      <div class="fg" style="margin-bottom:14px"><label>Notes</label><textarea id="dp-add-notes" placeholder="Anything worth remembering about them"></textarea></div>
+      <div style="display:flex;gap:8px;justify-content:flex-end">
+        <button class="btn" onclick="closeDpAddPerson()">Cancel</button>
+        <button class="btn btnp" onclick="saveDpAddPerson()">Add person</button>
+      </div>
+    </div>
+  </div>
+
   <div class="overlay" id="dp-person-detail-modal" onclick="if(event.target===this)closeDpPersonDetail()">
     <div class="modal" style="max-width:560px;max-height:85vh;overflow-y:auto">
-      <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:4px">
-        <div>
-          <div style="font-size:18px;font-weight:700;color:var(--navy)" id="dpd-name"></div>
-          <div style="font-size:12px;color:#888" id="dpd-role"></div>
+      <div id="dpd-view">
+        <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:4px">
+          <div>
+            <div style="font-size:18px;font-weight:700;color:var(--navy)" id="dpd-name"></div>
+            <div style="font-size:12px;color:#888" id="dpd-role"></div>
+          </div>
+          <div style="display:flex;gap:6px">
+            <button class="btn btnsm" onclick="startDpPersonEdit()">Edit</button>
+            <button class="btn btnsm" onclick="closeDpPersonDetail()">Close</button>
+          </div>
         </div>
-        <div style="display:flex;gap:6px">
-          <button class="btn btnsm" onclick="editDpPersonFromDetail()">Edit</button>
-          <button class="btn btnsm" onclick="closeDpPersonDetail()">Close</button>
+        <div style="font-size:13px;color:#555;margin:10px 0 4px" id="dpd-contact"></div>
+        <div style="margin-bottom:4px" id="dpd-personal-health"></div>
+        <div style="font-size:13px;color:#666;margin-bottom:16px" id="dpd-notes"></div>
+      </div>
+
+      <div id="dpd-edit-form" style="display:none;margin-bottom:16px">
+        <div style="font-size:16px;font-weight:700;color:var(--navy);margin-bottom:12px">Edit person</div>
+        <div class="fr">
+          <div class="fg"><label>Name</label><input id="dpd-edit-name"/></div>
+          <div class="fg"><label>Role</label><select id="dpd-edit-role"><option>Publisher</option><option>Flip Publisher</option><option>Associate Publisher</option><option>Market Leader</option><option>Associate Market Leader</option></select></div>
+        </div>
+        <div class="fr">
+          <div class="fg"><label>Email</label><input id="dpd-edit-email"/></div>
+          <div class="fg"><label>Phone</label><input id="dpd-edit-phone"/></div>
+        </div>
+        <div class="fg" style="margin-bottom:10px"><label>Notes</label><textarea id="dpd-edit-notes"></textarea></div>
+        <div style="display:flex;gap:8px;justify-content:flex-end">
+          <button class="btn" onclick="cancelDpPersonEditInline()">Cancel</button>
+          <button class="btn btnp" onclick="saveDpPersonEditInline()">Save changes</button>
         </div>
       </div>
-      <div style="font-size:13px;color:#555;margin:10px 0 4px" id="dpd-contact"></div>
-      <div style="margin-bottom:4px" id="dpd-personal-health"></div>
-      <div style="font-size:13px;color:#666;margin-bottom:16px" id="dpd-notes"></div>
 
       <div style="font-size:13px;font-weight:600;color:var(--navy);margin-bottom:8px">Magazines</div>
       <div id="dpd-magazines" style="margin-bottom:16px"></div>
@@ -1360,55 +1383,76 @@ function renderDpPeople(){
     var healthCell=p.last_sale_date?('<span style="display:inline-block;padding:2px 10px;border-radius:99px;font-size:12px;font-weight:600;color:'+h.color+';background:'+h.bg+'">'+h.label+' &middot; '+h.days+'d</span>'):'<span style="color:#aaa;font-size:12px">&mdash;</span>';
     return '<tr><td><a href="#" onclick="event.preventDefault();openDpPersonDetail(\''+p.id+'\')" style="color:var(--navy);font-weight:600;text-decoration:none">'+p.name+'</a></td><td>'+p.role+'</td><td>'+healthCell+'</td><td>'+(p.email||'&mdash;')+'</td><td>'+(p.phone||'&mdash;')+'</td><td>'+magCount+'</td>'
       +'<td style="max-width:220px;font-size:12px;color:#666">'+(p.notes||'&mdash;')+'</td>'
-      +'<td class="col-actions"><button class="btn btnsm" onclick="editDpPerson(\''+p.id+'\')">Edit</button> <button class="btn btnsm btndanger" onclick="deleteDpPerson(\''+p.id+'\')">Delete</button></td></tr>';
+      +'<td class="col-actions"><button class="btn btnsm" onclick="openDpPersonDetailInEditMode(\''+p.id+'\')">Edit</button> <button class="btn btnsm btndanger" onclick="deleteDpPerson(\''+p.id+'\')">Delete</button></td></tr>';
   }).join('')||'<tr><td colspan="8" style="color:#888;text-align:center;padding:16px">No one added yet.</td></tr>';
 }
 
-async function saveDpPerson(){
-  var name=document.getElementById('dp-person-name').value.trim();
+function openDpAddPerson(){
+  document.getElementById('dp-add-name').value='';
+  document.getElementById('dp-add-role').value='Publisher';
+  document.getElementById('dp-add-email').value='';
+  document.getElementById('dp-add-phone').value='';
+  document.getElementById('dp-add-notes').value='';
+  document.getElementById('dp-add-person-modal').classList.add('on');
+}
+
+function closeDpAddPerson(){
+  document.getElementById('dp-add-person-modal').classList.remove('on');
+}
+
+async function saveDpAddPerson(){
+  var name=document.getElementById('dp-add-name').value.trim();
   if(!name){toast('Enter a name.');return;}
+  var phoneRaw=document.getElementById('dp-add-phone').value.trim();
   var row={
     name:name,
-    role:document.getElementById('dp-person-role').value,
-    email:document.getElementById('dp-person-email').value.trim()||null,
-    phone:document.getElementById('dp-person-phone').value.trim()||null,
-    notes:document.getElementById('dp-person-notes').value.trim()||null
+    role:document.getElementById('dp-add-role').value,
+    email:document.getElementById('dp-add-email').value.trim()||null,
+    phone:phoneRaw?normalizePhone(phoneRaw):null,
+    notes:document.getElementById('dp-add-notes').value.trim()||null
   };
-  if(dpEditingPersonId){
-    var {error}=await sbClient.from('division_people').update(row).eq('id',dpEditingPersonId);
-    if(error){toast('Could not save: '+error.message);return;}
-    toast('Person updated!');
-  }else{
-    var {error}=await sbClient.from('division_people').insert(row);
-    if(error){toast('Could not add: '+error.message);return;}
-    toast('Person added!');
-  }
-  cancelDpPersonEdit();
+  var {error}=await sbClient.from('division_people').insert(row);
+  if(error){toast('Could not add: '+error.message);return;}
+  toast('Person added!');
+  closeDpAddPerson();
   await loadDivisionData();
 }
 
-function editDpPerson(id){
-  var p=dpPeople.find(function(x){return x.id===id;});
+function startDpPersonEdit(){
+  var p=dpPeople.find(function(x){return x.id===dpDetailPersonId;});
   if(!p)return;
-  dpEditingPersonId=id;
-  document.getElementById('dp-person-name').value=p.name;
-  document.getElementById('dp-person-role').value=p.role;
-  document.getElementById('dp-person-email').value=p.email||'';
-  document.getElementById('dp-person-phone').value=p.phone||'';
-  document.getElementById('dp-person-notes').value=p.notes||'';
-  document.getElementById('dp-person-form-title').textContent='Edit person';
-  document.getElementById('dp-person-savebtn').textContent='Save changes';
-  document.getElementById('dp-person-cancelbtn').style.display='inline-block';
-  document.getElementById('dp-person-name').scrollIntoView({behavior:'smooth',block:'center'});
+  document.getElementById('dpd-edit-name').value=p.name;
+  document.getElementById('dpd-edit-role').value=p.role;
+  document.getElementById('dpd-edit-email').value=p.email||'';
+  document.getElementById('dpd-edit-phone').value=p.phone||'';
+  document.getElementById('dpd-edit-notes').value=p.notes||'';
+  document.getElementById('dpd-view').style.display='none';
+  document.getElementById('dpd-edit-form').style.display='block';
 }
 
-function cancelDpPersonEdit(){
-  dpEditingPersonId=null;
-  ['dp-person-name','dp-person-email','dp-person-phone','dp-person-notes'].forEach(function(id){document.getElementById(id).value='';});
-  document.getElementById('dp-person-role').value='Publisher';
-  document.getElementById('dp-person-form-title').textContent='Add a person';
-  document.getElementById('dp-person-savebtn').textContent='Add person';
-  document.getElementById('dp-person-cancelbtn').style.display='none';
+function cancelDpPersonEditInline(){
+  document.getElementById('dpd-edit-form').style.display='none';
+  document.getElementById('dpd-view').style.display='block';
+}
+
+async function saveDpPersonEditInline(){
+  var name=document.getElementById('dpd-edit-name').value.trim();
+  if(!name){toast('Enter a name.');return;}
+  var phoneRaw=document.getElementById('dpd-edit-phone').value.trim();
+  var row={
+    name:name,
+    role:document.getElementById('dpd-edit-role').value,
+    email:document.getElementById('dpd-edit-email').value.trim()||null,
+    phone:phoneRaw?normalizePhone(phoneRaw):null,
+    notes:document.getElementById('dpd-edit-notes').value.trim()||null
+  };
+  var {error}=await sbClient.from('division_people').update(row).eq('id',dpDetailPersonId);
+  if(error){toast('Could not save: '+error.message);return;}
+  var p=dpPeople.find(function(x){return x.id===dpDetailPersonId;});
+  if(p)Object.assign(p,row);
+  toast('Person updated!');
+  renderDpPeople();
+  openDpPersonDetail(dpDetailPersonId);
 }
 
 async function deleteDpPerson(id){
@@ -1718,6 +1762,8 @@ function openDpPersonDetail(id){
   var p=dpPeople.find(function(x){return x.id===id;});
   if(!p)return;
   dpDetailPersonId=id;
+  document.getElementById('dpd-view').style.display='block';
+  document.getElementById('dpd-edit-form').style.display='none';
   document.getElementById('dpd-name').textContent=p.name;
   document.getElementById('dpd-role').textContent='Role: '+p.role;
   document.getElementById('dpd-contact').textContent=[p.email,p.phone].filter(Boolean).join('   •   ')||'No contact info on file.';
@@ -1755,13 +1801,9 @@ function closeDpPersonDetail(){
   dpDetailPersonId=null;
 }
 
-function editDpPersonFromDetail(){
-  var id=dpDetailPersonId;
-  if(!id)return;
-  closeDpPersonDetail();
-  var peopleTabBtn=document.querySelector('.divtab[onclick*="showDivSubTab(\'people\'"]');
-  if(peopleTabBtn)showDivSubTab('people',peopleTabBtn);
-  editDpPerson(id);
+function openDpPersonDetailInEditMode(id){
+  openDpPersonDetail(id);
+  startDpPersonEdit();
 }
 
 async function addDpTouchpointFromDetail(){
@@ -2163,7 +2205,7 @@ function showDivSubTab(n,el){
 // ===================== My Division (private) =====================
 var isDivisionLeader=false;
 var dpPeople=[],dpMagazines=[],dpTouchpoints=[];
-var dpEditingPersonId=null,dpEditingMagazineId=null,dpDetailPersonId=null;
+var dpEditingMagazineId=null,dpDetailPersonId=null;
 
 // ===================== Reports =====================
 function getViewLeads(){
