@@ -470,20 +470,24 @@
       <div class="mc"><div class="ml" style="color:#8a6d00">Yellow + Red + Purple</div><div class="mv" id="dp-m-atrisk" style="color:#8a6d00">&#x2014;</div></div>
     </div>
 
-    <div style="font-size:12px;font-weight:600;color:#888;text-transform:uppercase;letter-spacing:.04em;margin:4px 0 6px">Magazines &mdash; by days since last sale</div>
-    <div class="metrics">
-      <div class="mc" style="border-top:3px solid #1a7a45"><div class="ml" style="color:#1a7a45">Green</div><div class="mv" id="dp-h-green" style="color:#1a7a45">&#x2014;</div></div>
-      <div class="mc" style="border-top:3px solid #c99a00"><div class="ml" style="color:#8a6d00">Yellow</div><div class="mv" id="dp-h-yellow" style="color:#8a6d00">&#x2014;</div></div>
-      <div class="mc" style="border-top:3px solid #A32D2D"><div class="ml" style="color:#A32D2D">Red</div><div class="mv" id="dp-h-red" style="color:#A32D2D">&#x2014;</div></div>
-      <div class="mc" style="border-top:3px solid #5a2fc2"><div class="ml" style="color:#5a2fc2">Purple</div><div class="mv" id="dp-h-purple" style="color:#5a2fc2">&#x2014;</div></div>
+    <div class="card" style="margin-bottom:20px">
+      <div style="font-size:13px;font-weight:600;color:var(--navy);margin-bottom:10px">Health breakdown (by magazine, days since last sale)</div>
+      <div style="display:flex;gap:18px;flex-wrap:wrap;font-size:13px">
+        <div><span style="display:inline-block;width:10px;height:10px;border-radius:50%;background:#1a7a45;margin-right:6px"></span>Green (0&ndash;21 days): <b id="dp-h-green">0</b></div>
+        <div><span style="display:inline-block;width:10px;height:10px;border-radius:50%;background:#c99a00;margin-right:6px"></span>Yellow (22&ndash;33 days): <b id="dp-h-yellow">0</b></div>
+        <div><span style="display:inline-block;width:10px;height:10px;border-radius:50%;background:#A32D2D;margin-right:6px"></span>Red (34&ndash;45 days): <b id="dp-h-red">0</b></div>
+        <div><span style="display:inline-block;width:10px;height:10px;border-radius:50%;background:#5a2fc2;margin-right:6px"></span>Purple (46+ days): <b id="dp-h-purple">0</b></div>
+      </div>
     </div>
 
-    <div style="font-size:12px;font-weight:600;color:#888;text-transform:uppercase;letter-spacing:.04em;margin:16px 0 6px">People &mdash; by their own last sale</div>
-    <div class="metrics" style="margin-bottom:20px">
-      <div class="mc" style="border-top:3px solid #1a7a45"><div class="ml" style="color:#1a7a45">Green</div><div class="mv" id="dp-pm-green" style="color:#1a7a45">&#x2014;</div></div>
-      <div class="mc" style="border-top:3px solid #c99a00"><div class="ml" style="color:#8a6d00">Yellow</div><div class="mv" id="dp-pm-yellow" style="color:#8a6d00">&#x2014;</div></div>
-      <div class="mc" style="border-top:3px solid #A32D2D"><div class="ml" style="color:#A32D2D">Red</div><div class="mv" id="dp-pm-red" style="color:#A32D2D">&#x2014;</div></div>
-      <div class="mc" style="border-top:3px solid #5a2fc2"><div class="ml" style="color:#5a2fc2">Purple</div><div class="mv" id="dp-pm-purple" style="color:#5a2fc2">&#x2014;</div></div>
+    <div class="card" style="margin-bottom:20px">
+      <div style="font-size:13px;font-weight:600;color:var(--navy);margin-bottom:10px">Health breakdown (by person, their own last sale)</div>
+      <div style="display:flex;gap:18px;flex-wrap:wrap;font-size:13px">
+        <div><span style="display:inline-block;width:10px;height:10px;border-radius:50%;background:#1a7a45;margin-right:6px"></span>Green (0&ndash;21 days): <b id="dp-pm-green">0</b></div>
+        <div><span style="display:inline-block;width:10px;height:10px;border-radius:50%;background:#c99a00;margin-right:6px"></span>Yellow (22&ndash;33 days): <b id="dp-pm-yellow">0</b></div>
+        <div><span style="display:inline-block;width:10px;height:10px;border-radius:50%;background:#A32D2D;margin-right:6px"></span>Red (34&ndash;45 days): <b id="dp-pm-red">0</b></div>
+        <div><span style="display:inline-block;width:10px;height:10px;border-radius:50%;background:#5a2fc2;margin-right:6px"></span>Purple (46+ days): <b id="dp-pm-purple">0</b></div>
+      </div>
     </div>
 
     <div class="tabs">
