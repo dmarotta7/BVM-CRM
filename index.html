@@ -503,6 +503,7 @@
       <button class="divtab" onclick="showDivSubTab('magazines',this)">Magazines</button>
       <button class="divtab" onclick="showDivSubTab('touchpoints',this)">Touchpoints <span id="dp-tp-badge" style="display:none;background:#e86a2a;color:#fff;border-radius:99px;padding:1px 7px;font-size:11px;margin-left:4px"></span></button>
       <button class="divtab" onclick="showDivSubTab('reports',this)">Reports</button>
+      <button class="divtab" onclick="showDivSubTab('email',this)">Email</button>
     </div>
 
     <div class="divpg on" id="divsub-people">
@@ -602,6 +603,40 @@
             <tbody id="dp-report-body"></tbody>
           </table>
         </div>
+      </div>
+    </div>
+
+    <div class="divpg" id="divsub-email">
+      <div class="card">
+        <div style="font-size:15px;font-weight:600;margin-bottom:6px">Choose recipients</div>
+        <div style="font-size:12px;color:#888;margin-bottom:10px">Only people with an email on file are listed. <span id="dp-email-noemail-note"></span></div>
+        <div style="margin-bottom:10px">
+          <button class="btn btnsm" onclick="dpSelectAllEmailRecipients(true)">Select all</button>
+          <button class="btn btnsm" onclick="dpSelectAllEmailRecipients(false)">Select none</button>
+          <span style="font-size:12px;color:#666;margin-left:8px" id="dp-email-selected-count"></span>
+        </div>
+        <div id="dp-email-recipients" style="max-height:220px;overflow-y:auto;border:1px solid #eee;border-radius:8px;padding:8px 12px"></div>
+      </div>
+
+      <div class="card">
+        <div style="font-size:15px;font-weight:600;margin-bottom:12px">Draft with AI</div>
+        <div class="fg" style="margin-bottom:10px"><label>What's this email about?</label><textarea id="dp-email-instruction" placeholder="e.g. Encourage everyone to push hard to close out the month strong, remind them the deadline is Friday"></textarea></div>
+        <button class="btn btnp" onclick="dpGenerateGroupEmail()">Generate draft</button>
+        <span id="dp-email-gen-status" style="font-size:12px;color:#666;margin-left:10px"></span>
+      </div>
+
+      <div class="card" id="dp-email-draft-card" style="display:none">
+        <div style="font-size:15px;font-weight:600;margin-bottom:12px">Review &amp; send</div>
+        <div class="fg"><label>Subject</label><input id="dp-email-subject"/></div>
+        <div class="fg" style="margin-bottom:14px"><label>Body</label><textarea id="dp-email-body" style="min-height:220px"></textarea></div>
+        <div style="font-size:12px;color:#888;margin-bottom:12px">Edit freely before sending &mdash; nothing is sent automatically.</div>
+        <div style="display:flex;gap:8px;flex-wrap:wrap">
+          <button class="btn btnp" onclick="dpOpenMailto()">Open in Mail app</button>
+          <button class="btn" onclick="dpCopyRecipientEmails()">Copy recipient emails</button>
+          <button class="btn" onclick="dpCopySubject()">Copy subject</button>
+          <button class="btn" onclick="dpCopyBody()">Copy body</button>
+        </div>
+        <div style="font-size:11px;color:#aaa;margin-top:10px">If "Open in Mail app" doesn't include everyone (some mail apps limit how many addresses a link can carry), use the copy buttons instead and paste the recipients into BCC yourself.</div>
       </div>
     </div>
   </div>
@@ -1362,6 +1397,7 @@ async function loadDivisionData(){
   renderDpTouchpointWidget();
   dpPopulateReportPersonFilter();
   renderDpReports();
+  dpRenderEmailRecipients();
 }
 
 function dpHealthOf(lastSaleDate){
@@ -1985,6 +2021,92 @@ function exportDpReportExcel(){
   var datestamp=new Date().toISOString().slice(0,10);
   XLSX.writeFile(wb,'division_touchpoints_'+datestamp+'.xlsx');
   toast('Excel file downloaded!');
+}
+
+// --- Email my people ---
+function dpRenderEmailRecipients(){
+  var withEmail=dpPeople.filter(function(p){return p.email;});
+  var withoutCount=dpPeople.length-withEmail.length;
+  document.getElementById('dp-email-noemail-note').textContent=withoutCount?(withoutCount+' of your people have no email on file and are excluded.'):'';
+  document.getElementById('dp-email-recipients').innerHTML=withEmail.map(function(p){
+    return '<label style="display:flex;align-items:center;gap:8px;padding:5px 0;font-size:13px;border-bottom:1px solid #f5f5f2">'
+      +'<input type="checkbox" class="dp-email-recip-cb" value="'+p.id+'" checked onchange="dpUpdateEmailSelectedCount()" style="width:auto"/>'
+      +'<span style="flex:1">'+p.name+'</span><span style="color:#888;font-size:11px">'+p.role+'</span>'
+      +'</label>';
+  }).join('')||'<div style="color:#aaa;font-size:13px;padding:6px 0">No one has an email on file yet.</div>';
+  dpUpdateEmailSelectedCount();
+}
+
+function dpSelectAllEmailRecipients(checked){
+  document.querySelectorAll('.dp-email-recip-cb').forEach(function(cb){cb.checked=checked;});
+  dpUpdateEmailSelectedCount();
+}
+
+function dpUpdateEmailSelectedCount(){
+  var n=document.querySelectorAll('.dp-email-recip-cb:checked').length;
+  document.getElementById('dp-email-selected-count').textContent=n+' selected';
+}
+
+function dpGetSelectedEmailRecipients(){
+  var ids=Array.from(document.querySelectorAll('.dp-email-recip-cb:checked')).map(function(cb){return cb.value;});
+  return dpPeople.filter(function(p){return ids.indexOf(p.id)>=0&&p.email;});
+}
+
+async function dpGenerateGroupEmail(){
+  var instruction=document.getElementById('dp-email-instruction').value.trim();
+  if(!instruction){toast('Describe what the email should say.');return;}
+  var recipients=dpGetSelectedEmailRecipients();
+  if(!recipients.length){toast('Select at least one recipient.');return;}
+  var statusEl=document.getElementById('dp-email-gen-status');
+  statusEl.textContent='Generating...';
+  var prompt='You are drafting a single email from a Division Leader to his team of magazine publishers and market leaders.\n'
+    +'Instruction: '+instruction+'\n'
+    +'Recipients hold roles like: '+Array.from(new Set(recipients.map(function(r){return r.role;}))).join(', ')+'.\n'
+    +'Return ONLY a valid JSON object with two fields: subject (string) and body (string, plain text, no markdown, warm but professional tone, sign off as "Dave"). No code fences, no commentary, raw JSON only.';
+  try{
+    var txt=await callAI(prompt,'claude');
+    if(!txt){statusEl.textContent='';return;}
+    txt=txt.replace(/```[a-z]*/g,'').replace(/```/g,'').trim();
+    var draft=JSON.parse(txt);
+    document.getElementById('dp-email-subject').value=draft.subject||'';
+    document.getElementById('dp-email-body').value=draft.body||'';
+    document.getElementById('dp-email-draft-card').style.display='block';
+    statusEl.textContent='';
+    toast('Draft generated \u2014 review before sending!');
+  }catch(e){
+    statusEl.textContent='';
+    toast('Could not generate: '+e.message);
+  }
+}
+
+function dpCopyRecipientEmails(){
+  var emails=dpGetSelectedEmailRecipients().map(function(p){return p.email;}).join(', ');
+  navigator.clipboard.writeText(emails);
+  toast('Recipient emails copied!');
+}
+
+function dpCopySubject(){
+  navigator.clipboard.writeText(document.getElementById('dp-email-subject').value);
+  toast('Subject copied!');
+}
+
+function dpCopyBody(){
+  navigator.clipboard.writeText(document.getElementById('dp-email-body').value);
+  toast('Body copied!');
+}
+
+function dpOpenMailto(){
+  var recipients=dpGetSelectedEmailRecipients();
+  if(!recipients.length){toast('Select at least one recipient.');return;}
+  var subject=document.getElementById('dp-email-subject').value;
+  var body=document.getElementById('dp-email-body').value;
+  var bcc=recipients.map(function(p){return p.email;}).join(',');
+  var link='mailto:?bcc='+encodeURIComponent(bcc)+'&subject='+encodeURIComponent(subject)+'&body='+encodeURIComponent(body);
+  if(link.length>1800){
+    toast('That\'s a lot of recipients \u2014 use the copy buttons instead so nothing gets cut off.');
+    return;
+  }
+  window.location.href=link;
 }
 
 function renderDpTouchpoints(){
