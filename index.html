@@ -502,6 +502,7 @@
       <button class="divtab on" onclick="showDivSubTab('people',this)">People</button>
       <button class="divtab" onclick="showDivSubTab('magazines',this)">Magazines</button>
       <button class="divtab" onclick="showDivSubTab('touchpoints',this)">Touchpoints <span id="dp-tp-badge" style="display:none;background:#e86a2a;color:#fff;border-radius:99px;padding:1px 7px;font-size:11px;margin-left:4px"></span></button>
+      <button class="divtab" onclick="showDivSubTab('reports',this)">Reports</button>
     </div>
 
     <div class="divpg on" id="divsub-people">
@@ -575,6 +576,32 @@
           <label style="font-size:12px;color:#666;display:flex;align-items:center;gap:6px"><input type="checkbox" id="dp-tp-show-done" onchange="renderDpTouchpoints()" style="width:auto"/> Show completed</label>
         </div>
         <div id="dp-tp-list"></div>
+      </div>
+    </div>
+
+    <div class="divpg" id="divsub-reports">
+      <div class="card">
+        <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:10px;margin-bottom:12px">
+          <div style="font-size:15px;font-weight:600">Touchpoint log</div>
+          <div style="display:flex;align-items:center;gap:10px">
+            <select id="dp-report-person-filter" onchange="renderDpReports()" style="padding:6px 10px;border-radius:8px;border:1px solid #d5d5cf;font-size:13px;font-family:inherit">
+              <option value="">Everyone</option>
+            </select>
+            <select id="dp-report-status-filter" onchange="renderDpReports()" style="padding:6px 10px;border-radius:8px;border:1px solid #d5d5cf;font-size:13px;font-family:inherit">
+              <option value="">All statuses</option>
+              <option value="completed">Completed only</option>
+              <option value="open">Open only</option>
+            </select>
+            <button class="btn btnp btnsm" onclick="exportDpReportExcel()">Export to Excel</button>
+          </div>
+        </div>
+        <div style="font-size:12px;color:#888;margin-bottom:12px">Who a touchpoint was about, what it was, and when it was due or completed &mdash; sorted most recent first.</div>
+        <div class="card-scroll" style="border:none;box-shadow:none">
+          <table>
+            <thead><tr><th>Who</th><th>Type</th><th>What</th><th>Due date</th><th>Completed</th><th>Status</th></tr></thead>
+            <tbody id="dp-report-body"></tbody>
+          </table>
+        </div>
       </div>
     </div>
   </div>
@@ -1333,6 +1360,8 @@ async function loadDivisionData(){
   dpTouchpointTargetChanged();
   renderDpTouchpoints();
   renderDpTouchpointWidget();
+  dpPopulateReportPersonFilter();
+  renderDpReports();
 }
 
 function dpHealthOf(lastSaleDate){
@@ -1900,6 +1929,64 @@ function renderDpTouchpointWidget(){
     ||'<div style="color:#888;font-size:13px">Nothing due.</div>';
 }
 
+// --- Reports: touchpoint log + Excel export ---
+function dpPopulateReportPersonFilter(){
+  var sel=document.getElementById('dp-report-person-filter');
+  var cur=sel.value;
+  sel.innerHTML='<option value="">Everyone</option>'+dpPeople.map(function(p){return'<option value="'+p.id+'">'+p.name+'</option>';}).join('');
+  if(cur)sel.value=cur;
+}
+
+function dpReportRows(){
+  var personFilter=document.getElementById('dp-report-person-filter').value;
+  var statusFilter=document.getElementById('dp-report-status-filter').value;
+  var rows=dpTouchpoints.filter(function(tp){
+    if(personFilter&&tp.person_id!==personFilter)return false;
+    if(statusFilter==='completed'&&!tp.completed)return false;
+    if(statusFilter==='open'&&tp.completed)return false;
+    return true;
+  });
+  rows.sort(function(a,b){
+    var av=a.completed_at||a.due_date||a.created_at||'';
+    var bv=b.completed_at||b.due_date||b.created_at||'';
+    return bv.localeCompare(av);
+  });
+  return rows;
+}
+
+function renderDpReports(){
+  var rows=dpReportRows();
+  document.getElementById('dp-report-body').innerHTML=rows.map(function(tp){
+    var completedStr=tp.completed&&tp.completed_at?new Date(tp.completed_at).toLocaleDateString():'&mdash;';
+    var statusBadge=tp.completed
+      ?'<span style="color:#1a7a45;font-weight:600">Completed</span>'
+      :'<span style="color:#8a6d00;font-weight:600">Open</span>';
+    return '<tr><td>'+dpTargetLabel(tp)+'</td><td>'+(tp.type||'Other')+'</td><td>'+tp.title+'</td><td>'+(tp.due_date||'&mdash;')+'</td><td>'+completedStr+'</td><td>'+statusBadge+'</td></tr>';
+  }).join('')||'<tr><td colspan="6" style="color:#888;text-align:center;padding:16px">No touchpoints match this filter.</td></tr>';
+}
+
+function exportDpReportExcel(){
+  var rows=dpReportRows();
+  if(!rows.length){toast('Nothing to export with this filter.');return;}
+  var hdr=['Who','Type','What','Due Date','Completed Date','Status'];
+  var dataRows=rows.map(function(tp){
+    return[
+      dpTargetLabel(tp).replace(' (recruiting)',''),
+      tp.type||'Other',
+      tp.title,
+      tp.due_date||'',
+      tp.completed&&tp.completed_at?new Date(tp.completed_at).toISOString().slice(0,10):'',
+      tp.completed?'Completed':'Open'
+    ];
+  });
+  var ws=XLSX.utils.aoa_to_sheet([hdr].concat(dataRows));
+  var wb=XLSX.utils.book_new();
+  XLSX.utils.book_append_sheet(wb,ws,'Touchpoints');
+  var datestamp=new Date().toISOString().slice(0,10);
+  XLSX.writeFile(wb,'division_touchpoints_'+datestamp+'.xlsx');
+  toast('Excel file downloaded!');
+}
+
 function renderDpTouchpoints(){
   var showDone=document.getElementById('dp-tp-show-done').checked;
   var b=taskBuckets(dpTouchpoints);
@@ -1946,6 +2033,7 @@ async function toggleDpTouchpoint(id,checked){
   if(tp){tp.completed=checked;tp.completed_at=checked?new Date().toISOString():null;}
   renderDpTouchpoints();
   renderDpTouchpointWidget();
+  renderDpReports();
   if(document.getElementById('dp-person-detail-modal').classList.contains('on')){
     renderDpPersonDetailTouchpoints();
     document.getElementById('dpd-last-touchpoint').textContent=dpLastTouchpointText(dpDetailPersonId);
@@ -1959,6 +2047,7 @@ async function deleteDpTouchpoint(id){
   dpTouchpoints=dpTouchpoints.filter(function(x){return x.id!==id;});
   renderDpTouchpoints();
   renderDpTouchpointWidget();
+  renderDpReports();
   if(document.getElementById('dp-person-detail-modal').classList.contains('on')){
     renderDpPersonDetailTouchpoints();
     document.getElementById('dpd-last-touchpoint').textContent=dpLastTouchpointText(dpDetailPersonId);
