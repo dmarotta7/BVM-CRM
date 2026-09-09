@@ -514,28 +514,21 @@
       </div>
     </div>
 
+    <div class="card" style="margin-bottom:20px">
+      <div style="font-size:15px;font-weight:600;margin-bottom:6px">Import data</div>
+      <div style="font-size:12px;color:#888;margin-bottom:12px">Upload any of BVM's reports &mdash; Users, Pulse, or Publication Health &mdash; and it's recognized automatically. Matches people and magazines by name, updates what's changed, adds what's new, never deletes anything.</div>
+      <input type="file" id="dp-import-file" accept=".xlsx" style="display:none" onchange="importAnyDivisionReport(event)"/>
+      <button class="btn btnp" onclick="document.getElementById('dp-import-file').click()">Choose file to import</button>
+      <span id="dp-import-status" style="font-size:12px;color:#666;margin-left:10px"></span>
+    </div>
+
     <div class="tabs">
       <button class="divtab on" onclick="showDivSubTab('people',this)">People</button>
       <button class="divtab" onclick="showDivSubTab('magazines',this)">Magazines</button>
       <button class="divtab" onclick="showDivSubTab('touchpoints',this)">Touchpoints <span id="dp-tp-badge" style="display:none;background:#e86a2a;color:#fff;border-radius:99px;padding:1px 7px;font-size:11px;margin-left:4px"></span></button>
-      <button class="divtab" onclick="showDivSubTab('email',this)">Email</button>
     </div>
 
     <div class="divpg on" id="divsub-people">
-      <div class="card">
-        <div style="font-size:15px;font-weight:600;margin-bottom:6px">Import My Team (Users report)</div>
-        <div style="font-size:12px;color:#888;margin-bottom:12px">Adds/updates your team's role, email, and phone from BVM's Users report. Only rows where you (David Marotta) are listed as the DVL are imported &mdash; so this can never accidentally pull in someone who isn't actually on your team. Matches by name, never deletes, doesn't touch magazines or personal health.</div>
-        <input type="file" id="dp-users-file" accept=".xlsx" style="display:none" onchange="importUsersReport(event)"/>
-        <button class="btn btnp" onclick="document.getElementById('dp-users-file').click()">Choose file to import</button>
-        <span id="dp-users-status" style="font-size:12px;color:#666;margin-left:10px"></span>
-      </div>
-      <div class="card">
-        <div style="font-size:15px;font-weight:600;margin-bottom:6px">Import Pulse Report</div>
-        <div style="font-size:12px;color:#888;margin-bottom:12px">Updates each person's contact info and personal health from BVM's Pulse Report (one number per publisher, across all their magazines). Matches by name &mdash; updates existing people, adds new ones, never deletes. Rows titled Division Leader are skipped automatically.</div>
-        <input type="file" id="dp-pulse-file" accept=".xlsx" style="display:none" onchange="importPulseReport(event)"/>
-        <button class="btn btnp" onclick="document.getElementById('dp-pulse-file').click()">Choose file to import</button>
-        <span id="dp-pulse-status" style="font-size:12px;color:#666;margin-left:10px"></span>
-      </div>
       <div class="card">
         <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px">
           <div style="font-size:15px;font-weight:600">Your people</div>
@@ -551,13 +544,6 @@
     </div>
 
     <div class="divpg" id="divsub-magazines">
-      <div class="card">
-        <div style="font-size:15px;font-weight:600;margin-bottom:6px">Import from BVM Back Office (Publication Health report)</div>
-        <div style="font-size:12px;color:#888;margin-bottom:12px">Upload the same report anytime to refresh everyone's health. Matches people and magazines by name &mdash; updates existing ones, adds new ones, never deletes anything. Health is calculated from each publisher's <b>own</b> last sale (Days Since Last Publisher/Flip Sale), not just any sale on the magazine.</div>
-        <input type="file" id="dp-import-file" accept=".xlsx" style="display:none" onchange="importDivisionReport(event)"/>
-        <button class="btn btnp" onclick="document.getElementById('dp-import-file').click()">Choose file to import</button>
-        <span id="dp-import-status" style="font-size:12px;color:#666;margin-left:10px"></span>
-      </div>
       <div class="card">
         <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px">
           <div style="font-size:15px;font-weight:600">Your magazines</div>
@@ -594,20 +580,23 @@
         <button class="btn btnp" onclick="addDpTouchpoint()">Add touchpoint</button>
       </div>
 
-      <div class="card">
-        <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:10px;margin-bottom:12px">
-          <div style="display:flex;gap:4px;background:#f0f2f5;border-radius:8px;padding:3px">
-            <button class="btn btnsm" id="dp-tp-view-list-btn" onclick="dpSwitchTouchpointView('list')" style="background:#fff;box-shadow:0 1px 3px rgba(0,0,0,.1);border:none">List</button>
-            <button class="btn btnsm" id="dp-tp-view-log-btn" onclick="dpSwitchTouchpointView('log')" style="background:none;border:none">Log &amp; export</button>
-          </div>
-          <label id="dp-tp-show-done-wrap" style="font-size:12px;color:#666;display:flex;align-items:center;gap:6px"><input type="checkbox" id="dp-tp-show-done" onchange="renderDpTouchpoints()" style="width:auto"/> Show completed</label>
+      <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:10px;margin-bottom:14px">
+        <div style="display:flex;gap:4px;background:#f0f2f5;border-radius:8px;padding:3px">
+          <button class="btn btnsm" id="dp-tp-view-list-btn" onclick="dpSwitchTouchpointView('list')" style="background:#fff;box-shadow:0 1px 3px rgba(0,0,0,.1);border:none">List</button>
+          <button class="btn btnsm" id="dp-tp-view-log-btn" onclick="dpSwitchTouchpointView('log')" style="background:none;border:none">Log &amp; export</button>
+          <button class="btn btnsm" id="dp-tp-view-email-btn" onclick="dpSwitchTouchpointView('email')" style="background:none;border:none">Email</button>
         </div>
+        <label id="dp-tp-show-done-wrap" style="font-size:12px;color:#666;display:flex;align-items:center;gap:6px"><input type="checkbox" id="dp-tp-show-done" onchange="renderDpTouchpoints()" style="width:auto"/> Show completed</label>
+      </div>
 
-        <div id="dp-tp-view-list">
+      <div id="dp-tp-view-list">
+        <div class="card">
           <div id="dp-tp-list"></div>
         </div>
+      </div>
 
-        <div id="dp-tp-view-log" style="display:none">
+      <div id="dp-tp-view-log" style="display:none">
+        <div class="card">
           <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:10px;margin-bottom:12px">
             <div style="display:flex;align-items:center;gap:10px">
               <select id="dp-report-person-filter" onchange="renderDpReports()" style="padding:6px 10px;border-radius:8px;border:1px solid #d5d5cf;font-size:13px;font-family:inherit">
@@ -630,39 +619,39 @@
           </div>
         </div>
       </div>
-    </div>
 
-    <div class="divpg" id="divsub-email">
-      <div class="card">
-        <div style="font-size:15px;font-weight:600;margin-bottom:6px">Choose recipients</div>
-        <div style="font-size:12px;color:#888;margin-bottom:10px">Only people with an email on file are listed. <span id="dp-email-noemail-note"></span></div>
-        <div style="margin-bottom:10px">
-          <button class="btn btnsm" onclick="dpSelectAllEmailRecipients(true)">Select all</button>
-          <button class="btn btnsm" onclick="dpSelectAllEmailRecipients(false)">Select none</button>
-          <span style="font-size:12px;color:#666;margin-left:8px" id="dp-email-selected-count"></span>
+      <div id="dp-tp-view-email" style="display:none">
+        <div class="card">
+          <div style="font-size:15px;font-weight:600;margin-bottom:6px">Choose recipients</div>
+          <div style="font-size:12px;color:#888;margin-bottom:10px">Only people with an email on file are listed. <span id="dp-email-noemail-note"></span></div>
+          <div style="margin-bottom:10px">
+            <button class="btn btnsm" onclick="dpSelectAllEmailRecipients(true)">Select all</button>
+            <button class="btn btnsm" onclick="dpSelectAllEmailRecipients(false)">Select none</button>
+            <span style="font-size:12px;color:#666;margin-left:8px" id="dp-email-selected-count"></span>
+          </div>
+          <div id="dp-email-recipients" style="max-height:220px;overflow-y:auto;border:1px solid #eee;border-radius:8px;padding:8px 12px"></div>
         </div>
-        <div id="dp-email-recipients" style="max-height:220px;overflow-y:auto;border:1px solid #eee;border-radius:8px;padding:8px 12px"></div>
-      </div>
 
-      <div class="card">
-        <div style="font-size:15px;font-weight:600;margin-bottom:12px">Draft with AI</div>
-        <div class="fg" style="margin-bottom:10px"><label>What's this email about?</label><textarea id="dp-email-instruction" placeholder="e.g. Encourage everyone to push hard to close out the month strong, remind them the deadline is Friday"></textarea></div>
-        <button class="btn btnp" onclick="dpGenerateGroupEmail()">Generate draft</button>
-        <span id="dp-email-gen-status" style="font-size:12px;color:#666;margin-left:10px"></span>
-      </div>
-
-      <div class="card" id="dp-email-draft-card" style="display:none">
-        <div style="font-size:15px;font-weight:600;margin-bottom:12px">Review &amp; send</div>
-        <div class="fg"><label>Subject</label><input id="dp-email-subject"/></div>
-        <div class="fg" style="margin-bottom:14px"><label>Body</label><textarea id="dp-email-body" style="min-height:220px"></textarea></div>
-        <div style="font-size:12px;color:#888;margin-bottom:12px">Edit freely before sending &mdash; nothing is sent automatically.</div>
-        <div style="display:flex;gap:8px;flex-wrap:wrap">
-          <button class="btn btnp" onclick="dpOpenMailto()">Open in Mail app</button>
-          <button class="btn" onclick="dpCopyRecipientEmails()">Copy recipient emails</button>
-          <button class="btn" onclick="dpCopySubject()">Copy subject</button>
-          <button class="btn" onclick="dpCopyBody()">Copy body</button>
+        <div class="card">
+          <div style="font-size:15px;font-weight:600;margin-bottom:12px">Draft with AI</div>
+          <div class="fg" style="margin-bottom:10px"><label>What's this email about?</label><textarea id="dp-email-instruction" placeholder="e.g. Encourage everyone to push hard to close out the month strong, remind them the deadline is Friday"></textarea></div>
+          <button class="btn btnp" onclick="dpGenerateGroupEmail()">Generate draft</button>
+          <span id="dp-email-gen-status" style="font-size:12px;color:#666;margin-left:10px"></span>
         </div>
-        <div style="font-size:11px;color:#aaa;margin-top:10px">If "Open in Mail app" doesn't include everyone (some mail apps limit how many addresses a link can carry), use the copy buttons instead and paste the recipients into BCC yourself.</div>
+
+        <div class="card" id="dp-email-draft-card" style="display:none">
+          <div style="font-size:15px;font-weight:600;margin-bottom:12px">Review &amp; send</div>
+          <div class="fg"><label>Subject</label><input id="dp-email-subject"/></div>
+          <div class="fg" style="margin-bottom:14px"><label>Body</label><textarea id="dp-email-body" style="min-height:220px"></textarea></div>
+          <div style="font-size:12px;color:#888;margin-bottom:12px">Edit freely before sending &mdash; nothing is sent automatically.</div>
+          <div style="display:flex;gap:8px;flex-wrap:wrap">
+            <button class="btn btnp" onclick="dpOpenMailto()">Open in Mail app</button>
+            <button class="btn" onclick="dpCopyRecipientEmails()">Copy recipient emails</button>
+            <button class="btn" onclick="dpCopySubject()">Copy subject</button>
+            <button class="btn" onclick="dpCopyBody()">Copy body</button>
+          </div>
+          <div style="font-size:11px;color:#aaa;margin-top:10px">If "Open in Mail app" doesn't include everyone (some mail apps limit how many addresses a link can carry), use the copy buttons instead and paste the recipients into BCC yourself.</div>
+        </div>
       </div>
     </div>
   </div>
@@ -1613,6 +1602,43 @@ function dpCol(row,names){
 }
 function dpNormName(s){return(s||'').toString().trim().toLowerCase();}
 
+// --- Import data: auto-detects which BVM report was uploaded, routes to the right handler ---
+function importAnyDivisionReport(event){
+  var file=event.target.files[0];
+  if(!file)return;
+  var statusEl=document.getElementById('dp-import-status');
+  statusEl.textContent='Reading file...';
+  var reader=new FileReader();
+  reader.onload=function(e){
+    try{
+      var wb=XLSX.read(e.target.result,{type:'binary',codepage:65001});
+      var ws=wb.Sheets[wb.SheetNames[0]];
+      var headerRow=(XLSX.utils.sheet_to_json(ws,{header:1,raw:false})[0])||[];
+      var headers=headerRow.map(function(h){return(h||'').toString().trim();});
+      if(headers.indexOf('DVL')>=0){
+        statusEl.textContent='Detected: Users report (team roster)...';
+        var usersRows=XLSX.utils.sheet_to_json(ws,{defval:'',raw:false,header:1});
+        processUsersImportRows(usersRows,statusEl);
+      }else if(headers.indexOf('Publication Status')>=0){
+        statusEl.textContent='Detected: Publication Health report (magazines)...';
+        var pubRows=XLSX.utils.sheet_to_json(ws,{defval:'',raw:false});
+        processDivisionImportRows(pubRows,statusEl);
+      }else if(headers.indexOf('Baseline Month')>=0||headers.indexOf('Performance Coach')>=0){
+        statusEl.textContent='Detected: Pulse Report (personal health)...';
+        var pulseRows=XLSX.utils.sheet_to_json(ws,{defval:'',raw:false,header:1});
+        processPulseImportRows(pulseRows,statusEl);
+      }else{
+        statusEl.textContent='';
+        toast('Could not recognize this file. It doesn\'t look like a Users, Pulse, or Publication Health report.');
+      }
+    }catch(err){
+      statusEl.textContent='Error reading file: '+err.message;
+    }
+  };
+  reader.readAsBinaryString(file);
+  event.target.value='';
+}
+
 function importDivisionReport(event){
   var file=event.target.files[0];
   if(!file)return;
@@ -1944,15 +1970,16 @@ async function deleteDpMagazine(id){
 
 // --- Touchpoints ---
 function dpSwitchTouchpointView(view){
-  var isList=view==='list';
-  document.getElementById('dp-tp-view-list').style.display=isList?'block':'none';
-  document.getElementById('dp-tp-view-log').style.display=isList?'none':'block';
-  document.getElementById('dp-tp-show-done-wrap').style.display=isList?'flex':'none';
-  var listBtn=document.getElementById('dp-tp-view-list-btn'),logBtn=document.getElementById('dp-tp-view-log-btn');
-  listBtn.style.background=isList?'#fff':'none';
-  listBtn.style.boxShadow=isList?'0 1px 3px rgba(0,0,0,.1)':'none';
-  logBtn.style.background=isList?'none':'#fff';
-  logBtn.style.boxShadow=isList?'none':'0 1px 3px rgba(0,0,0,.1)';
+  document.getElementById('dp-tp-view-list').style.display=view==='list'?'block':'none';
+  document.getElementById('dp-tp-view-log').style.display=view==='log'?'block':'none';
+  document.getElementById('dp-tp-view-email').style.display=view==='email'?'block':'none';
+  document.getElementById('dp-tp-show-done-wrap').style.display=view==='list'?'flex':'none';
+  ['list','log','email'].forEach(function(v){
+    var btn=document.getElementById('dp-tp-view-'+v+'-btn');
+    var on=v===view;
+    btn.style.background=on?'#fff':'none';
+    btn.style.boxShadow=on?'0 1px 3px rgba(0,0,0,.1)':'none';
+  });
 }
 
 function dpTouchpointTargetChanged(){
