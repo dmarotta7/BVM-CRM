@@ -92,6 +92,8 @@
 
   /* ── Buttons ── */
   .btn{padding:7px 16px;border-radius:8px;border:1px solid #b8b8ae;background:#fff;font-size:13px;cursor:pointer;color:#1a1a18;font-family:inherit;transition:all .15s}
+  .tools-menu-item{display:block;width:100%;text-align:left;border:none;border-radius:0;color:#1a1a18;background:none}
+  .tools-menu-item:hover{background:var(--orange-light);color:var(--orange-dark)}
   .btn:disabled{opacity:.4;cursor:not-allowed}
   .btn:hover{background:#f5f5f3;border-color:#bbb}
   .btnp{background:var(--orange);color:#fff;border-color:var(--orange-dark)}
@@ -193,8 +195,8 @@
     <span id="viewing-indicator" style="display:none;font-size:12px;color:var(--orange);background:rgba(232,106,42,.15);padding:5px 10px;border-radius:99px;align-items:center;font-weight:600"></span>
     <div style="position:relative;display:inline-block">
       <button class="btn" onclick="toggleToolsMenu(event)">&#x2699; Tools &#x25BE;</button>
-      <div id="tools-menu" style="display:none;position:absolute;top:calc(100% + 4px);right:0;background:#fff;border:1px solid #b8b8ae;border-radius:8px;box-shadow:0 8px 24px rgba(0,0,0,.15);z-index:50;min-width:210px;overflow:hidden;padding:6px 0">
-        <div style="padding:6px 14px 3px;font-size:11px;font-weight:600;color:#888;text-transform:uppercase;letter-spacing:.04em">View</div>
+      <div id="tools-menu" style="display:none;position:absolute;top:calc(100% + 4px);right:0;background:#fff;border:1px solid #b8b8ae;border-top:3px solid var(--orange);border-radius:8px;box-shadow:0 8px 24px rgba(0,0,0,.15);z-index:50;min-width:210px;overflow:hidden;padding:6px 0">
+        <div style="padding:6px 14px 3px;font-size:11px;font-weight:700;color:var(--orange-dark);text-transform:uppercase;letter-spacing:.04em">View</div>
         <div style="padding:4px 14px 8px">
           <label style="font-size:11px;color:#888;display:block;margin-bottom:3px">Leads per page</label>
           <select id="pagesize" onchange="changePageSize(this.value)" style="width:100%;padding:6px 8px;border-radius:6px;border:1px solid #b8b8ae;font-size:13px;font-family:inherit">
@@ -212,19 +214,19 @@
           </select>
         </div>
         <div style="border-top:1px solid #dcdcd3;margin:6px 0"></div>
-        <div style="padding:6px 14px 3px;font-size:11px;font-weight:600;color:#888;text-transform:uppercase;letter-spacing:.04em">Download template</div>
-        <button class="btn" style="display:block;width:100%;text-align:left;border:none;border-radius:0;color:#1a1a18" onclick="downloadTemplate('csv');toggleToolsMenu()">CSV (.csv)</button>
-        <button class="btn" style="display:block;width:100%;text-align:left;border:none;border-radius:0;color:#1a1a18" onclick="downloadTemplate('xlsx');toggleToolsMenu()">Excel (.xlsx)</button>
+        <div style="padding:6px 14px 3px;font-size:11px;font-weight:700;color:var(--orange-dark);text-transform:uppercase;letter-spacing:.04em">Download template</div>
+        <button class="btn tools-menu-item" onclick="downloadTemplate('csv');toggleToolsMenu()">CSV (.csv)</button>
+        <button class="btn tools-menu-item" onclick="downloadTemplate('xlsx');toggleToolsMenu()">Excel (.xlsx)</button>
         <div style="border-top:1px solid #dcdcd3;margin:6px 0"></div>
-        <div style="padding:6px 14px 3px;font-size:11px;font-weight:600;color:#888;text-transform:uppercase;letter-spacing:.04em">Export leads</div>
-        <button class="btn" style="display:block;width:100%;text-align:left;border:none;border-radius:0;color:#1a1a18" onclick="exportLeads('csv');toggleToolsMenu()">CSV (.csv)</button>
-        <button class="btn" style="display:block;width:100%;text-align:left;border:none;border-radius:0;color:#1a1a18" onclick="exportLeads('xlsx');toggleToolsMenu()">Excel (.xlsx)</button>
+        <div style="padding:6px 14px 3px;font-size:11px;font-weight:700;color:var(--orange-dark);text-transform:uppercase;letter-spacing:.04em">Export leads</div>
+        <button class="btn tools-menu-item" onclick="exportLeads('csv');toggleToolsMenu()">CSV (.csv)</button>
+        <button class="btn tools-menu-item" onclick="exportLeads('xlsx');toggleToolsMenu()">Excel (.xlsx)</button>
         <div style="border-top:1px solid #dcdcd3;margin:6px 0"></div>
-        <button class="btn" style="display:block;width:100%;text-align:left;border:none;border-radius:0;color:#1a1a18" onclick="toggleToolsMenu();triggerImport()">&#x2b06; Import CSV / Excel</button>
-        <button class="btn" style="display:block;width:100%;text-align:left;border:none;border-radius:0;color:#1a1a18" onclick="toggleToolsMenu();openIndustryManager()">&#x2699; Manage Industries</button>
+        <button class="btn tools-menu-item" onclick="toggleToolsMenu();triggerImport()">&#x2b06; Import CSV / Excel</button>
+        <button class="btn tools-menu-item" onclick="toggleToolsMenu();openIndustryManager()">&#x2699; Manage Industries</button>
         <div style="border-top:1px solid #dcdcd3;margin:6px 0"></div>
-        <div style="padding:6px 14px 3px;font-size:11px;font-weight:600;color:#888;text-transform:uppercase;letter-spacing:.04em">Account</div>
-        <button class="btn" style="display:block;width:100%;text-align:left;border:none;border-radius:0;color:#1a1a18" onclick="toggleToolsMenu();openChangePassword()">Change password</button>
+        <div style="padding:6px 14px 3px;font-size:11px;font-weight:700;color:var(--orange-dark);text-transform:uppercase;letter-spacing:.04em">Account</div>
+        <button class="btn tools-menu-item" onclick="toggleToolsMenu();openChangePassword()">Change password</button>
       </div>
     </div>
     <input type="file" id="csvfile" accept=".csv,.xlsx" style="display:none" onchange="importCSV(event)"/>
