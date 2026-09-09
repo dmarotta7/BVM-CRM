@@ -342,6 +342,12 @@
         <button class="btn btnsm" onclick="clearSelection()">Clear</button>
       </span>
     </div>
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px">
+      <div style="display:flex;gap:4px;background:#f0f2f5;border-radius:8px;padding:3px">
+        <button class="btn btnsm" id="leads-view-table-btn" onclick="switchLeadsView('table')" style="background:#fff;box-shadow:0 1px 3px rgba(0,0,0,.1);border:none">Table</button>
+        <button class="btn btnsm" id="leads-view-board-btn" onclick="switchLeadsView('board')" style="background:none;border:none">Board</button>
+      </div>
+    </div>
     <div id="topscroll" style="overflow-x:auto;overflow-y:hidden;height:14px;margin-bottom:2px">
       <div id="topscroll-inner" style="height:1px"></div>
     </div>
@@ -353,6 +359,7 @@
       <div id="empty" class="empty" style="display:none">No leads found.</div>
     </div>
     <div id="pagination" style="display:flex;align-items:center;justify-content:space-between;padding:12px 2px;font-size:13px;color:#666"></div>
+    <div id="leads-board" style="display:none;gap:12px;overflow-x:auto;padding-bottom:8px"></div>
   </div>
 
   <div class="pg" id="tab-followups">
@@ -1125,6 +1132,74 @@ function setSort(key){
   render();
 }
 
+var leadsViewMode='table';
+function switchLeadsView(view){
+  leadsViewMode=view;
+  document.getElementById('cardscroll').style.display=view==='table'?'block':'none';
+  document.getElementById('pagination').style.display=view==='table'?'flex':'none';
+  document.getElementById('topscroll').style.display=view==='table'?'block':'none';
+  document.getElementById('leads-board').style.display=view==='board'?'flex':'none';
+  var tBtn=document.getElementById('leads-view-table-btn'),bBtn=document.getElementById('leads-view-board-btn');
+  tBtn.style.background=view==='table'?'#fff':'none';
+  tBtn.style.boxShadow=view==='table'?'0 1px 3px rgba(0,0,0,.1)':'none';
+  bBtn.style.background=view==='board'?'#fff':'none';
+  bBtn.style.boxShadow=view==='board'?'0 1px 3px rgba(0,0,0,.1)':'none';
+  if(view==='board')renderLeadsBoard();
+}
+
+function getBoardLeads(){
+  var q=document.getElementById('srch').value.toLowerCase();
+  var src=document.getElementById('fsrc').value;
+  var ind=document.getElementById('find-filter').value;
+  var own=adminViewOwnerId;
+  return leads.filter(function(l){
+    return(!q||l.name.toLowerCase().includes(q)||l.company.toLowerCase().includes(q)||(l.city||'').toLowerCase().includes(q)||(l.zip||'').toLowerCase().includes(q))&&(!src||l.source===src)&&(!ind||l.industry===ind)&&(!own||l.owner_id===own);
+  });
+}
+
+var BOARD_STAGES=['New','Contacted','Qualified','Proposal','Closed','Lost'];
+var boardDragLeadId=null;
+
+function renderLeadsBoard(){
+  var fl=getBoardLeads();
+  var byStage={};
+  BOARD_STAGES.forEach(function(s){byStage[s]=[];});
+  fl.forEach(function(l){(byStage[l.stage]||byStage.New).push(l);});
+  document.getElementById('leads-board').innerHTML=BOARD_STAGES.map(function(s){
+    var c=stageColors[s]||stageColors.New;
+    var items=byStage[s];
+    var total=items.reduce(function(sum,l){return sum+(l.value||0);},0);
+    return '<div style="min-width:230px;max-width:260px;flex:1;background:#eef0f3;border-radius:10px;padding:8px" ondragover="event.preventDefault()" ondrop="onBoardDrop(event,\''+s+'\')">'
+      +'<div style="display:flex;justify-content:space-between;align-items:center;padding:4px 6px 4px">'
+      +'<span style="font-size:12px;font-weight:700;color:'+c.fg+';background:'+c.bg+';padding:2px 8px;border-radius:99px">'+s+'</span>'
+      +'<span style="font-size:11px;color:#888">'+items.length+'</span>'
+      +'</div>'
+      +'<div style="font-size:11px;color:#888;padding:0 6px 8px">$'+total.toLocaleString()+'</div>'
+      +'<div style="display:flex;flex-direction:column;gap:6px;max-height:65vh;overflow-y:auto;min-height:40px">'
+      +items.map(function(l){
+        return '<div draggable="true" ondragstart="onBoardDragStart(event,\''+l.id+'\')" onclick="openEdit(\''+l.id+'\')" style="background:#fff;border:1px solid #c7cdd9;border-radius:8px;padding:8px 10px;cursor:grab;box-shadow:0 1px 2px rgba(0,0,0,.05)">'
+        +'<div style="font-size:13px;font-weight:600;color:#1a1a18">'+l.name+'</div>'
+        +'<div style="font-size:11px;color:#888;margin-bottom:4px">'+l.company+'</div>'
+        +'<div style="display:flex;justify-content:space-between;align-items:center">'
+        +'<span style="font-size:11px;color:#1a7a45;font-weight:600">'+(l.value?'$'+l.value.toLocaleString():'')+'</span>'
+        +'<span style="font-size:10px;color:#aaa">'+(l.source||'')+'</span>'
+        +'</div></div>';
+      }).join('')
+      +'</div></div>';
+  }).join('');
+}
+
+function onBoardDragStart(event,id){
+  boardDragLeadId=id;
+  event.dataTransfer.effectAllowed='move';
+}
+
+function onBoardDrop(event,newStage){
+  event.preventDefault();
+  if(boardDragLeadId)setStage(boardDragLeadId,newStage);
+  boardDragLeadId=null;
+}
+
 function getFilteredLeads(){
   var q=document.getElementById('srch').value.toLowerCase();
   var sf=document.getElementById('fsf').value;
@@ -1183,6 +1258,7 @@ function render(){
   updateBulkBar();
   syncScrollWidth();
   metrics(fl);populateDrip();
+  if(leadsViewMode==='board')renderLeadsBoard();
 }
 
 function renderPagination(totalCount,totalPages){
