@@ -53,15 +53,15 @@
   .mv{font-size:24px;font-weight:700}
 
   /* ── Tabs ── */
-  .tabs{display:flex;gap:4px;background:#fff;border:1px solid #e2e6ed;border-radius:10px;padding:5px;margin-bottom:1.5rem;box-shadow:0 1px 4px rgba(0,0,0,.05);width:fit-content;max-width:100%;overflow-x:auto;-webkit-overflow-scrolling:touch}
+  .tabs{display:flex;gap:4px;background:#fff;border:1px solid #e2e6ed;border-top:3px solid var(--orange);border-radius:10px;padding:5px;margin-bottom:1.5rem;box-shadow:0 1px 4px rgba(0,0,0,.05);width:fit-content;max-width:100%;overflow-x:auto;-webkit-overflow-scrolling:touch}
   .tabs .tab,.tabs .divtab{flex-shrink:0}
   .tab{padding:9px 20px;font-size:14px;cursor:pointer;border:none;background:none;color:#555;border-radius:7px;font-family:inherit;font-weight:600;transition:all .15s}
-  .tab.on{color:#fff;background:var(--navy);box-shadow:0 2px 6px rgba(15,31,61,.3)}
-  .tab:hover:not(.on){background:#f0f2f5;color:var(--navy)}
+  .tab.on{color:#fff;background:var(--orange);box-shadow:0 2px 6px rgba(232,106,42,.35)}
+  .tab:hover:not(.on){background:var(--orange-light);color:var(--orange-dark)}
   .pg{display:none}.pg.on{display:block}
   .divtab{padding:9px 20px;font-size:14px;cursor:pointer;border:none;background:none;color:#555;border-radius:7px;font-family:inherit;font-weight:600;transition:all .15s}
-  .divtab.on{color:#fff;background:var(--navy);box-shadow:0 2px 6px rgba(15,31,61,.3)}
-  .divtab:hover:not(.on){background:#f0f2f5;color:var(--navy)}
+  .divtab.on{color:#fff;background:var(--orange);box-shadow:0 2px 6px rgba(232,106,42,.35)}
+  .divtab:hover:not(.on){background:var(--orange-light);color:var(--orange-dark)}
   .divpg{display:none}.divpg.on{display:block}
 
   /* ── Cards ── */
@@ -249,7 +249,7 @@
 
 <div class="container">
 
-  <div class="metrics">
+  <div class="metrics" id="lead-metrics-bar">
     <div class="mc"><div class="ml">Total leads</div><div class="mv" id="m1">&#x2014;</div></div>
     <div class="mc"><div class="ml" style="color:var(--orange-dark)">Contacted leads</div><div class="mv" id="m2" style="color:var(--orange-dark)">&#x2014;</div></div>
     <div class="mc"><div class="ml" style="color:#5a2fc2">In proposal</div><div class="mv" id="m3" style="color:#5a2fc2">&#x2014;</div></div>
@@ -2598,6 +2598,7 @@ function showTab(n,el){
   document.querySelectorAll('.pg').forEach(function(p){p.classList.remove('on');});
   document.querySelectorAll('.tab').forEach(function(t){t.classList.remove('on');});
   document.getElementById('tab-'+n).classList.add('on');el.classList.add('on');
+  document.getElementById('lead-metrics-bar').style.display=(n==='division')?'none':'grid';
   if(n==='metrics')mInit();
   if(n==='reports')renderReports();
   if(n==='division')loadDivisionData();
