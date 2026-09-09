@@ -53,7 +53,8 @@
   .mv{font-size:24px;font-weight:700}
 
   /* ── Tabs ── */
-  .tabs{display:flex;gap:4px;background:#fff;border:1px solid #e2e6ed;border-radius:10px;padding:5px;margin-bottom:1.5rem;box-shadow:0 1px 4px rgba(0,0,0,.05);width:fit-content}
+  .tabs{display:flex;gap:4px;background:#fff;border:1px solid #e2e6ed;border-radius:10px;padding:5px;margin-bottom:1.5rem;box-shadow:0 1px 4px rgba(0,0,0,.05);width:fit-content;max-width:100%;overflow-x:auto;-webkit-overflow-scrolling:touch}
+  .tabs .tab,.tabs .divtab{flex-shrink:0}
   .tab{padding:9px 20px;font-size:14px;cursor:pointer;border:none;background:none;color:#555;border-radius:7px;font-family:inherit;font-weight:600;transition:all .15s}
   .tab.on{color:#fff;background:var(--navy);box-shadow:0 2px 6px rgba(15,31,61,.3)}
   .tab:hover:not(.on){background:#f0f2f5;color:var(--navy)}
@@ -143,7 +144,7 @@
   .followup-due{color:#A32D2D!important;font-weight:600}
   .spinner{display:inline-block;width:12px;height:12px;border:2px solid #ccc;border-top-color:var(--orange);border-radius:50%;animation:spin .6s linear infinite;vertical-align:middle;margin-right:6px}
   @keyframes spin{to{transform:rotate(360deg)}}
-  @media(max-width:700px){.metrics{grid-template-columns:1fr 1fr}.fr{grid-template-columns:1fr}.container{padding:1rem}.topbar{padding:0 1rem}.topbar-sub{display:none}}
+  @media(max-width:700px){.metrics{grid-template-columns:1fr 1fr}.fr{grid-template-columns:1fr}.container{padding:1rem}.topbar{padding:10px 1rem;height:auto;flex-wrap:wrap;position:static}.topbar-sub{display:none}.topbar-right{flex-wrap:wrap;justify-content:flex-start;gap:6px}}
 </style>
 <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
