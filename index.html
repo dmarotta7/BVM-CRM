@@ -48,12 +48,12 @@
 
   /* ── Metric cards ── */
   .metrics{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:1.5rem}
-  .mc{background:#fff;border:1px solid #e2e6ed;border-radius:10px;padding:1rem 1.25rem;border-top:3px solid var(--navy)}
+  .mc{background:#fff;border:1px solid #c7cdd9;border-radius:10px;padding:1rem 1.25rem;border-top:3px solid var(--navy)}
   .ml{font-size:12px;color:#888;margin-bottom:4px}
   .mv{font-size:24px;font-weight:700}
 
   /* ── Tabs ── */
-  .tabs{display:flex;gap:4px;background:#fff;border:1px solid #e2e6ed;border-top:3px solid var(--orange);border-radius:10px;padding:5px;margin-bottom:1.5rem;box-shadow:0 1px 4px rgba(0,0,0,.05);width:fit-content;max-width:100%;overflow-x:auto;-webkit-overflow-scrolling:touch}
+  .tabs{display:flex;gap:4px;background:#fff;border:1px solid #c7cdd9;border-top:3px solid var(--orange);border-radius:10px;padding:5px;margin-bottom:1.5rem;box-shadow:0 1px 3px rgba(0,0,0,.09);width:fit-content;max-width:100%;overflow-x:auto;-webkit-overflow-scrolling:touch}
   .tabs .tab,.tabs .divtab{flex-shrink:0}
   .tab{padding:9px 20px;font-size:14px;cursor:pointer;border:none;background:none;color:#555;border-radius:7px;font-family:inherit;font-weight:600;transition:all .15s}
   .tab.on{color:#fff;background:var(--orange);box-shadow:0 2px 6px rgba(232,106,42,.35)}
@@ -65,15 +65,15 @@
   .divpg{display:none}.divpg.on{display:block}
 
   /* ── Cards ── */
-  .card{background:#fff;border:1px solid #e2e6ed;border-radius:12px;padding:1.25rem;margin-bottom:1rem}
-  .card-scroll{background:#fff;border:1px solid #e2e6ed;border-radius:12px;margin-bottom:1rem;overflow-x:auto;box-shadow:0 1px 4px rgba(0,0,0,.06)}
+  .card{background:#fff;border:1px solid #c7cdd9;border-radius:12px;padding:1.25rem;margin-bottom:1rem;box-shadow:0 1px 3px rgba(0,0,0,.05)}
+  .card-scroll{background:#fff;border:1px solid #c7cdd9;border-radius:12px;margin-bottom:1rem;overflow-x:auto;box-shadow:0 1px 3px rgba(0,0,0,.1)}
 
   /* ── Table ── */
   table{width:100%;min-width:1100px;border-collapse:collapse;font-size:13px}
   thead tr{background:var(--navy)}
   th{text-align:left;padding:10px 10px;font-size:11px;font-weight:600;color:rgba(255,255,255,.75);border-bottom:none;text-transform:uppercase;letter-spacing:.05em;white-space:nowrap}
   th.col-actions,td.col-actions{min-width:220px;white-space:nowrap}
-  td{padding:9px 10px;border-bottom:1px solid #f0f2f5;vertical-align:middle;white-space:nowrap}
+  td{padding:9px 10px;border-bottom:1px solid #dde1e8;vertical-align:middle;white-space:nowrap}
   tr:last-child td{border-bottom:none}
   tr:hover td{background:#fdf5f0}
 
@@ -91,7 +91,7 @@
   .sLost{background:#f0f0ee;color:#888}
 
   /* ── Buttons ── */
-  .btn{padding:7px 16px;border-radius:8px;border:1px solid #d5d5cf;background:#fff;font-size:13px;cursor:pointer;color:#1a1a18;font-family:inherit;transition:all .15s}
+  .btn{padding:7px 16px;border-radius:8px;border:1px solid #b8b8ae;background:#fff;font-size:13px;cursor:pointer;color:#1a1a18;font-family:inherit;transition:all .15s}
   .btn:disabled{opacity:.4;cursor:not-allowed}
   .btn:hover{background:#f5f5f3;border-color:#bbb}
   .btnp{background:var(--orange);color:#fff;border-color:var(--orange-dark)}
@@ -105,15 +105,15 @@
   button[data-action="advance"]:hover{background:var(--orange-light)}
 
   /* ── Form ── */
-  .form-section{background:#fff;border:1px solid #e2e6ed;border-radius:12px;padding:1.5rem;margin-bottom:1.5rem;display:none;border-top:3px solid var(--orange)}
+  .form-section{background:#fff;border:1px solid #c7cdd9;border-radius:12px;padding:1.5rem;margin-bottom:1.5rem;display:none;border-top:3px solid var(--orange)}
   .fr{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:12px}
   .fg{display:flex;flex-direction:column;gap:5px}
   .fg label{font-size:12px;font-weight:600;color:var(--navy)}
-  .fg input,.fg select,.fg textarea{padding:8px 11px;border-radius:8px;border:1px solid #d5d5cf;font-size:13px;font-family:inherit;color:#1a1a18;background:#fff;transition:border .15s}
+  .fg input,.fg select,.fg textarea{padding:8px 11px;border-radius:8px;border:1px solid #b8b8ae;font-size:13px;font-family:inherit;color:#1a1a18;background:#fff;transition:border .15s}
   .fg input:focus,.fg select:focus,.fg textarea:focus{outline:none;border-color:var(--orange)}
   .fg textarea{resize:vertical;min-height:64px}
   .frow{display:flex;gap:8px;margin-bottom:1rem;flex-wrap:wrap;align-items:center}
-  .frow input,.frow select{padding:7px 11px;border-radius:8px;border:1px solid #d5d5cf;font-size:13px;font-family:inherit;color:#1a1a18}
+  .frow input,.frow select{padding:7px 11px;border-radius:8px;border:1px solid #b8b8ae;font-size:13px;font-family:inherit;color:#1a1a18}
 
   /* ── AI ── */
   .ai-box{background:#f0f2f5;border-radius:10px;padding:1rem;font-size:13px;line-height:1.75;min-height:80px;white-space:pre-wrap;color:#1a1a18;margin-top:12px;border-left:3px solid var(--orange)}
@@ -139,7 +139,7 @@
   /* ── API banner ── */
   .api-banner{background:#FFF3CD;border:1px solid #f0d060;border-radius:10px;padding:.875rem 1rem;font-size:13px;color:#7d5c00;margin-bottom:1.5rem;display:flex;align-items:flex-start;gap:10px}
   .api-key-row{display:flex;gap:8px;align-items:center;margin-top:8px}
-  .api-key-row input{flex:1;padding:7px 11px;border-radius:8px;border:1px solid #d5d5cf;font-size:13px;font-family:inherit}
+  .api-key-row input{flex:1;padding:7px 11px;border-radius:8px;border:1px solid #b8b8ae;font-size:13px;font-family:inherit}
 
   .followup-due{color:#A32D2D!important;font-weight:600}
   .spinner{display:inline-block;width:12px;height:12px;border:2px solid #ccc;border-top-color:var(--orange);border-radius:50%;animation:spin .6s linear infinite;vertical-align:middle;margin-right:6px}
@@ -193,11 +193,11 @@
     <span id="viewing-indicator" style="display:none;font-size:12px;color:var(--orange);background:rgba(232,106,42,.15);padding:5px 10px;border-radius:99px;align-items:center;font-weight:600"></span>
     <div style="position:relative;display:inline-block">
       <button class="btn" onclick="toggleToolsMenu(event)">&#x2699; Tools &#x25BE;</button>
-      <div id="tools-menu" style="display:none;position:absolute;top:calc(100% + 4px);right:0;background:#fff;border:1px solid #d5d5cf;border-radius:8px;box-shadow:0 8px 24px rgba(0,0,0,.15);z-index:50;min-width:210px;overflow:hidden;padding:6px 0">
+      <div id="tools-menu" style="display:none;position:absolute;top:calc(100% + 4px);right:0;background:#fff;border:1px solid #b8b8ae;border-radius:8px;box-shadow:0 8px 24px rgba(0,0,0,.15);z-index:50;min-width:210px;overflow:hidden;padding:6px 0">
         <div style="padding:6px 14px 3px;font-size:11px;font-weight:600;color:#888;text-transform:uppercase;letter-spacing:.04em">View</div>
         <div style="padding:4px 14px 8px">
           <label style="font-size:11px;color:#888;display:block;margin-bottom:3px">Leads per page</label>
-          <select id="pagesize" onchange="changePageSize(this.value)" style="width:100%;padding:6px 8px;border-radius:6px;border:1px solid #d5d5cf;font-size:13px;font-family:inherit">
+          <select id="pagesize" onchange="changePageSize(this.value)" style="width:100%;padding:6px 8px;border-radius:6px;border:1px solid #b8b8ae;font-size:13px;font-family:inherit">
             <option value="10">10</option>
             <option value="20" selected>20</option>
             <option value="30">30</option>
@@ -207,22 +207,22 @@
         </div>
         <div id="admin-view-wrap" style="display:none;padding:4px 14px 8px">
           <label style="font-size:11px;color:#888;display:block;margin-bottom:3px">Viewing</label>
-          <select id="admin-view-select" onchange="adminViewChanged()" style="width:100%;padding:6px 8px;border-radius:6px;border:1px solid #d5d5cf;font-size:13px;font-family:inherit">
+          <select id="admin-view-select" onchange="adminViewChanged()" style="width:100%;padding:6px 8px;border-radius:6px;border:1px solid #b8b8ae;font-size:13px;font-family:inherit">
             <option value="">Everyone</option>
           </select>
         </div>
-        <div style="border-top:1px solid #f0f0ee;margin:6px 0"></div>
+        <div style="border-top:1px solid #dcdcd3;margin:6px 0"></div>
         <div style="padding:6px 14px 3px;font-size:11px;font-weight:600;color:#888;text-transform:uppercase;letter-spacing:.04em">Download template</div>
         <button class="btn" style="display:block;width:100%;text-align:left;border:none;border-radius:0;color:#1a1a18" onclick="downloadTemplate('csv');toggleToolsMenu()">CSV (.csv)</button>
         <button class="btn" style="display:block;width:100%;text-align:left;border:none;border-radius:0;color:#1a1a18" onclick="downloadTemplate('xlsx');toggleToolsMenu()">Excel (.xlsx)</button>
-        <div style="border-top:1px solid #f0f0ee;margin:6px 0"></div>
+        <div style="border-top:1px solid #dcdcd3;margin:6px 0"></div>
         <div style="padding:6px 14px 3px;font-size:11px;font-weight:600;color:#888;text-transform:uppercase;letter-spacing:.04em">Export leads</div>
         <button class="btn" style="display:block;width:100%;text-align:left;border:none;border-radius:0;color:#1a1a18" onclick="exportLeads('csv');toggleToolsMenu()">CSV (.csv)</button>
         <button class="btn" style="display:block;width:100%;text-align:left;border:none;border-radius:0;color:#1a1a18" onclick="exportLeads('xlsx');toggleToolsMenu()">Excel (.xlsx)</button>
-        <div style="border-top:1px solid #f0f0ee;margin:6px 0"></div>
+        <div style="border-top:1px solid #dcdcd3;margin:6px 0"></div>
         <button class="btn" style="display:block;width:100%;text-align:left;border:none;border-radius:0;color:#1a1a18" onclick="toggleToolsMenu();triggerImport()">&#x2b06; Import CSV / Excel</button>
         <button class="btn" style="display:block;width:100%;text-align:left;border:none;border-radius:0;color:#1a1a18" onclick="toggleToolsMenu();openIndustryManager()">&#x2699; Manage Industries</button>
-        <div style="border-top:1px solid #f0f0ee;margin:6px 0"></div>
+        <div style="border-top:1px solid #dcdcd3;margin:6px 0"></div>
         <div style="padding:6px 14px 3px;font-size:11px;font-weight:600;color:#888;text-transform:uppercase;letter-spacing:.04em">Account</div>
         <button class="btn" style="display:block;width:100%;text-align:left;border:none;border-radius:0;color:#1a1a18" onclick="toggleToolsMenu();openChangePassword()">Change password</button>
       </div>
@@ -275,7 +275,7 @@
     <div class="fr">
       <div class="fg"><label>Industry</label>
         <select id="find"><option value="">— Select industry —</option></select>
-        <div style="display:flex;gap:6px;margin-top:6px"><input id="finew" placeholder="Add new industry..." style="flex:1;padding:6px 10px;border-radius:7px;border:1px solid #d5d5cf;font-size:12px;font-family:inherit"/><button type="button" class="btn btnsm" onclick="addIndustryFromForm()">+ Add</button></div>
+        <div style="display:flex;gap:6px;margin-top:6px"><input id="finew" placeholder="Add new industry..." style="flex:1;padding:6px 10px;border-radius:7px;border:1px solid #b8b8ae;font-size:12px;font-family:inherit"/><button type="button" class="btn btnsm" onclick="addIndustryFromForm()">+ Add</button></div>
       </div>
       <div class="fg"><label>Stage</label>
         <select id="fst"><option>New</option><option>Contacted</option><option>Qualified</option><option>Proposal</option><option>Closed</option><option>Lost</option></select>
@@ -309,12 +309,12 @@
     <button class="tab on" onclick="showTab('leads',this)">All leads</button>
     <button class="tab" onclick="showTab('followups',this)">Follow-ups <span id="fu-badge" style="display:none;background:#e86a2a;color:#fff;border-radius:99px;padding:1px 7px;font-size:11px;margin-left:4px"></span></button>
     <button class="tab" onclick="showTab('metrics',this)">Daily Metrics</button>
-    <span style="width:1px;background:#e2e6ed;margin:6px 4px"></span>
+    <span style="width:1px;background:#c7cdd9;margin:6px 4px"></span>
     <button class="tab" onclick="showTab('reports',this)">Reports</button>
     <button class="tab" onclick="showTab('findleads',this)" style="display:none">Find Leads</button>
     <button class="tab" onclick="showTab('drip',this)">Email drip</button>
     <button class="tab" onclick="showTab('ai',this)">AI analyst</button>
-    <span style="width:1px;background:#e2e6ed;margin:6px 4px;display:none" id="division-sep"></span>
+    <span style="width:1px;background:#c7cdd9;margin:6px 4px;display:none" id="division-sep"></span>
     <button class="tab" id="tab-btn-division" style="display:none" onclick="showTab('division',this)">My Division</button>
   </div>
 
@@ -337,7 +337,7 @@
       <span id="bulk-count" style="font-weight:600;color:var(--orange-dark)"></span>
       <span style="margin-left:auto;display:flex;align-items:center;gap:8px">
         <span>Reassign to:</span>
-        <select id="bulk-owner-select" style="padding:5px 8px;border-radius:6px;border:1px solid #d5d5cf;font-size:13px;font-family:inherit"></select>
+        <select id="bulk-owner-select" style="padding:5px 8px;border-radius:6px;border:1px solid #b8b8ae;font-size:13px;font-family:inherit"></select>
         <button class="btn btnp btnsm" onclick="bulkReassign()">Apply</button>
         <button class="btn btnsm" onclick="clearSelection()">Clear</button>
       </span>
@@ -422,7 +422,7 @@
         <div style="font-size:15px;font-weight:600" id="fl-results-title">Results</div>
         <div style="display:flex;gap:8px;align-items:center">
           <span id="fl-selected-count" style="font-size:12px;color:#888"></span>
-          <select id="fl-owner-select" style="display:none;padding:5px 8px;border-radius:6px;border:1px solid #d5d5cf;font-size:12px;font-family:inherit"></select>
+          <select id="fl-owner-select" style="display:none;padding:5px 8px;border-radius:6px;border:1px solid #b8b8ae;font-size:12px;font-family:inherit"></select>
           <button class="btn btnp btnsm" onclick="importSelectedPlaces()" id="fl-import-btn">Import selected</button>
         </div>
       </div>
@@ -435,14 +435,14 @@
       <div style="font-size:15px;font-weight:600;margin-bottom:4px">Email drip sequences</div>
       <div style="font-size:13px;color:#888;margin-bottom:14px">AI writes a personalized 4-email sequence based on your lead profile and notes.</div>
       <div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center">
-        <select id="dlead" style="padding:8px 11px;border-radius:8px;border:1px solid #d5d5cf;font-size:13px;font-family:inherit;min-width:220px"></select>
-        <select id="dtype" style="padding:8px 11px;border-radius:8px;border:1px solid #d5d5cf;font-size:13px;font-family:inherit">
+        <select id="dlead" style="padding:8px 11px;border-radius:8px;border:1px solid #b8b8ae;font-size:13px;font-family:inherit;min-width:220px"></select>
+        <select id="dtype" style="padding:8px 11px;border-radius:8px;border:1px solid #b8b8ae;font-size:13px;font-family:inherit">
           <option value="cold">Cold outreach</option>
           <option value="followup">Follow-up</option>
           <option value="nurture">Nurture / educate</option>
           <option value="closing">Post-proposal close</option>
         </select>
-        <select id="dprovider" style="padding:8px 11px;border-radius:8px;border:1px solid #d5d5cf;font-size:13px;font-family:inherit">
+        <select id="dprovider" style="padding:8px 11px;border-radius:8px;border:1px solid #b8b8ae;font-size:13px;font-family:inherit">
           <option value="claude">Claude</option>
           <option value="gemini">Gemini</option>
         </select>
@@ -462,7 +462,7 @@
         <button class="btn" onclick="ask('priority')">Who to call today?</button>
         <button class="btn" onclick="ask('tips')">Sales tips</button>
         <button class="btn" onclick="ask('email')">Draft best follow-up</button>
-        <select id="aiprovider" style="padding:8px 11px;border-radius:8px;border:1px solid #d5d5cf;font-size:13px;font-family:inherit;margin-left:auto">
+        <select id="aiprovider" style="padding:8px 11px;border-radius:8px;border:1px solid #b8b8ae;font-size:13px;font-family:inherit;margin-left:auto">
           <option value="claude">Claude</option>
           <option value="gemini">Gemini</option>
         </select>
@@ -599,10 +599,10 @@
         <div class="card">
           <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:10px;margin-bottom:12px">
             <div style="display:flex;align-items:center;gap:10px">
-              <select id="dp-report-person-filter" onchange="renderDpReports()" style="padding:6px 10px;border-radius:8px;border:1px solid #d5d5cf;font-size:13px;font-family:inherit">
+              <select id="dp-report-person-filter" onchange="renderDpReports()" style="padding:6px 10px;border-radius:8px;border:1px solid #b8b8ae;font-size:13px;font-family:inherit">
                 <option value="">Everyone</option>
               </select>
-              <select id="dp-report-status-filter" onchange="renderDpReports()" style="padding:6px 10px;border-radius:8px;border:1px solid #d5d5cf;font-size:13px;font-family:inherit">
+              <select id="dp-report-status-filter" onchange="renderDpReports()" style="padding:6px 10px;border-radius:8px;border:1px solid #b8b8ae;font-size:13px;font-family:inherit">
                 <option value="">All statuses</option>
                 <option value="completed">Completed only</option>
                 <option value="open">Open only</option>
@@ -629,7 +629,7 @@
             <button class="btn btnsm" onclick="dpSelectAllEmailRecipients(false)">Select none</button>
             <span style="font-size:12px;color:#666;margin-left:8px" id="dp-email-selected-count"></span>
           </div>
-          <div id="dp-email-recipients" style="max-height:220px;overflow-y:auto;border:1px solid #eee;border-radius:8px;padding:8px 12px"></div>
+          <div id="dp-email-recipients" style="max-height:220px;overflow-y:auto;border:1px solid #dfdfd8;border-radius:8px;padding:8px 12px"></div>
         </div>
 
         <div class="card">
@@ -726,7 +726,7 @@
       <div style="font-size:13px;font-weight:600;color:var(--navy);margin-bottom:4px">Last touchpoint</div>
       <div style="font-size:13px;color:#555;margin-bottom:16px" id="dpd-last-touchpoint"></div>
 
-      <div style="border-top:1px solid #eee;padding-top:14px">
+      <div style="border-top:1px solid #dfdfd8;padding-top:14px">
         <div style="font-size:13px;font-weight:600;color:var(--navy);margin-bottom:8px">Log a touchpoint</div>
         <div class="fr">
           <div class="fg"><label>Type</label><select id="dpd-tp-type">
@@ -813,7 +813,7 @@
       <div class="card" id="m-team-card" style="display:none">
         <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px">
           <div style="font-size:15px;font-weight:600">Team summary</div>
-          <select id="m-team-period" onchange="mRenderTeam()" style="padding:6px 10px;border-radius:8px;border:1px solid #d5d5cf;font-size:13px;font-family:inherit">
+          <select id="m-team-period" onchange="mRenderTeam()" style="padding:6px 10px;border-radius:8px;border:1px solid #b8b8ae;font-size:13px;font-family:inherit">
             <option value="week">This week</option>
             <option value="month">This month</option>
             <option value="all">All time</option>
@@ -853,7 +853,7 @@
     <div style="font-size:12px;color:#888;margin-bottom:14px">Add or remove industries from the dropdown list.</div>
     <div id="ind-list" style="max-height:260px;overflow-y:auto;margin-bottom:14px"></div>
     <div style="display:flex;gap:8px;margin-bottom:14px">
-      <input id="ind-new" placeholder="New industry name..." style="flex:1;padding:8px 11px;border-radius:8px;border:1px solid #d5d5cf;font-size:13px;font-family:inherit" onkeydown="if(event.key==='Enter')addIndustryFromManager()"/>
+      <input id="ind-new" placeholder="New industry name..." style="flex:1;padding:8px 11px;border-radius:8px;border:1px solid #b8b8ae;font-size:13px;font-family:inherit" onkeydown="if(event.key==='Enter')addIndustryFromManager()"/>
       <button class="btn btnp" onclick="addIndustryFromManager()">+ Add</button>
     </div>
     <div style="display:flex;justify-content:flex-end">
@@ -907,31 +907,31 @@
       <div class="fg"><label>Owner (rep)</label><select id="ef-owner"></select></div>
       <div></div>
     </div>
-    <div style="border-top:1px solid #eee;margin-top:10px;padding-top:12px">
+    <div style="border-top:1px solid #dfdfd8;margin-top:10px;padding-top:12px">
       <div style="font-size:13px;font-weight:600;color:var(--navy);margin-bottom:8px">Notes</div>
       <div id="ef-nl" style="max-height:180px;overflow-y:auto;margin-bottom:10px"></div>
       <div style="display:flex;gap:6px">
-        <textarea id="ef-note-input" placeholder="Call notes, next steps, meeting summary..." style="flex:1;padding:6px 10px;border-radius:7px;border:1px solid #d5d5cf;font-size:12px;font-family:inherit;min-height:36px;resize:vertical"></textarea>
+        <textarea id="ef-note-input" placeholder="Call notes, next steps, meeting summary..." style="flex:1;padding:6px 10px;border-radius:7px;border:1px solid #b8b8ae;font-size:12px;font-family:inherit;min-height:36px;resize:vertical"></textarea>
         <button type="button" class="btn btnsm" onclick="saveNoteFromEdit()">+ Add</button>
       </div>
     </div>
-    <div style="border-top:1px solid #eee;margin-top:10px;padding-top:12px">
+    <div style="border-top:1px solid #dfdfd8;margin-top:10px;padding-top:12px">
       <div style="font-size:13px;font-weight:600;color:var(--navy);margin-bottom:8px">Tasks for this lead</div>
       <div id="ef-tasks-list" style="margin-bottom:10px"></div>
       <div style="display:flex;gap:6px">
-        <input id="ef-task-title" placeholder="Add a task..." style="flex:1;padding:6px 10px;border-radius:7px;border:1px solid #d5d5cf;font-size:12px;font-family:inherit"/>
-        <input id="ef-task-due" type="date" style="padding:6px 8px;border-radius:7px;border:1px solid #d5d5cf;font-size:12px;font-family:inherit"/>
+        <input id="ef-task-title" placeholder="Add a task..." style="flex:1;padding:6px 10px;border-radius:7px;border:1px solid #b8b8ae;font-size:12px;font-family:inherit"/>
+        <input id="ef-task-due" type="date" style="padding:6px 8px;border-radius:7px;border:1px solid #b8b8ae;font-size:12px;font-family:inherit"/>
         <button type="button" class="btn btnsm" onclick="addTaskFromEdit()">+ Add</button>
       </div>
     </div>
-    <div style="border-top:1px solid #eee;margin-top:10px;padding-top:12px">
+    <div style="border-top:1px solid #dfdfd8;margin-top:10px;padding-top:12px">
       <div style="font-size:13px;font-weight:600;color:var(--navy);margin-bottom:8px">Attachments</div>
       <div id="ef-attachments-list" style="margin-bottom:10px"></div>
       <input type="file" id="ef-file-input" style="display:none" onchange="uploadAttachment(event)"/>
       <button type="button" class="btn btnsm" onclick="document.getElementById('ef-file-input').click()">+ Upload file</button>
       <span id="ef-upload-status" style="font-size:12px;color:#888;margin-left:8px"></span>
     </div>
-    <div style="border-top:1px solid #eee;margin-top:10px;padding-top:12px">
+    <div style="border-top:1px solid #dfdfd8;margin-top:10px;padding-top:12px">
       <div style="font-size:13px;font-weight:600;color:var(--navy);margin-bottom:8px">Activity</div>
       <div id="ef-activity-list" style="max-height:160px;overflow-y:auto"></div>
     </div>
@@ -1115,12 +1115,12 @@ function render(){
       +'<td style="font-size:12px;color:#888">'+(l.phone?normalizePhone(l.phone):'&mdash;')+'</td>'
       +'<td style="font-size:12px;color:#555">'+(l.city||'&mdash;')+'</td>'
       +'<td style="font-size:12px;color:#555">'+(l.zip||'&mdash;')+'</td>'
-      +'<td><select data-action="setsource" data-id="'+l.id+'" style="border:1px solid transparent;border-radius:6px;padding:3px 6px;font-size:13px;font-family:inherit;color:#1a1a18;background:transparent;cursor:pointer" onmouseover="this.style.borderColor=\'#d5d5cf\'" onmouseout="this.style.borderColor=\'transparent\'">'+['Website','Referral','LinkedIn','Facebook','Instagram','Cold outreach','Event','Driving Community','Other'].map(function(s){return'<option'+(s===l.source?' selected':'')+'>'+s+'</option>';}).join('')+'</select></td>'
+      +'<td><select data-action="setsource" data-id="'+l.id+'" style="border:1px solid transparent;border-radius:6px;padding:3px 6px;font-size:13px;font-family:inherit;color:#1a1a18;background:transparent;cursor:pointer" onmouseover="this.style.borderColor=\'#b8b8ae\'" onmouseout="this.style.borderColor=\'transparent\'">'+['Website','Referral','LinkedIn','Facebook','Instagram','Cold outreach','Event','Driving Community','Other'].map(function(s){return'<option'+(s===l.source?' selected':'')+'>'+s+'</option>';}).join('')+'</select></td>'
       +'<td>'+industryCell(l)+'</td>'
       +'<td>'+stageCell(l)+'</td>'
       +'<td style="font-weight:600">$'+(l.value||0).toLocaleString()+'</td>'
       +'<td style="font-size:12px;color:#888">'+(l.contact_date||'—')+'</td>'
-      +'<td><input type="date" class="fudate" data-action="setfollowup" data-id="'+l.id+'" value="'+(l.followup_date||'')+'" style="border:1px solid #d5d5cf;border-radius:6px;padding:3px 6px;font-size:12px;font-family:inherit;color:'+(l.followup_date&&new Date(l.followup_date)<new Date()?'#A32D2D':'#555')+';background:#fff;cursor:pointer"/></td>'
+      +'<td><input type="date" class="fudate" data-action="setfollowup" data-id="'+l.id+'" value="'+(l.followup_date||'')+'" style="border:1px solid #b8b8ae;border-radius:6px;padding:3px 6px;font-size:12px;font-family:inherit;color:'+(l.followup_date&&new Date(l.followup_date)<new Date()?'#A32D2D':'#555')+';background:#fff;cursor:pointer"/></td>'
       +'<td><button class="btn btnsm" data-action="notes" data-id="'+l.id+'" style="'+(nc?'color:#1d5ca8':'color:#aaa')+'">'+(nc?l.notes.length+' note'+(l.notes.length>1?'s':''):'Add note')+'</button></td>'
       +(mIsAdmin?'<td>'+ownerCell(l)+'</td>':'')
       +'<td class="col-actions"><div style="display:flex;gap:5px;flex-wrap:nowrap">'
@@ -2018,7 +2018,7 @@ function openDpPersonDetail(id){
   var mags=dpMagazines.filter(function(m){return m.person_id===id;});
   document.getElementById('dpd-magazines').innerHTML=mags.map(function(m){
     var h=dpHealthOf(m.last_sale_date);
-    return '<div style="display:flex;justify-content:space-between;align-items:center;padding:6px 0;border-bottom:1px solid #f0f2f5">'
+    return '<div style="display:flex;justify-content:space-between;align-items:center;padding:6px 0;border-bottom:1px solid #dde1e8">'
       +'<span style="font-size:13px">'+m.name+'</span>'
       +'<span style="display:inline-block;padding:2px 10px;border-radius:99px;font-size:11px;font-weight:600;color:'+h.color+';background:'+h.bg+'">'+h.label+(h.days!==null?' &middot; '+h.days+'d':'')+'</span>'
       +'</div>';
@@ -2084,7 +2084,7 @@ function dpTouchpointRowHTML(tp,compact){
   var overdue=!tp.completed&&tp.due_date&&tp.due_date<todayStr();
   var dueToday=!tp.completed&&tp.due_date===todayStr();
   var color=tp.completed?'#aaa':overdue?'#A32D2D':dueToday?'#c95a1e':'#1a1a18';
-  return '<div style="display:flex;align-items:center;gap:10px;padding:'+(compact?'6px 0':'8px 0')+';border-bottom:1px solid #f0f2f5">'
+  return '<div style="display:flex;align-items:center;gap:10px;padding:'+(compact?'6px 0':'8px 0')+';border-bottom:1px solid #dde1e8">'
     +'<input type="checkbox" style="width:auto" '+(tp.completed?'checked':'')+' onchange="toggleDpTouchpoint(\''+tp.id+'\',this.checked)"/>'
     +'<div style="flex:1;min-width:0">'
       +'<div style="font-size:13px;color:'+color+';text-decoration:'+(tp.completed?'line-through':'none')+'">'+dpTypeBadge(tp.type)+tp.title+'</div>'
@@ -2175,7 +2175,7 @@ function dpRenderEmailRecipients(){
   var withoutCount=dpPeople.length-withEmail.length;
   document.getElementById('dp-email-noemail-note').textContent=withoutCount?(withoutCount+' of your people have no email on file and are excluded.'):'';
   document.getElementById('dp-email-recipients').innerHTML=withEmail.map(function(p){
-    return '<label style="display:flex;align-items:center;gap:8px;padding:5px 0;font-size:13px;border-bottom:1px solid #f5f5f2">'
+    return '<label style="display:flex;align-items:center;gap:8px;padding:5px 0;font-size:13px;border-bottom:1px solid #dde1e8">'
       +'<input type="checkbox" class="dp-email-recip-cb" value="'+p.id+'" checked onchange="dpUpdateEmailSelectedCount()" style="width:auto"/>'
       +'<span style="flex:1">'+p.name+'</span><span style="color:#888;font-size:11px">'+p.role+'</span>'
       +'</label>';
@@ -2373,7 +2373,7 @@ function taskRowHTML(k,compact){
   var overdue=!k.completed&&k.due_date&&k.due_date<todayStr();
   var dueToday=!k.completed&&k.due_date===todayStr();
   var color=k.completed?'#aaa':overdue?'#A32D2D':dueToday?'#c95a1e':'#1a1a18';
-  return '<div style="display:flex;align-items:center;gap:10px;padding:'+(compact?'6px 0':'8px 0')+';border-bottom:1px solid #f0f2f5">'
+  return '<div style="display:flex;align-items:center;gap:10px;padding:'+(compact?'6px 0':'8px 0')+';border-bottom:1px solid #dde1e8">'
     +'<input type="checkbox" style="width:auto" '+(k.completed?'checked':'')+' onchange="toggleTask(\''+k.id+'\',this.checked)"/>'
     +'<div style="flex:1;min-width:0">'
       +'<div style="font-size:13px;color:'+color+';text-decoration:'+(k.completed?'line-through':'none')+'">'+k.title+'</div>'
@@ -2452,7 +2452,7 @@ async function loadAttachments(){
 
 function renderEfAttachments(){
   document.getElementById('ef-attachments-list').innerHTML=currentAttachments.map(function(a){
-    return '<div style="display:flex;align-items:center;gap:10px;padding:6px 0;border-bottom:1px solid #f0f2f5">'
+    return '<div style="display:flex;align-items:center;gap:10px;padding:6px 0;border-bottom:1px solid #dde1e8">'
       +'<div style="flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-size:12px;color:#1a1a18;cursor:pointer" onclick="downloadAttachment(\''+a.id+'\')" title="'+a.file_name+'">&#x1F4CE; '+a.file_name+'</div>'
       +'<div style="font-size:11px;color:#888;white-space:nowrap">'+formatFileSize(a.file_size)+'</div>'
       +'<button type="button" class="btn btnsm btndanger" onclick="deleteAttachment(\''+a.id+'\')">Delete</button>'
@@ -2554,7 +2554,7 @@ function updateEfSummaryLine(){
 function renderEfActivity(){
   document.getElementById('ef-activity-list').innerHTML=currentActivity.map(function(a){
     var when=new Date(a.created_at).toLocaleString(undefined,{month:'short',day:'numeric',hour:'numeric',minute:'2-digit'});
-    return '<div style="padding:5px 0;border-bottom:1px solid #f0f2f5;font-size:12px">'
+    return '<div style="padding:5px 0;border-bottom:1px solid #dde1e8;font-size:12px">'
       +'<span style="font-weight:600">'+actorLabel(a.actor_id)+'</span> '+a.action
       +(a.details?' <span style="color:#888">'+a.details+'</span>':'')
       +'<div style="color:#aaa;font-size:11px">'+when+'</div>'
@@ -2637,7 +2637,7 @@ function renderFunnel(){
   document.getElementById('funnel-chart').innerHTML=allStages.map(function(s){
     var pct=Math.round(counts[s]/max*100);
     var barColor=s==='Lost'?'#ccc':'var(--navy)';
-    return '<div style="display:flex;align-items:center;gap:10px;margin-bottom:8px'+(s==='Lost'?';padding-top:6px;border-top:1px dashed #e2e6ed':'')+'">'
+    return '<div style="display:flex;align-items:center;gap:10px;margin-bottom:8px'+(s==='Lost'?';padding-top:6px;border-top:1px dashed #c7cdd9':'')+'">'
       +'<div style="width:90px;font-size:12px;color:#555">'+s+'</div>'
       +'<div style="flex:1;background:#f0f2f5;border-radius:6px;overflow:hidden;height:22px">'
         +'<div style="width:'+pct+'%;background:'+barColor+';height:100%;border-radius:6px"></div>'
@@ -2747,7 +2747,7 @@ function renderPlaceResults(){
   document.getElementById('fl-results-title').textContent=placeResults.length+' result'+(placeResults.length!==1?'s':'')+' found';
   document.getElementById('fl-results-list').innerHTML=placeResults.map(function(p){
     var dup=isDuplicateOfExisting(p);
-    return '<div style="display:flex;align-items:flex-start;gap:10px;padding:8px 0;border-bottom:1px solid #f0f2f5'+(dup?';opacity:.5':'')+'">'
+    return '<div style="display:flex;align-items:flex-start;gap:10px;padding:8px 0;border-bottom:1px solid #dde1e8'+(dup?';opacity:.5':'')+'">'
       +'<input type="checkbox" style="margin-top:3px" '+(selectedPlaceIds.has(p.id)?'checked':'')+' '+(dup?'disabled':'')+' onchange="togglePlaceSelect(\''+p.id+'\',this.checked)"/>'
       +'<div style="flex:1">'
         +'<div style="font-size:13px;font-weight:600">'+p.name+(dup?' <span style="font-weight:400;color:#888;font-size:11px">(already in your leads)</span>':'')+'</div>'
@@ -3628,7 +3628,7 @@ function populateIndustryDropdowns(){
 
 function industryCell(l){
   var inds=getIndustries();
-  return '<select data-action="setindustry" data-id="'+l.id+'" style="border:1px solid transparent;border-radius:6px;padding:3px 6px;font-size:13px;font-family:inherit;color:#1a1a18;background:transparent;cursor:pointer" onmouseover="this.style.borderColor=\'#d5d5cf\'" onmouseout="this.style.borderColor=\'transparent\'">'
+  return '<select data-action="setindustry" data-id="'+l.id+'" style="border:1px solid transparent;border-radius:6px;padding:3px 6px;font-size:13px;font-family:inherit;color:#1a1a18;background:transparent;cursor:pointer" onmouseover="this.style.borderColor=\'#b8b8ae\'" onmouseout="this.style.borderColor=\'transparent\'">'
     +'<option value="">—</option>'
     +inds.map(function(i){return'<option'+(i===l.industry?' selected':'')+'>'+i+'</option>';}).join('')
     +'</select>';
@@ -3650,7 +3650,7 @@ function stageCell(l){
 }
 
 function ownerCell(l){
-  return '<select data-action="setowner" data-id="'+l.id+'" style="border:1px solid transparent;border-radius:6px;padding:3px 6px;font-size:12px;font-family:inherit;color:#1a1a18;background:transparent;cursor:pointer" onmouseover="this.style.borderColor=\'#d5d5cf\'" onmouseout="this.style.borderColor=\'transparent\'">'
+  return '<select data-action="setowner" data-id="'+l.id+'" style="border:1px solid transparent;border-radius:6px;padding:3px 6px;font-size:12px;font-family:inherit;color:#1a1a18;background:transparent;cursor:pointer" onmouseover="this.style.borderColor=\'#b8b8ae\'" onmouseout="this.style.borderColor=\'transparent\'">'
     +allProfiles.map(function(p){return'<option value="'+p.id+'"'+(p.id===l.owner_id?' selected':'')+'>'+(p.rep_name||p.email)+'</option>';}).join('')
     +'</select>';
 }
