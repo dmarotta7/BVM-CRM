@@ -222,6 +222,7 @@
         <div style="border-top:1px solid #dcdcd3;margin:6px 0"></div>
         <button class="btn" style="display:block;width:100%;text-align:left;border:none;border-radius:0;color:#1a1a18;background:none" onmouseover="this.style.background='var(--orange-light)';this.style.color='var(--orange-dark)'" onmouseout="this.style.background='none';this.style.color='#1a1a18'" onclick="toggleToolsMenu();triggerImport()">&#x2b06; Import CSV / Excel</button>
         <button class="btn" style="display:block;width:100%;text-align:left;border:none;border-radius:0;color:#1a1a18;background:none" onmouseover="this.style.background='var(--orange-light)';this.style.color='var(--orange-dark)'" onmouseout="this.style.background='none';this.style.color='#1a1a18'" onclick="toggleToolsMenu();openIndustryManager()">&#x2699; Manage Industries</button>
+        <button class="btn" style="display:block;width:100%;text-align:left;border:none;border-radius:0;color:#1a1a18;background:none" onmouseover="this.style.background='var(--orange-light)';this.style.color='var(--orange-dark)'" onmouseout="this.style.background='none';this.style.color='#1a1a18'" onclick="toggleToolsMenu();openTrash()">&#x1f5d1; Trash</button>
         <div style="border-top:1px solid #dcdcd3;margin:6px 0"></div>
         <div style="padding:6px 14px 3px;font-size:11px;font-weight:700;color:var(--orange-dark);text-transform:uppercase;letter-spacing:.04em">Account</div>
         <button class="btn" style="display:block;width:100%;text-align:left;border:none;border-radius:0;color:#1a1a18;background:none" onmouseover="this.style.background='var(--orange-light)';this.style.color='var(--orange-dark)'" onmouseout="this.style.background='none';this.style.color='#1a1a18'" onclick="toggleToolsMenu();openChangePassword()">Change password</button>
@@ -236,6 +237,19 @@
         <div style="display:flex;gap:8px;justify-content:flex-end">
           <button class="btn" onclick="cancelImportOwner()">Cancel</button>
           <button class="btn btnp" onclick="confirmImportOwner()">Continue</button>
+        </div>
+      </div>
+    </div>
+    <div class="overlay" id="trash-modal" onclick="if(event.target===this)closeTrash()">
+      <div class="modal" style="max-width:560px;max-height:80vh;overflow-y:auto">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:4px">
+          <div style="font-size:16px;font-weight:700;color:var(--navy)">Trash</div>
+          <button class="btn btnsm" onclick="closeTrash()">Close</button>
+        </div>
+        <div style="font-size:12px;color:#888;margin-bottom:14px">Deleted leads land here first, not gone for good. Restore them, or delete permanently when you're sure.</div>
+        <div id="trash-list"></div>
+        <div style="margin-top:12px;display:flex;justify-content:flex-end">
+          <button class="btn btndanger btnsm" onclick="emptyTrash()">Empty trash</button>
         </div>
       </div>
     </div>
@@ -1150,6 +1164,35 @@ var leads=[],activeId=null;
 var tasks=[];
 var pageSize=20,currentPage=1;
 var stages=["New","Contacted","Qualified","Proposal","Closed"];
+
+// Real lead score, calculated from actual signals rather than randomized.
+// Weighted so a lead can only reach 100 by being far along AND well-engaged:
+//   stage progress (10-50) + has phone (5) + has email (5) + recency of
+//   last contact (0-15) + note/engagement count (0-15, capped) +
+//   an active future follow-up date (+10) or an overdue one (-10).
+function calcLeadScore(l){
+  if(l.stage==='Lost')return 0;
+  if(l.stage==='Closed')return 100;
+  var stageBase={New:10,Contacted:25,Qualified:40,Proposal:50}[l.stage];
+  if(stageBase===undefined)stageBase=10;
+  var score=stageBase;
+  if(l.phone)score+=5;
+  if(l.email)score+=5;
+  if(l.contact_date){
+    var days=Math.floor((new Date(todayStr())-new Date(l.contact_date))/86400000);
+    if(days<=7)score+=15;
+    else if(days<=14)score+=10;
+    else if(days<=30)score+=5;
+  }
+  var noteCount=(l.notes||[]).length;
+  score+=Math.min(noteCount*3,15);
+  if(l.followup_date){
+    var fdays=Math.floor((new Date(l.followup_date)-new Date(todayStr()))/86400000);
+    if(fdays>=0)score+=10;
+    else score-=10;
+  }
+  return Math.max(0,Math.min(100,Math.round(score)));
+}
 var sbClient=null,mUser=null,mIsAdmin=false,allProfiles=[];
 var adminViewOwnerId='';
 function repNameById(id){
@@ -1195,7 +1238,7 @@ async function loadLeads(){
   try{
     var all=[];var page=1000;var from=0;
     while(true){
-      var {data:chunk,error}=await sbClient.from('leads').select('*').order('created_at',{ascending:false}).range(from,from+page-1);
+      var {data:chunk,error}=await sbClient.from('leads').select('*').is('deleted_at',null).order('created_at',{ascending:false}).range(from,from+page-1);
       if(error)throw new Error(error.message);
       all=all.concat(chunk);
       if(chunk.length<page)break;
@@ -1538,8 +1581,9 @@ async function addLead(){
       address:document.getElementById('faddr').value.trim()||null,
       city:document.getElementById('fcity').value.trim()||null,
       zip:document.getElementById('fzip').value.trim()||null,
-      score:Math.floor(Math.random()*35)+30,value:parseInt(document.getElementById('fv').value)||0,notes:note?[note]:[],contact_date:document.getElementById('fcd').value||null,followup_date:document.getElementById('ffu').value||null,
+      value:parseInt(document.getElementById('fv').value)||0,notes:note?[note]:[],contact_date:document.getElementById('fcd').value||null,followup_date:document.getElementById('ffu').value||null,
       owner_id:mUser.id};
+    row.score=calcLeadScore(row);
     var {data,error}=await sbClient.from('leads').insert(row).select().single();
     if(error)throw new Error(error.message);
     leads.unshift(Object.assign({},data,{notes:data.notes||[]}));
@@ -1560,7 +1604,7 @@ async function advance(id){
   var l=leads.find(function(x){return x.id===id;});if(!l)return;
   var i=stages.indexOf(l.stage);
   if(i>=stages.length-1){toast('Already at final stage');return;}
-  var ns=stages[i+1];var nsc=Math.min(100,l.score+Math.floor(Math.random()*8)+4);
+  var ns=stages[i+1];var nsc=calcLeadScore(Object.assign({},l,{stage:ns}));
   setSS('loading','Saving...');
   try{
     await sbLeadUpdate(id,{stage:ns,score:nsc});
@@ -1580,10 +1624,11 @@ async function setSource(id,source){
 
 async function setFollowup(id,date){
   var l=leads.find(function(x){return x.id===id;});if(!l)return;
+  var nsc=calcLeadScore(Object.assign({},l,{followup_date:date||null}));
   setSS('loading','Saving...');
   try{
-    await sbLeadUpdate(id,{followup_date:date||null});
-    l.followup_date=date||null;render();setSS('ok','Synced');toast('Follow-up date updated!');
+    await sbLeadUpdate(id,{followup_date:date||null,score:nsc});
+    l.followup_date=date||null;l.score=nsc;render();setSS('ok','Synced');toast('Follow-up date updated!');
   }catch(e){setSS('err','Sync error');toast('Error: '+e.message);}
 }
 
@@ -1602,7 +1647,7 @@ async function retreat(id){
   var l=leads.find(function(x){return x.id===id;});if(!l)return;
   var i=stages.indexOf(l.stage);
   if(i<=0){toast('Already at first stage');return;}
-  var ns=stages[i-1];var nsc=Math.max(0,l.score-Math.floor(Math.random()*5)-2);
+  var ns=stages[i-1];var nsc=calcLeadScore(Object.assign({},l,{stage:ns}));
   setSS('loading','Saving...');
   try{
     await sbLeadUpdate(id,{stage:ns,score:nsc});
@@ -1633,17 +1678,72 @@ async function reopenLead(id){
 }
 
 async function del(id){
-  if(!confirm('Remove this lead? This cannot be undone.'))return;
+  if(!confirm('Remove this lead? You can restore it from Trash (Tools menu) afterward.'))return;
   var l=leads.find(function(x){return x.id===id;});
   setSS('loading','Deleting...');
   try{
-    var {error}=await sbClient.from('leads').delete().eq('id',id);
+    var {error}=await sbClient.from('leads').update({deleted_at:new Date().toISOString()}).eq('id',id);
     if(error)throw new Error(error.message);
     if(l)logActivity(id,l.name,l.company,'deleted this lead');
     leads=leads.filter(function(x){return x.id!==id;});
     tasks=tasks.filter(function(t){return t.lead_id!==id;});
-    render();renderTaskLeadDropdown();renderFollowupWidget();renderTasks();setSS('ok','Synced');toast('Lead deleted');
+    render();renderTaskLeadDropdown();renderFollowupWidget();renderTasks();setSS('ok','Synced');toast('Lead moved to Trash');
   }catch(e){setSS('err','Sync error');toast('Error: '+e.message);}
+}
+
+// --- Trash: soft-deleted leads, restorable until permanently removed ---
+var trashedLeads=[];
+async function openTrash(){
+  document.getElementById('trash-modal').classList.add('on');
+  document.getElementById('trash-list').innerHTML='<div style="color:#888;font-size:13px;padding:12px 0">Loading...</div>';
+  var {data,error}=await sbClient.from('leads').select('*').not('deleted_at','is',null).order('deleted_at',{ascending:false}).limit(200);
+  if(error){document.getElementById('trash-list').innerHTML='<div style="color:#A32D2D;font-size:13px">Could not load trash: '+error.message+'</div>';return;}
+  trashedLeads=data||[];
+  renderTrashList();
+}
+
+function closeTrash(){
+  document.getElementById('trash-modal').classList.remove('on');
+}
+
+function renderTrashList(){
+  var el=document.getElementById('trash-list');
+  if(!trashedLeads.length){el.innerHTML='<div style="color:#888;font-size:13px;padding:12px 0">Trash is empty.</div>';return;}
+  el.innerHTML=trashedLeads.map(function(l){
+    return '<div style="display:flex;justify-content:space-between;align-items:center;padding:8px 0;border-bottom:1px solid #dde1e8">'
+      +'<div><div style="font-size:13px;font-weight:600">'+l.name+'</div><div style="font-size:11px;color:#888">'+l.company+' &middot; deleted '+new Date(l.deleted_at).toLocaleDateString()+'</div></div>'
+      +'<div style="display:flex;gap:6px"><button class="btn btnsm" onclick="restoreLead(\''+l.id+'\')">Restore</button><button class="btn btnsm btndanger" onclick="permanentlyDeleteLead(\''+l.id+'\')">Delete forever</button></div>'
+      +'</div>';
+  }).join('');
+}
+
+async function restoreLead(id){
+  var {error}=await sbClient.from('leads').update({deleted_at:null}).eq('id',id);
+  if(error){toast('Could not restore: '+error.message);return;}
+  trashedLeads=trashedLeads.filter(function(x){return x.id!==id;});
+  renderTrashList();
+  toast('Lead restored!');
+  await loadLeads();
+}
+
+async function permanentlyDeleteLead(id){
+  if(!confirm('Delete this lead permanently? This cannot be undone.'))return;
+  var {error}=await sbClient.from('leads').delete().eq('id',id);
+  if(error){toast('Could not delete: '+error.message);return;}
+  trashedLeads=trashedLeads.filter(function(x){return x.id!==id;});
+  renderTrashList();
+  toast('Deleted permanently.');
+}
+
+async function emptyTrash(){
+  if(!trashedLeads.length){toast('Trash is already empty.');return;}
+  if(!confirm('Permanently delete all '+trashedLeads.length+' lead(s) in Trash? This cannot be undone.'))return;
+  var ids=trashedLeads.map(function(l){return l.id;});
+  var {error}=await sbClient.from('leads').delete().in('id',ids);
+  if(error){toast('Could not empty trash: '+error.message);return;}
+  trashedLeads=[];
+  renderTrashList();
+  toast('Trash emptied.');
 }
 
 // ===================== Tasks / Follow-ups =====================
@@ -3290,10 +3390,10 @@ async function importSelectedPlaces(){
         phone:p.phone?normalizePhone(p.phone):null,
         source:'Google Places',stage:'New',
         website:p.website||null,
-        score:Math.floor(Math.random()*35)+30,
         value:0,notes:p.address?[p.address]:[],
         owner_id:(document.getElementById('fl-owner-select').value)||mUser.id
       };
+      row.score=calcLeadScore(row);
       var {data,error}=await sbClient.from('leads').insert(row).select().single();
       if(error)throw new Error(error.message);
       leads.unshift(Object.assign({},data,{notes:data.notes||[]}));
@@ -3709,10 +3809,11 @@ async function saveNote(){
   var txt=document.getElementById('ni').value.trim();if(!txt)return;
   var l=leads.find(function(x){return x.id===activeId;});if(!l)return;
   var newNotes=(l.notes||[]).concat([txt]);
+  var nsc=calcLeadScore(Object.assign({},l,{notes:newNotes}));
   setSS('loading','Saving...');
   try{
-    await sbLeadUpdate(activeId,{notes:newNotes});
-    l.notes=newNotes;document.getElementById('ni').value='';
+    await sbLeadUpdate(activeId,{notes:newNotes,score:nsc});
+    l.notes=newNotes;l.score=nsc;document.getElementById('ni').value='';
     renderAllNotesLists(l);render();setSS('ok','Synced');toast('Note saved!');
   }catch(e){setSS('err','Sync error');toast('Error: '+e.message);}
 }
@@ -3722,10 +3823,11 @@ async function saveNoteFromEdit(){
   var txt=ta.value.trim();if(!txt)return;
   var l=leads.find(function(x){return x.id===activeId;});if(!l)return;
   var newNotes=(l.notes||[]).concat([txt]);
+  var nsc=calcLeadScore(Object.assign({},l,{notes:newNotes}));
   setSS('loading','Saving...');
   try{
-    await sbLeadUpdate(activeId,{notes:newNotes});
-    l.notes=newNotes;ta.value='';
+    await sbLeadUpdate(activeId,{notes:newNotes,score:nsc});
+    l.notes=newNotes;l.score=nsc;ta.value='';
     renderAllNotesLists(l);render();setSS('ok','Synced');toast('Note saved!');
   }catch(e){setSS('err','Sync error');toast('Error: '+e.message);}
 }
@@ -3733,10 +3835,11 @@ async function saveNoteFromEdit(){
 async function delNote(idx){
   var l=leads.find(function(x){return x.id===activeId;});if(!l)return;
   var newNotes=l.notes.filter(function(_,i){return i!==idx;});
+  var nsc=calcLeadScore(Object.assign({},l,{notes:newNotes}));
   setSS('loading','Saving...');
   try{
-    await sbLeadUpdate(activeId,{notes:newNotes});
-    l.notes=newNotes;renderAllNotesLists(l);render();setSS('ok','Synced');
+    await sbLeadUpdate(activeId,{notes:newNotes,score:nsc});
+    l.notes=newNotes;l.score=nsc;renderAllNotesLists(l);render();setSS('ok','Synced');
   }catch(e){setSS('err','Sync error');toast('Error: '+e.message);}
 }
 
@@ -3930,15 +4033,16 @@ async function processRows(rows){
     var stageRaw=col(row,'stage');
     var stage=validStages.find(function(s){return s.toLowerCase()===stageRaw.toLowerCase();})||'New';
     var cd=parseImportDate(col(row,'contact_date'));var fd=parseImportDate(col(row,'followup_date'));
-    toImport.push({
+    var importRow={
       name:name||'Unknown',company:company||'Unknown',email:email,
       phone:normalizePhone(col(row,'phone')),source:col(row,'source')||'Other',stage:stage,
-      score:(!isNaN(scoreRaw)&&scoreRaw>=0&&scoreRaw<=100)?scoreRaw:Math.floor(Math.random()*35)+30,
       value:parseInt(col(row,'value'))||0,notes:[],
       contact_date:cd||null,followup_date:fd||null,
       address:col(row,'address')||null,city:col(row,'city')||null,zip:col(row,'zip')||null,
       owner_id:importTargetOwner||mUser.id
-    });
+    };
+    importRow.score=(!isNaN(scoreRaw)&&scoreRaw>=0&&scoreRaw<=100)?scoreRaw:calcLeadScore(importRow);
+    toImport.push(importRow);
   }
   if(toImport.length===0){
     toast('No new leads to import. Rows checked: '+rows.length+', skipped duplicates: '+skipped+', blank rows: '+blank);return;
@@ -4098,6 +4202,7 @@ async function saveEdit(){
       zip:document.getElementById('ef-zip').value.trim()||null
     };
     if(mIsAdmin)updates.owner_id=document.getElementById('ef-owner').value;
+    updates.score=calcLeadScore(Object.assign({},before,updates));
     await sbLeadUpdate(activeId,updates);
     if(updates.stage!==prevStage){
       logActivity(activeId,n,c,'changed stage','('+prevStage+' \u2192 '+updates.stage+')');
@@ -4190,13 +4295,14 @@ async function setStage(id,newStage){
   var prevStage=l.stage;
   if(prevStage===newStage)return;
   if(newStage==='Lost'&&!confirm('Mark "'+l.name+'" as lost?')){render();return;}
+  var nsc=calcLeadScore(Object.assign({},l,{stage:newStage}));
   setSS('loading','Saving...');
   try{
-    await sbLeadUpdate(id,{stage:newStage});
+    await sbLeadUpdate(id,{stage:newStage,score:nsc});
     if(newStage==='Lost')logActivity(id,l.name,l.company,'marked as lost','(was '+prevStage+')');
     else if(prevStage==='Lost')logActivity(id,l.name,l.company,'reopened this lead');
     else logActivity(id,l.name,l.company,'changed stage','('+prevStage+' \u2192 '+newStage+')');
-    l.stage=newStage;render();setSS('ok','Synced');toast('Stage updated!');
+    l.stage=newStage;l.score=nsc;render();setSS('ok','Synced');toast('Stage updated!');
   }catch(e){setSS('err','Sync error');toast('Error: '+e.message);render();}
 }
 
