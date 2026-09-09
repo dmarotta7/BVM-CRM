@@ -383,6 +383,21 @@
   </div>
 
   <div class="pg" id="tab-reports">
+    <div class="card" id="trend-card" style="display:none">
+      <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:10px;margin-bottom:4px">
+        <div style="font-size:15px;font-weight:600">Pipeline trend</div>
+        <select id="trend-metric-select" onchange="renderTrendChart()" style="padding:6px 10px;border-radius:8px;border:1px solid #b8b8ae;font-size:13px;font-family:inherit">
+          <option value="pipeline_value">Pipeline value</option>
+          <option value="total_leads">Total leads</option>
+          <option value="contacted_count">Contacted leads</option>
+          <option value="closed_value">Closed value</option>
+        </select>
+      </div>
+      <div style="font-size:13px;color:#888;margin-bottom:8px">One snapshot recorded per day, automatically, the first time you check Reports that day.</div>
+      <div id="trend-chart-wrap"></div>
+      <div style="font-size:12px;color:#888;margin-top:6px" id="trend-summary"></div>
+    </div>
+
     <div class="card">
       <div style="font-size:15px;font-weight:600;margin-bottom:4px">Pipeline funnel</div>
       <div style="font-size:13px;color:#888;margin-bottom:14px">Where your leads sit in the pipeline right now.</div>
@@ -2901,6 +2916,74 @@ function renderReports(){
   renderSourceReport();
   document.getElementById('rep-report-card').style.display=mIsAdmin?'block':'none';
   if(mIsAdmin)renderRepReport();
+  document.getElementById('trend-card').style.display=mIsAdmin?'block':'none';
+  if(mIsAdmin){maybeRecordDailySnapshot();loadAndRenderTrends();}
+}
+
+var dpLeadTrendData=[];
+
+async function maybeRecordDailySnapshot(){
+  var today=todayStr();
+  var {data:existing}=await sbClient.from('lead_metrics_snapshots').select('id').eq('snapshot_date',today).maybeSingle();
+  if(existing)return;
+  var counts={New:0,Contacted:0,Qualified:0,Proposal:0,Closed:0,Lost:0};
+  var pipelineValue=0,closedValue=0;
+  leads.forEach(function(l){
+    if(counts[l.stage]!==undefined)counts[l.stage]++;
+    if(['New','Contacted','Qualified','Proposal'].indexOf(l.stage)>=0)pipelineValue+=(l.value||0);
+    if(l.stage==='Closed')closedValue+=(l.value||0);
+  });
+  var row={
+    snapshot_date:today,
+    total_leads:leads.length,
+    new_count:counts.New,contacted_count:counts.Contacted,qualified_count:counts.Qualified,
+    proposal_count:counts.Proposal,closed_count:counts.Closed,lost_count:counts.Lost,
+    pipeline_value:pipelineValue,closed_value:closedValue
+  };
+  await sbClient.from('lead_metrics_snapshots').upsert(row,{onConflict:'snapshot_date'});
+  dpLeadTrendData=[];
+}
+
+async function loadAndRenderTrends(){
+  var {data,error}=await sbClient.from('lead_metrics_snapshots').select('*').order('snapshot_date',{ascending:true}).limit(90);
+  if(error||!data||!data.length){
+    document.getElementById('trend-chart-wrap').innerHTML='<div style="color:#888;font-size:13px;text-align:center;padding:30px">No history yet &mdash; the first snapshot was just recorded today. Check back tomorrow to start seeing a trend.</div>';
+    document.getElementById('trend-summary').textContent='';
+    return;
+  }
+  dpLeadTrendData=data;
+  renderTrendChart();
+}
+
+function renderTrendChart(){
+  var data=dpLeadTrendData;
+  if(!data||data.length<2){
+    document.getElementById('trend-chart-wrap').innerHTML='<div style="color:#888;font-size:13px;text-align:center;padding:30px">Need at least 2 days of history to show a trend. Check back tomorrow.</div>';
+    document.getElementById('trend-summary').textContent='';
+    return;
+  }
+  var metric=document.getElementById('trend-metric-select').value;
+  var values=data.map(function(d){return Number(d[metric])||0;});
+  var max=Math.max.apply(null,values),min=Math.min.apply(null,values);
+  var range=(max-min)||1;
+  var w=700,h=180,pad=14;
+  var stepX=values.length>1?(w-2*pad)/(values.length-1):0;
+  var pts=values.map(function(v,i){
+    var x=pad+i*stepX;
+    var y=h-pad-((v-min)/range)*(h-2*pad);
+    return{x:x,y:y};
+  });
+  var trendUp=values[values.length-1]>=values[0];
+  var color=trendUp?'#1a7a45':'#A32D2D';
+  var polyline=pts.map(function(p){return p.x+','+p.y;}).join(' ');
+  var dots=pts.map(function(p){return '<circle cx="'+p.x+'" cy="'+p.y+'" r="3" fill="'+color+'"/>';}).join('');
+  document.getElementById('trend-chart-wrap').innerHTML=
+    '<svg viewBox="0 0 '+w+' '+h+'" style="width:100%;height:180px">'
+    +'<polyline points="'+polyline+'" fill="none" stroke="'+color+'" stroke-width="2.5"/>'
+    +dots
+    +'</svg>';
+  var fmt=function(v){return(metric==='pipeline_value'||metric==='closed_value')?('$'+v.toLocaleString()):v.toLocaleString();};
+  document.getElementById('trend-summary').textContent=data[0].snapshot_date+': '+fmt(values[0])+'  \u2192  '+data[data.length-1].snapshot_date+': '+fmt(values[values.length-1]);
 }
 
 function renderFunnel(){
