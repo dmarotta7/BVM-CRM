@@ -660,7 +660,16 @@
     <div class="modal" style="max-width:420px">
       <div style="font-size:16px;font-weight:700;color:var(--navy);margin-bottom:14px" id="dp-mag-form-title">Add a magazine</div>
       <div class="fg"><label>Magazine name</label><input id="dp-mag-name" placeholder="e.g. Mendham Neighbors"/></div>
-      <div class="fg"><label>Assigned publisher</label><select id="dp-mag-person"><option value="">&#x2014; Unmanned &#x2014;</option></select></div>
+      <div class="fg"><label>Assigned publisher</label><select id="dp-mag-person" onchange="dpMagPersonChanged()"><option value="">&#x2014; Unmanned &#x2014;</option></select></div>
+      <div class="fg" id="dp-mag-recruiting-wrap" style="display:none">
+        <label>Recruiting stage</label>
+        <select id="dp-mag-recruiting-stage">
+          <option value="">&#x2014; Not actively recruiting &#x2014;</option>
+          <option value="Sourcing">Sourcing</option>
+          <option value="Interviewing">Interviewing</option>
+          <option value="Offer Extended">Offer Extended</option>
+        </select>
+      </div>
       <div class="fg"><label>Last sale date</label><input id="dp-mag-lastsale" type="date"/></div>
       <div class="fg" style="margin-bottom:14px"><label>Notes</label><textarea id="dp-mag-notes" placeholder="Recruiting notes, market context, etc."></textarea></div>
       <div style="display:flex;gap:8px;justify-content:flex-end">
@@ -1416,6 +1425,7 @@ async function loadDivisionData(){
   dpPeople=peopleRes.data||[];
   dpMagazines=magsRes.data||[];
   dpTouchpoints=tpRes.data||[];
+  await dpLoadHealthTrends();
   renderDivisionSummary();
   renderDpPeople();
   dpPopulatePersonSelects();
@@ -1436,6 +1446,44 @@ function dpHealthOf(lastSaleDate){
   if(days<=33)return{label:'Yellow',color:'#8a6d00',bg:'#fff8e0',days:days};
   if(days<=45)return{label:'Red',color:'#A32D2D',bg:'#fdeaea',days:days};
   return{label:'Purple',color:'#5a2fc2',bg:'#f2ebfc',days:days};
+}
+
+function dpHealthSnapshotRow(subjectType,subjectId,lastSaleDate){
+  var h=dpHealthOf(lastSaleDate);
+  return{
+    subject_type:subjectType,
+    subject_id:subjectId,
+    health_label:lastSaleDate?h.label:null,
+    days_since:lastSaleDate?h.days:null
+  };
+}
+
+// dpHealth trend cache: subjectType:subjectId -> {current, previous} health objects
+var dpHealthTrends={};
+async function dpLoadHealthTrends(){
+  var {data,error}=await sbClient.from('division_health_history').select('subject_type,subject_id,health_label,recorded_at').order('recorded_at',{ascending:false});
+  if(error||!data){dpHealthTrends={};return;}
+  var bySubject={};
+  data.forEach(function(row){
+    var key=row.subject_type+':'+row.subject_id;
+    if(!bySubject[key])bySubject[key]=[];
+    if(bySubject[key].length<2)bySubject[key].push(row.health_label);
+  });
+  dpHealthTrends=bySubject;
+}
+
+var DP_HEALTH_RANK={'Green':0,'Yellow':1,'Red':2,'Purple':3};
+function dpTrendArrow(subjectType,subjectId){
+  var key=subjectType+':'+subjectId;
+  var hist=dpHealthTrends[key];
+  if(!hist||hist.length<2)return'';
+  var cur=hist[0],prev=hist[1];
+  if(cur==null||prev==null)return'';
+  var curRank=DP_HEALTH_RANK[cur],prevRank=DP_HEALTH_RANK[prev];
+  if(curRank===undefined||prevRank===undefined)return'';
+  if(curRank<prevRank)return'<span title="Improving since last import" style="color:#1a7a45;font-weight:700">&#9650;</span>';
+  if(curRank>prevRank)return'<span title="Worsening since last import" style="color:#A32D2D;font-weight:700">&#9660;</span>';
+  return'<span title="No change since last import" style="color:#aaa">&#9679;</span>';
 }
 
 function renderDivisionSummary(){
@@ -1501,7 +1549,8 @@ function renderDpPeople(){
   document.getElementById('dp-people-body').innerHTML=list.map(function(p){
     var magCount=dpMagazines.filter(function(m){return m.person_id===p.id;}).length;
     var h=dpHealthOf(p.last_sale_date);
-    var healthCell=p.last_sale_date?('<span style="display:inline-block;padding:2px 10px;border-radius:99px;font-size:12px;font-weight:600;color:'+h.color+';background:'+h.bg+'">'+h.label+' &middot; '+h.days+'d</span>'):'<span style="color:#aaa;font-size:12px">&mdash;</span>';
+    var trend=dpTrendArrow('person',p.id);
+    var healthCell=p.last_sale_date?('<span style="display:inline-block;padding:2px 10px;border-radius:99px;font-size:12px;font-weight:600;color:'+h.color+';background:'+h.bg+'">'+h.label+' &middot; '+h.days+'d</span> '+trend):'<span style="color:#aaa;font-size:12px">&mdash;</span>';
     return '<tr><td><a href="#" onclick="event.preventDefault();openDpPersonDetail(\''+p.id+'\')" style="color:var(--navy);font-weight:600;text-decoration:none">'+p.name+'</a></td><td>'+p.role+'</td><td>'+healthCell+'</td><td>'+(p.email||'&mdash;')+'</td><td>'+(p.phone||'&mdash;')+'</td><td>'+magCount+'</td>'
       +'<td style="max-width:220px;font-size:12px;color:#666">'+(p.notes||'&mdash;')+'</td>'
       +'<td class="col-actions"><button class="btn btnsm" onclick="openDpPersonDetailInEditMode(\''+p.id+'\')">Edit</button> <button class="btn btnsm btndanger" onclick="deleteDpPerson(\''+p.id+'\')">Delete</button></td></tr>';
@@ -1708,7 +1757,7 @@ async function processDivisionImportRows(rows,statusEl){
   }
 
   statusEl.textContent='Updating magazines...';
-  var magsAdded=0,magsUpdated=0;
+  var magsAdded=0,magsUpdated=0,healthSnapshots=[];
   for(var i=0;i<magsNeeded.length;i++){
     var m=magsNeeded[i];
     var personId=null;
@@ -1723,15 +1772,18 @@ async function processDivisionImportRows(rows,statusEl){
       lastSale=dt.toISOString().slice(0,10);
     }
     var existingMag=dpMagazines.find(function(x){return dpNormName(x.name)===dpNormName(m.name);});
+    var magId=null;
     if(existingMag){
       var {error}=await sbClient.from('division_magazines').update({person_id:personId,last_sale_date:lastSale}).eq('id',existingMag.id);
-      if(!error){existingMag.person_id=personId;existingMag.last_sale_date=lastSale;magsUpdated++;}
+      if(!error){existingMag.person_id=personId;existingMag.last_sale_date=lastSale;magsUpdated++;magId=existingMag.id;}
     }else{
       var {data,error}=await sbClient.from('division_magazines').insert({name:m.name,person_id:personId,last_sale_date:lastSale}).select().single();
-      if(!error&&data){dpMagazines.push(data);magsAdded++;}
+      if(!error&&data){dpMagazines.push(data);magsAdded++;magId=data.id;}
     }
+    if(magId)healthSnapshots.push(dpHealthSnapshotRow('magazine',magId,lastSale));
     if(i%10===0)statusEl.textContent='Updating magazines... ('+(i+1)+'/'+magsNeeded.length+')';
   }
+  if(healthSnapshots.length)await sbClient.from('division_health_history').insert(healthSnapshots);
 
   await loadDivisionData();
   statusEl.textContent=peopleAdded+' people added, '+magsUpdated+' magazines updated, '+magsAdded+' magazines added'+(skipped?', '+skipped+' rows skipped':'')+'.';
@@ -1820,7 +1872,7 @@ function importPulseReport(event){
 
 async function processPulseImportRows(rows,statusEl){
   // header:1 mode gives raw arrays; row 0 = column titles, row 1 = sub-header (# Sold/Total), data starts row 2
-  var added=0,updated=0,skipped=0;
+  var added=0,updated=0,skipped=0,healthSnapshots=[];
   for(var i=2;i<rows.length;i++){
     var r=rows[i];
     if(!r||!r[0])continue;
@@ -1839,16 +1891,19 @@ async function processPulseImportRows(rows,statusEl){
     }
     var row={role:role,email:email,phone:phone,last_sale_date:lastSale};
     var existing=dpPeople.find(function(p){return dpNormName(p.name)===dpNormName(name);});
+    var personId=null;
     if(existing){
       var {error}=await sbClient.from('division_people').update(row).eq('id',existing.id);
-      if(!error){Object.assign(existing,row);updated++;}
+      if(!error){Object.assign(existing,row);updated++;personId=existing.id;}
     }else{
       row.name=name;
       var {data,error}=await sbClient.from('division_people').insert(row).select().single();
-      if(!error&&data){dpPeople.push(data);added++;}
+      if(!error&&data){dpPeople.push(data);added++;personId=data.id;}
     }
+    if(personId)healthSnapshots.push(dpHealthSnapshotRow('person',personId,lastSale));
     if(i%10===0)statusEl.textContent='Updating people... ('+(i-1)+'/'+(rows.length-2)+')';
   }
+  if(healthSnapshots.length)await sbClient.from('division_health_history').insert(healthSnapshots);
   await loadDivisionData();
   statusEl.textContent=added+' people added, '+updated+' updated'+(skipped?', '+skipped+' rows skipped (not Publisher/Flip/Associate)':'')+'.';
   toast('Pulse Report import complete!');
@@ -1900,14 +1955,28 @@ function renderDpMagazines(){
   document.getElementById('dp-mags-body').innerHTML=list.map(function(m){
     var p=dpPeople.find(function(x){return x.id===m.person_id;});
     var h=dpHealthOf(m.last_sale_date);
-    var pubCell=p?p.name:'<span style="color:#A32D2D;font-weight:600">UNMANNED</span>';
+    var trend=dpTrendArrow('magazine',m.id);
+    var pubCell=p?p.name:('<span style="color:#A32D2D;font-weight:600">UNMANNED</span>'+dpRecruitingBadge(m.recruiting_stage));
     return '<tr><td>'+m.name+'</td><td>'+pubCell+'</td>'
-      +'<td><span style="display:inline-block;padding:2px 10px;border-radius:99px;font-size:12px;font-weight:600;color:'+h.color+';background:'+h.bg+'">'+h.label+'</span></td>'
+      +'<td><span style="display:inline-block;padding:2px 10px;border-radius:99px;font-size:12px;font-weight:600;color:'+h.color+';background:'+h.bg+'">'+h.label+'</span> '+trend+'</td>'
       +'<td>'+(h.days===null?'&mdash;':h.days)+'</td>'
       +'<td>'+(m.last_sale_date||'&mdash;')+'</td>'
       +'<td style="max-width:200px;font-size:12px;color:#666">'+(m.notes||'&mdash;')+'</td>'
       +'<td class="col-actions"><button class="btn btnsm" onclick="editDpMagazine(\''+m.id+'\')">Edit</button> <button class="btn btnsm btndanger" onclick="deleteDpMagazine(\''+m.id+'\')">Delete</button></td></tr>';
   }).join('')||'<tr><td colspan="7" style="color:#888;text-align:center;padding:16px">No magazines added yet.</td></tr>';
+}
+
+function dpRecruitingBadge(stage){
+  if(!stage)return'';
+  var colors={'Sourcing':'#8a6d00','Interviewing':'#1a4d8f','Offer Extended':'#1a7a45'};
+  var c=colors[stage]||'#666';
+  return '<div style="margin-top:2px"><span style="display:inline-block;padding:1px 8px;border-radius:99px;font-size:10px;font-weight:600;color:'+c+';background:'+c+'1a">'+stage+'</span></div>';
+}
+
+function dpMagPersonChanged(){
+  var unmanned=!document.getElementById('dp-mag-person').value;
+  document.getElementById('dp-mag-recruiting-wrap').style.display=unmanned?'block':'none';
+  if(!unmanned)document.getElementById('dp-mag-recruiting-stage').value='';
 }
 
 function openDpAddMagazine(){
@@ -1916,8 +1985,10 @@ function openDpAddMagazine(){
   document.getElementById('dp-mag-person').value='';
   document.getElementById('dp-mag-lastsale').value='';
   document.getElementById('dp-mag-notes').value='';
+  document.getElementById('dp-mag-recruiting-stage').value='';
   document.getElementById('dp-mag-form-title').textContent='Add a magazine';
   document.getElementById('dp-mag-savebtn').textContent='Add magazine';
+  dpMagPersonChanged();
   document.getElementById('dp-magazine-modal').classList.add('on');
 }
 
@@ -1929,8 +2000,10 @@ function editDpMagazine(id){
   document.getElementById('dp-mag-person').value=m.person_id||'';
   document.getElementById('dp-mag-lastsale').value=m.last_sale_date||'';
   document.getElementById('dp-mag-notes').value=m.notes||'';
+  document.getElementById('dp-mag-recruiting-stage').value=m.recruiting_stage||'';
   document.getElementById('dp-mag-form-title').textContent='Edit magazine';
   document.getElementById('dp-mag-savebtn').textContent='Save changes';
+  dpMagPersonChanged();
   document.getElementById('dp-magazine-modal').classList.add('on');
 }
 
@@ -1942,11 +2015,13 @@ function closeDpMagazineModal(){
 async function saveDpMagazine(){
   var name=document.getElementById('dp-mag-name').value.trim();
   if(!name){toast('Enter a magazine name.');return;}
+  var personId=document.getElementById('dp-mag-person').value||null;
   var row={
     name:name,
-    person_id:document.getElementById('dp-mag-person').value||null,
+    person_id:personId,
     last_sale_date:document.getElementById('dp-mag-lastsale').value||null,
-    notes:document.getElementById('dp-mag-notes').value.trim()||null
+    notes:document.getElementById('dp-mag-notes').value.trim()||null,
+    recruiting_stage:personId?null:(document.getElementById('dp-mag-recruiting-stage').value||null)
   };
   if(dpEditingMagazineId){
     var {error}=await sbClient.from('division_magazines').update(row).eq('id',dpEditingMagazineId);
