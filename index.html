@@ -508,8 +508,15 @@
 
     <div class="divpg on" id="divsub-people">
       <div class="card">
+        <div style="font-size:15px;font-weight:600;margin-bottom:6px">Import My Team (Users report)</div>
+        <div style="font-size:12px;color:#888;margin-bottom:12px">Adds/updates your team's role, email, and phone from BVM's Users report. Only rows where you (David Marotta) are listed as the DVL are imported &mdash; so this can never accidentally pull in someone who isn't actually on your team. Matches by name, never deletes, doesn't touch magazines or personal health.</div>
+        <input type="file" id="dp-users-file" accept=".xlsx" style="display:none" onchange="importUsersReport(event)"/>
+        <button class="btn btnp" onclick="document.getElementById('dp-users-file').click()">Choose file to import</button>
+        <span id="dp-users-status" style="font-size:12px;color:#666;margin-left:10px"></span>
+      </div>
+      <div class="card">
         <div style="font-size:15px;font-weight:600;margin-bottom:6px">Import Pulse Report</div>
-        <div style="font-size:12px;color:#888;margin-bottom:12px">Updates each person's contact info and personal health from BVM's Pulse Report (one number per publisher, across all their magazines). Matches by name &mdash; updates existing people, adds new ones (including Associate Publishers), never deletes. Rows titled Division Leader / Market Leader / Associate Market Leader are skipped automatically.</div>
+        <div style="font-size:12px;color:#888;margin-bottom:12px">Updates each person's contact info and personal health from BVM's Pulse Report (one number per publisher, across all their magazines). Matches by name &mdash; updates existing people, adds new ones, never deletes. Rows titled Division Leader are skipped automatically.</div>
         <input type="file" id="dp-pulse-file" accept=".xlsx" style="display:none" onchange="importPulseReport(event)"/>
         <button class="btn btnp" onclick="document.getElementById('dp-pulse-file').click()">Choose file to import</button>
         <span id="dp-pulse-status" style="font-size:12px;color:#666;margin-left:10px"></span>
@@ -659,7 +666,7 @@
     <div class="modal" style="max-width:420px">
       <div style="font-size:16px;font-weight:700;color:var(--navy);margin-bottom:14px">Add a person</div>
       <div class="fg"><label>Name</label><input id="dp-add-name" placeholder="Full name"/></div>
-      <div class="fg"><label>Role</label><select id="dp-add-role"><option>Publisher</option><option>Flip Publisher</option><option>Associate Publisher</option><option>Market Leader</option><option>Associate Market Leader</option></select></div>
+      <div class="fg"><label>Role</label><select id="dp-add-role"><option>Publisher</option><option>Flip Publisher</option><option>Associate Publisher</option><option>Market Leader</option><option>Associate Market Leader</option><option>Account Executive</option></select></div>
       <div class="fg"><label>Email</label><input id="dp-add-email" placeholder="jane@example.com"/></div>
       <div class="fg"><label>Phone</label><input id="dp-add-phone" placeholder="(973) 555-0100"/></div>
       <div class="fg" style="margin-bottom:14px"><label>Notes</label><textarea id="dp-add-notes" placeholder="Anything worth remembering about them"></textarea></div>
@@ -692,7 +699,7 @@
         <div style="font-size:16px;font-weight:700;color:var(--navy);margin-bottom:12px">Edit person</div>
         <div class="fr">
           <div class="fg"><label>Name</label><input id="dpd-edit-name"/></div>
-          <div class="fg"><label>Role</label><select id="dpd-edit-role"><option>Publisher</option><option>Flip Publisher</option><option>Associate Publisher</option><option>Market Leader</option><option>Associate Market Leader</option></select></div>
+          <div class="fg"><label>Role</label><select id="dpd-edit-role"><option>Publisher</option><option>Flip Publisher</option><option>Associate Publisher</option><option>Market Leader</option><option>Associate Market Leader</option><option>Account Executive</option></select></div>
         </div>
         <div class="fr">
           <div class="fg"><label>Email</label><input id="dpd-edit-email"/></div>
@@ -1673,9 +1680,65 @@ async function processDivisionImportRows(rows,statusEl){
   toast('Import complete!');
 }
 
+// --- Import My Team (Users report, filtered by DVL = David Marotta) ---
+var DP_USERS_DVL_NAME='david marotta';
+var DP_USERS_ROLE_MAP={'publisher':'Publisher','associate publisher':'Associate Publisher','flip publisher':'Flip Publisher','market leader':'Market Leader','associate market leader':'Associate Market Leader','account executive':'Account Executive'};
+
+function importUsersReport(event){
+  var file=event.target.files[0];
+  if(!file)return;
+  var statusEl=document.getElementById('dp-users-status');
+  statusEl.textContent='Reading file...';
+  var reader=new FileReader();
+  reader.onload=function(e){
+    try{
+      var wb=XLSX.read(e.target.result,{type:'binary',codepage:65001});
+      var ws=wb.Sheets[wb.SheetNames[0]];
+      var rows=XLSX.utils.sheet_to_json(ws,{defval:'',raw:false,header:1});
+      processUsersImportRows(rows,statusEl);
+    }catch(err){
+      statusEl.textContent='Error reading file: '+err.message;
+    }
+  };
+  reader.readAsBinaryString(file);
+  event.target.value='';
+}
+
+async function processUsersImportRows(rows,statusEl){
+  // header:1 mode gives raw arrays; row 0 = column titles, data starts row 1
+  // columns: 0 Full Name, 3 Phone, 4 Email, 5 Position, 8 DVL
+  var added=0,updated=0,skipped=0;
+  for(var i=1;i<rows.length;i++){
+    var r=rows[i];
+    if(!r||!r[0])continue;
+    var name=(r[0]||'').toString().trim();
+    var dvl=(r[8]||'').toString().trim().toLowerCase();
+    if(dvl!==DP_USERS_DVL_NAME){skipped++;continue;}
+    var titleRaw=(r[5]||'').toString().trim().toLowerCase();
+    var role=DP_USERS_ROLE_MAP[titleRaw];
+    if(!role){skipped++;continue;}
+    var phone=r[3]?normalizePhone(r[3]):null;
+    var email=r[4]||null;
+    var row={role:role,email:email,phone:phone};
+    var existing=dpPeople.find(function(p){return dpNormName(p.name)===dpNormName(name);});
+    if(existing){
+      var {error}=await sbClient.from('division_people').update(row).eq('id',existing.id);
+      if(!error){Object.assign(existing,row);updated++;}
+    }else{
+      row.name=name;
+      var {data,error}=await sbClient.from('division_people').insert(row).select().single();
+      if(!error&&data){dpPeople.push(data);added++;}
+    }
+    if(i%10===0)statusEl.textContent='Updating team... ('+i+'/'+(rows.length-1)+')';
+  }
+  await loadDivisionData();
+  statusEl.textContent=added+' people added, '+updated+' updated'+(skipped?', '+skipped+' rows skipped (not on your team)':'')+'.';
+  toast('Team roster import complete!');
+}
+
 // --- Import Pulse Report (person-level health, contact info, Associate Publishers) ---
 var DP_PULSE_SKIP_TITLES=['division leader'];
-var DP_PULSE_ROLE_MAP={'publisher':'Publisher','flip publisher':'Flip Publisher','associate publisher':'Associate Publisher','market leader':'Market Leader','associate market leader':'Associate Market Leader'};
+var DP_PULSE_ROLE_MAP={'publisher':'Publisher','flip publisher':'Flip Publisher','associate publisher':'Associate Publisher','market leader':'Market Leader','associate market leader':'Associate Market Leader','account executive':'Account Executive'};
 
 function importPulseReport(event){
   var file=event.target.files[0];
