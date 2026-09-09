@@ -887,12 +887,13 @@
   </div>
 
   <div class="overlay" id="dp-quick-note-modal" onclick="if(event.target===this)closeDpQuickNote()">
-    <div class="modal" style="max-width:420px">
-      <div style="font-size:16px;font-weight:700;color:var(--navy);margin-bottom:2px">Log a contact</div>
-      <div style="font-size:12px;color:#888;margin-bottom:14px" id="dp-quick-note-name"></div>
-      <div class="fg" style="margin-bottom:14px"><label>What happened?</label><textarea id="dp-quick-note-text" placeholder="Called, texted, ran into them at..."></textarea></div>
+    <div class="modal" style="max-width:440px;max-height:80vh;overflow-y:auto">
+      <div style="font-size:16px;font-weight:700;color:var(--navy);margin-bottom:2px" id="dp-quick-note-name"></div>
+      <div style="font-size:12px;color:#888;margin-bottom:12px">Contact notes</div>
+      <div id="dp-quick-note-history" style="margin-bottom:14px"></div>
+      <div class="fg" style="margin-bottom:14px"><label>Log a new contact</label><textarea id="dp-quick-note-text" placeholder="Called, texted, ran into them at..."></textarea></div>
       <div style="display:flex;gap:8px;justify-content:flex-end">
-        <button class="btn" onclick="closeDpQuickNote()">Cancel</button>
+        <button class="btn" onclick="closeDpQuickNote()">Close</button>
         <button class="btn btnp" onclick="saveDpQuickNote()">Save note</button>
       </div>
     </div>
@@ -1925,12 +1926,8 @@ function dpTruncate(s,n){
 
 function dpNoteCellInner(ns){
   if(!ns.text)return'<span style="color:var(--orange-dark);font-weight:600">+ Add note</span>';
-  var html='<span style="white-space:pre-wrap">'+dpTruncate(ns.text,70)+'</span>';
-  if(ns.date){
-    var extra=ns.count>1?(' &middot; +'+(ns.count-1)+' more'):'';
-    html+='<div style="font-size:10px;color:#999;margin-top:2px">'+ns.date+extra+'</div>';
-  }
-  return html;
+  var label=ns.date?ns.date:'On file';
+  return '<span style="color:#555">&#128221; '+label+'</span>';
 }
 
 function dpPersonNoteSummary(personId){
@@ -1946,12 +1943,31 @@ function dpPersonNoteSummary(personId){
   return {text:'',date:'',count:0};
 }
 
+function renderDpQuickNoteHistory(personId){
+  var withNotes=dpTouchpoints.filter(function(t){return t.person_id===personId&&t.outcome_notes;})
+    .sort(function(a,b){return (b.completed_at||b.due_date||b.created_at||'').localeCompare(a.completed_at||a.due_date||a.created_at||'');});
+  var html;
+  if(withNotes.length){
+    html='<div style="max-height:220px;overflow-y:auto;border:1px solid #dfdfd8;border-radius:8px;padding:2px 10px">'
+      +withNotes.map(function(tp){
+        var d=tp.completed_at?tp.completed_at.slice(0,10):(tp.due_date||'');
+        return '<div style="padding:8px 0;border-bottom:1px solid #eee"><div style="font-size:11px;color:#999">'+d+'</div><div style="font-size:13px;color:#333;white-space:pre-wrap">'+tp.outcome_notes+'</div></div>';
+      }).join('')
+      +'</div>';
+  }else{
+    var p=dpPeople.find(function(x){return x.id===personId;});
+    html=(p&&p.notes)?('<div style="font-size:13px;color:#555;padding:4px 0">'+p.notes+'</div>'):'<div style="font-size:13px;color:#aaa;padding:4px 0">No notes yet.</div>';
+  }
+  document.getElementById('dp-quick-note-history').innerHTML=html;
+}
+
 function openDpQuickNote(personId){
   var p=dpPeople.find(function(x){return x.id===personId;});
   if(!p)return;
   dpQuickNotePersonId=personId;
   document.getElementById('dp-quick-note-name').textContent=p.name;
   document.getElementById('dp-quick-note-text').value='';
+  renderDpQuickNoteHistory(personId);
   document.getElementById('dp-quick-note-modal').classList.add('on');
   setTimeout(function(){document.getElementById('dp-quick-note-text').focus();},50);
 }
@@ -1969,8 +1985,9 @@ async function saveDpQuickNote(){
   var row={person_id:dpQuickNotePersonId,title:'Contact logged',type:'PDS (Personal Daily Support)',due_date:todayStr(),completed:true,completed_at:nowIso,outcome_notes:text};
   var {error}=await sbClient.from('division_touchpoints').insert(row);
   if(error){toast('Could not save: '+error.message);return;}
-  closeDpQuickNote();
+  document.getElementById('dp-quick-note-text').value='';
   await loadDivisionData();
+  renderDpQuickNoteHistory(dpQuickNotePersonId);
   toast('Note logged!');
 }
 
