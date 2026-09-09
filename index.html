@@ -186,23 +186,32 @@
     <span class="topbar-sub">Marketing &amp; Sales CRM</span>
   </div>
   <div class="topbar-right">
-    <select id="pagesize" onchange="changePageSize(this.value)" style="padding:7px 10px;border-radius:8px;border:1px solid rgba(255,255,255,.2);background:rgba(255,255,255,.1);font-size:13px;color:#fff;font-family:inherit">
-      <option value="10">Show 10</option>
-      <option value="20" selected>Show 20</option>
-      <option value="30">Show 30</option>
-      <option value="40">Show 40</option>
-      <option value="50">Show 50</option>
-    </select>
-    <select id="admin-view-select" onchange="adminViewChanged()" style="display:none;padding:7px 10px;border-radius:8px;border:1px solid rgba(255,255,255,.2);background:rgba(255,255,255,.1);font-size:13px;color:#fff;font-family:inherit">
-      <option value="">Viewing: Everyone</option>
-    </select>
     <span style="font-size:12px;color:#888;display:flex;align-items:center">
       <span class="sync-dot loading" id="syncdot"></span>
       <span id="syncstatus">Connecting...</span>
     </span>
+    <span id="viewing-indicator" style="display:none;font-size:12px;color:var(--orange);background:rgba(232,106,42,.15);padding:5px 10px;border-radius:99px;align-items:center;font-weight:600"></span>
     <div style="position:relative;display:inline-block">
       <button class="btn" onclick="toggleToolsMenu(event)">&#x2699; Tools &#x25BE;</button>
       <div id="tools-menu" style="display:none;position:absolute;top:calc(100% + 4px);right:0;background:#fff;border:1px solid #d5d5cf;border-radius:8px;box-shadow:0 8px 24px rgba(0,0,0,.15);z-index:50;min-width:210px;overflow:hidden;padding:6px 0">
+        <div style="padding:6px 14px 3px;font-size:11px;font-weight:600;color:#888;text-transform:uppercase;letter-spacing:.04em">View</div>
+        <div style="padding:4px 14px 8px">
+          <label style="font-size:11px;color:#888;display:block;margin-bottom:3px">Leads per page</label>
+          <select id="pagesize" onchange="changePageSize(this.value)" style="width:100%;padding:6px 8px;border-radius:6px;border:1px solid #d5d5cf;font-size:13px;font-family:inherit">
+            <option value="10">10</option>
+            <option value="20" selected>20</option>
+            <option value="30">30</option>
+            <option value="40">40</option>
+            <option value="50">50</option>
+          </select>
+        </div>
+        <div id="admin-view-wrap" style="display:none;padding:4px 14px 8px">
+          <label style="font-size:11px;color:#888;display:block;margin-bottom:3px">Viewing</label>
+          <select id="admin-view-select" onchange="adminViewChanged()" style="width:100%;padding:6px 8px;border-radius:6px;border:1px solid #d5d5cf;font-size:13px;font-family:inherit">
+            <option value="">Everyone</option>
+          </select>
+        </div>
+        <div style="border-top:1px solid #f0f0ee;margin:6px 0"></div>
         <div style="padding:6px 14px 3px;font-size:11px;font-weight:600;color:#888;text-transform:uppercase;letter-spacing:.04em">Download template</div>
         <button class="btn" style="display:block;width:100%;text-align:left;border:none;border-radius:0;color:#1a1a18" onclick="downloadTemplate('csv');toggleToolsMenu()">CSV (.csv)</button>
         <button class="btn" style="display:block;width:100%;text-align:left;border:none;border-radius:0;color:#1a1a18" onclick="downloadTemplate('xlsx');toggleToolsMenu()">Excel (.xlsx)</button>
@@ -213,6 +222,9 @@
         <div style="border-top:1px solid #f0f0ee;margin:6px 0"></div>
         <button class="btn" style="display:block;width:100%;text-align:left;border:none;border-radius:0;color:#1a1a18" onclick="toggleToolsMenu();triggerImport()">&#x2b06; Import CSV / Excel</button>
         <button class="btn" style="display:block;width:100%;text-align:left;border:none;border-radius:0;color:#1a1a18" onclick="toggleToolsMenu();openIndustryManager()">&#x2699; Manage Industries</button>
+        <div style="border-top:1px solid #f0f0ee;margin:6px 0"></div>
+        <div style="padding:6px 14px 3px;font-size:11px;font-weight:600;color:#888;text-transform:uppercase;letter-spacing:.04em">Account</div>
+        <button class="btn" style="display:block;width:100%;text-align:left;border:none;border-radius:0;color:#1a1a18" onclick="toggleToolsMenu();openChangePassword()">Change password</button>
       </div>
     </div>
     <input type="file" id="csvfile" accept=".csv,.xlsx" style="display:none" onchange="importCSV(event)"/>
@@ -230,7 +242,6 @@
     <button class="btn btnp" onclick="toggleForm()">+ Add lead</button>
     <span style="font-size:12px;color:rgba(255,255,255,.7);display:flex;align-items:center;gap:8px;margin-left:4px;border-left:1px solid rgba(255,255,255,.2);padding-left:12px">
       <span id="app-who"></span>
-      <button class="btn btnsm" onclick="openChangePassword()">Change password</button>
       <button class="btn btnsm" onclick="appLogout()">Log out</button>
     </span>
   </div>
@@ -300,7 +311,7 @@
     <button class="tab" onclick="showTab('metrics',this)">Daily Metrics</button>
     <span style="width:1px;background:#e2e6ed;margin:6px 4px"></span>
     <button class="tab" onclick="showTab('reports',this)">Reports</button>
-    <button class="tab" onclick="showTab('findleads',this)">Find Leads</button>
+    <button class="tab" onclick="showTab('findleads',this)" style="display:none">Find Leads</button>
     <button class="tab" onclick="showTab('drip',this)">Email drip</button>
     <button class="tab" onclick="showTab('ai',this)">AI analyst</button>
     <span style="width:1px;background:#e2e6ed;margin:6px 4px;display:none" id="division-sep"></span>
@@ -472,11 +483,10 @@
       <div id="dp-tp-widget-list"></div>
     </div>
 
-    <div class="metrics">
+    <div class="metrics" style="grid-template-columns:repeat(3,1fr)">
       <div class="mc"><div class="ml">People</div><div class="mv" id="dp-m-people">&#x2014;</div></div>
       <div class="mc"><div class="ml">Magazines</div><div class="mv" id="dp-m-mags">&#x2014;</div></div>
       <div class="mc"><div class="ml" style="color:#A32D2D">Unmanned</div><div class="mv" id="dp-m-unmanned" style="color:#A32D2D">&#x2014;</div></div>
-      <div class="mc"><div class="ml" style="color:#8a6d00">Yellow + Red + Purple</div><div class="mv" id="dp-m-atrisk" style="color:#8a6d00">&#x2014;</div></div>
     </div>
 
     <div class="card" style="margin-bottom:20px">
@@ -969,6 +979,19 @@ function adminViewChanged(){
   renderFollowupWidget();renderTasks();
   if(mInitDone)mLoadEntries();
   if(document.getElementById('tab-reports').classList.contains('on'))renderReports();
+  updateViewingIndicator();
+}
+function updateViewingIndicator(){
+  var el=document.getElementById('viewing-indicator');
+  if(!el)return;
+  if(adminViewOwnerId){
+    var sel=document.getElementById('admin-view-select');
+    var label=sel.options[sel.selectedIndex]?sel.options[sel.selectedIndex].text:'';
+    el.textContent='Viewing: '+label;
+    el.style.display='inline-flex';
+  }else{
+    el.style.display='none';
+  }
 }
 var selectedLeadIds=new Set();
 var pendingAuthType=(function(){
@@ -1432,7 +1455,7 @@ function renderDivisionSummary(){
   document.getElementById('dp-h-yellow').textContent=counts.Yellow;
   document.getElementById('dp-h-red').textContent=counts.Red;
   document.getElementById('dp-h-purple').textContent=counts.Purple;
-  document.getElementById('dp-m-atrisk').textContent=counts.Yellow+counts.Red+counts.Purple;
+
 
   var pcounts={Green:0,Yellow:0,Red:0,Purple:0};
   dpPeople.forEach(function(p){
@@ -2944,8 +2967,8 @@ async function afterLogin(user){
     document.getElementById('import-owner-select').innerHTML=ownerOpts;
     document.getElementById('fl-owner-select').innerHTML=ownerOpts;
     document.getElementById('fl-owner-select').style.display='';
-    document.getElementById('admin-view-select').style.display='';
-    document.getElementById('admin-view-select').innerHTML='<option value="">Viewing: Everyone</option>'+allProfiles.map(function(p){return'<option value="'+p.id+'">Viewing: '+(p.rep_name||p.email)+'</option>';}).join('');
+    document.getElementById('admin-view-wrap').style.display='block';
+    document.getElementById('admin-view-select').innerHTML='<option value="">Everyone</option>'+allProfiles.map(function(p){return'<option value="'+p.id+'">'+(p.rep_name||p.email)+'</option>';}).join('');
     document.getElementById('th-select').style.display='';
     document.getElementById('select-all-filter-btn').style.display='';
   }
