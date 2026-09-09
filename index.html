@@ -749,7 +749,7 @@
           <div style="font-size:12px;color:#888;margin-bottom:12px">Who a touchpoint was about, what it was, and when it was due or completed &mdash; sorted most recent first.</div>
           <div class="card-scroll" style="border:none;box-shadow:none">
             <table>
-              <thead><tr><th>Who</th><th>Type</th><th>What</th><th>Due date</th><th>Completed</th><th>Status</th></tr></thead>
+              <thead><tr><th>Who</th><th>Type</th><th>What</th><th>Due date</th><th>Completed</th><th>Status</th><th>Outcome</th></tr></thead>
               <tbody id="dp-report-body"></tbody>
             </table>
           </div>
@@ -2489,15 +2489,50 @@ function dpTouchpointRowHTML(tp,compact){
   var overdue=!tp.completed&&tp.due_date&&tp.due_date<todayStr();
   var dueToday=!tp.completed&&tp.due_date===todayStr();
   var color=tp.completed?'#aaa':overdue?'#A32D2D':dueToday?'#c95a1e':'#1a1a18';
-  return '<div style="display:flex;align-items:center;gap:10px;padding:'+(compact?'6px 0':'8px 0')+';border-bottom:1px solid #dde1e8">'
-    +'<input type="checkbox" style="width:auto" '+(tp.completed?'checked':'')+' onchange="toggleDpTouchpoint(\''+tp.id+'\',this.checked)"/>'
+  var noteSection='';
+  if(!compact){
+    noteSection='<div id="tp-note-view-'+tp.id+'">'
+      +(tp.outcome_notes?'<div style="font-size:11px;color:#666;font-style:italic;margin-top:3px;white-space:pre-wrap">'+tp.outcome_notes+'</div>':'')
+      +'<button type="button" onclick="toggleTpNoteEdit(\''+tp.id+'\')" style="background:none;border:none;padding:0;font-size:11px;color:var(--orange-dark);cursor:pointer;margin-top:3px;font-weight:600">'+(tp.outcome_notes?'Edit note':'+ Add note')+'</button>'
+      +'</div>'
+      +'<div id="tp-note-edit-'+tp.id+'" style="display:none;margin-top:4px">'
+      +'<textarea id="tp-note-input-'+tp.id+'" placeholder="How did it go?" style="width:100%;font-size:12px;padding:6px 8px;border-radius:6px;border:1px solid #b8b8ae;font-family:inherit;min-height:50px">'+(tp.outcome_notes||'')+'</textarea>'
+      +'<div style="margin-top:4px"><button type="button" class="btn btnsm" onclick="saveTpOutcomeNote(\''+tp.id+'\')">Save</button> <button type="button" class="btn btnsm" onclick="toggleTpNoteEdit(\''+tp.id+'\')">Cancel</button></div>'
+      +'</div>';
+  }
+  return '<div style="display:flex;align-items:flex-start;gap:10px;padding:'+(compact?'6px 0':'8px 0')+';border-bottom:1px solid #dde1e8">'
+    +'<input type="checkbox" style="width:auto;margin-top:2px" '+(tp.completed?'checked':'')+' onchange="toggleDpTouchpoint(\''+tp.id+'\',this.checked)"/>'
     +'<div style="flex:1;min-width:0">'
       +'<div style="font-size:13px;color:'+color+';text-decoration:'+(tp.completed?'line-through':'none')+'">'+dpTypeBadge(tp.type)+tp.title+'</div>'
       +'<div style="font-size:11px;color:#888">'+dpTargetLabel(tp)+'</div>'
+      +noteSection
     +'</div>'
-    +'<div style="font-size:11px;color:'+(overdue?'#A32D2D':'#888')+';white-space:nowrap">'+(tp.due_date||'No date')+'</div>'
+    +'<div style="font-size:11px;color:'+(overdue?'#A32D2D':'#888')+';white-space:nowrap;margin-top:2px">'+(tp.due_date||'No date')+'</div>'
     +(compact?'':'<button class="btn btnsm btndanger" onclick="deleteDpTouchpoint(\''+tp.id+'\')">Delete</button>')
     +'</div>';
+}
+
+function toggleTpNoteEdit(id){
+  var viewEl=document.getElementById('tp-note-view-'+id);
+  var editEl=document.getElementById('tp-note-edit-'+id);
+  if(!viewEl||!editEl)return;
+  var opening=editEl.style.display==='none';
+  editEl.style.display=opening?'block':'none';
+  viewEl.style.display=opening?'none':'block';
+  if(opening)document.getElementById('tp-note-input-'+id).focus();
+}
+
+async function saveTpOutcomeNote(id){
+  var val=document.getElementById('tp-note-input-'+id).value.trim();
+  var {error}=await sbClient.from('division_touchpoints').update({outcome_notes:val||null}).eq('id',id);
+  if(error){toast('Could not save note: '+error.message);return;}
+  var tp=dpTouchpoints.find(function(x){return x.id===id;});
+  if(tp)tp.outcome_notes=val||null;
+  toast('Note saved!');
+  renderDpTouchpoints();
+  renderDpTouchpointWidget();
+  renderDpReports();
+  if(document.getElementById('dp-person-detail-modal').classList.contains('on'))renderDpPersonDetailTouchpoints();
 }
 
 function renderDpTouchpointWidget(){
@@ -2548,14 +2583,14 @@ function renderDpReports(){
     var statusBadge=tp.completed
       ?'<span style="color:#1a7a45;font-weight:600">Completed</span>'
       :'<span style="color:#8a6d00;font-weight:600">Open</span>';
-    return '<tr><td>'+dpTargetLabel(tp)+'</td><td>'+(tp.type||'Other')+'</td><td>'+tp.title+'</td><td>'+(tp.due_date||'&mdash;')+'</td><td>'+completedStr+'</td><td>'+statusBadge+'</td></tr>';
-  }).join('')||'<tr><td colspan="6" style="color:#888;text-align:center;padding:16px">No touchpoints match this filter.</td></tr>';
+    return '<tr><td>'+dpTargetLabel(tp)+'</td><td>'+(tp.type||'Other')+'</td><td>'+tp.title+'</td><td>'+(tp.due_date||'&mdash;')+'</td><td>'+completedStr+'</td><td>'+statusBadge+'</td><td style="max-width:220px;font-size:12px;color:#666;font-style:italic">'+(tp.outcome_notes||'&mdash;')+'</td></tr>';
+  }).join('')||'<tr><td colspan="7" style="color:#888;text-align:center;padding:16px">No touchpoints match this filter.</td></tr>';
 }
 
 function exportDpReportExcel(){
   var rows=dpReportRows();
   if(!rows.length){toast('Nothing to export with this filter.');return;}
-  var hdr=['Who','Type','What','Due Date','Completed Date','Status'];
+  var hdr=['Who','Type','What','Due Date','Completed Date','Status','Outcome'];
   var dataRows=rows.map(function(tp){
     return[
       dpTargetLabel(tp).replace(' (recruiting)',''),
@@ -2563,7 +2598,8 @@ function exportDpReportExcel(){
       tp.title,
       tp.due_date||'',
       tp.completed&&tp.completed_at?new Date(tp.completed_at).toISOString().slice(0,10):'',
-      tp.completed?'Completed':'Open'
+      tp.completed?'Completed':'Open',
+      tp.outcome_notes||''
     ];
   });
   var ws=XLSX.utils.aoa_to_sheet([hdr].concat(dataRows));
