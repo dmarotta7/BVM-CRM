@@ -4093,8 +4093,10 @@ async function processRows(rows){
       contact_date:['contact date','contacted','contact_date','date contacted'],
       followup_date:['follow-up date','followup date','follow up date','followup_date','follow-up','next call date','next call','callback date'],
       address:['address','street address','company address'],
-      city:['city','company city'],
-      zip:['zip','zip code','postal code','zipcode']
+      city:['city','company city','town'],
+      zip:['zip','zip code','postal code','zipcode'],
+      industry:['industry','category','business type','business category'],
+      website:['website','site','url','company website']
     };
     var opts=alts[name]||[name];
     var rowKeys=Object.keys(row);
@@ -4126,6 +4128,7 @@ async function processRows(rows){
       value:parseInt(col(row,'value'))||0,notes:[],
       contact_date:cd||null,followup_date:fd||null,
       address:col(row,'address')||null,city:col(row,'city')||null,zip:col(row,'zip')||null,
+      industry:col(row,'industry')||null,website:col(row,'website')||null,
       owner_id:importTargetOwner||mUser.id
     };
     importRow.score=(!isNaN(scoreRaw)&&scoreRaw>=0&&scoreRaw<=100)?scoreRaw:calcLeadScore(importRow);
