@@ -229,6 +229,14 @@
       </div>
     </div>
     <input type="file" id="csvfile" accept=".csv,.xlsx" style="display:none" onchange="importCSV(event)"/>
+    <button class="btn btnp" onclick="toggleForm()">+ Add lead</button>
+    <span style="font-size:12px;color:rgba(255,255,255,.7);display:flex;align-items:center;gap:8px;margin-left:4px;border-left:1px solid rgba(255,255,255,.2);padding-left:12px">
+      <span id="app-who"></span>
+      <button class="btn btnsm" onclick="appLogout()">Log out</button>
+    </span>
+  </div>
+</div>
+
     <div class="overlay" id="import-owner-modal" onclick="if(event.target===this)cancelImportOwner()">
       <div class="modal" style="max-width:380px">
         <div style="font-size:15px;font-weight:700;color:var(--navy);margin-bottom:4px">Who should these leads go to?</div>
@@ -246,20 +254,13 @@
           <div style="font-size:16px;font-weight:700;color:var(--navy)">Trash</div>
           <button class="btn btnsm" onclick="closeTrash()">Close</button>
         </div>
-        <div style="font-size:12px;color:#888;margin-bottom:14px">Deleted leads land here first, not gone for good. Restore them, or delete permanently when you're sure.</div>
+        <div style="font-size:12px;color:#888;margin-bottom:14px">Deleted leads land here first, not gone for good. Restore them, or delete permanently when you're sure. If you've picked a rep under Tools &rarr; Viewing, only that rep's trash shows here, and Empty trash only clears theirs.</div>
         <div id="trash-list"></div>
         <div style="margin-top:12px;display:flex;justify-content:flex-end">
           <button class="btn btndanger btnsm" onclick="emptyTrash()">Empty trash</button>
         </div>
       </div>
     </div>
-    <button class="btn btnp" onclick="toggleForm()">+ Add lead</button>
-    <span style="font-size:12px;color:rgba(255,255,255,.7);display:flex;align-items:center;gap:8px;margin-left:4px;border-left:1px solid rgba(255,255,255,.2);padding-left:12px">
-      <span id="app-who"></span>
-      <button class="btn btnsm" onclick="appLogout()">Log out</button>
-    </span>
-  </div>
-</div>
 
 <div class="container">
 
@@ -1709,10 +1710,17 @@ var trashedLeads=[];
 async function openTrash(){
   document.getElementById('trash-modal').classList.add('on');
   document.getElementById('trash-list').innerHTML='<div style="color:#888;font-size:13px;padding:12px 0">Loading...</div>';
-  var {data,error}=await sbClient.from('leads').select('*').not('deleted_at','is',null).order('deleted_at',{ascending:false}).limit(200);
+  var tq=sbClient.from('leads').select('*').not('deleted_at','is',null);
+  if(adminViewOwnerId)tq=tq.eq('owner_id',adminViewOwnerId);
+  var {data,error}=await tq.order('deleted_at',{ascending:false}).limit(500);
   if(error){document.getElementById('trash-list').innerHTML='<div style="color:#A32D2D;font-size:13px">Could not load trash: '+error.message+'</div>';return;}
   trashedLeads=data||[];
   renderTrashList();
+}
+
+function trashOwnerName(id){
+  var p=(typeof allProfiles!=='undefined'&&allProfiles||[]).find(function(x){return x.id===id;});
+  return p?(p.rep_name||p.email):'unknown';
 }
 
 function closeTrash(){
@@ -1724,7 +1732,7 @@ function renderTrashList(){
   if(!trashedLeads.length){el.innerHTML='<div style="color:#888;font-size:13px;padding:12px 0">Trash is empty.</div>';return;}
   el.innerHTML=trashedLeads.map(function(l){
     return '<div style="display:flex;justify-content:space-between;align-items:center;padding:8px 0;border-bottom:1px solid #dde1e8">'
-      +'<div><div style="font-size:13px;font-weight:600">'+l.name+'</div><div style="font-size:11px;color:#888">'+l.company+' &middot; deleted '+new Date(l.deleted_at).toLocaleDateString()+'</div></div>'
+      +'<div><div style="font-size:13px;font-weight:600">'+l.name+'</div><div style="font-size:11px;color:#888">'+l.company+' &middot; deleted '+new Date(l.deleted_at).toLocaleDateString()+' &middot; owner: '+trashOwnerName(l.owner_id)+'</div></div>'
       +'<div style="display:flex;gap:6px"><button class="btn btnsm" onclick="restoreLead(\''+l.id+'\')">Restore</button><button class="btn btnsm btndanger" onclick="permanentlyDeleteLead(\''+l.id+'\')">Delete forever</button></div>'
       +'</div>';
   }).join('');
